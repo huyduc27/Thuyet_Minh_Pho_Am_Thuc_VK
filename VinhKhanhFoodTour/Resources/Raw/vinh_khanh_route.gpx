@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="VinhKhanhFoodTour"
+     xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Vinh Khanh Food Street Walking Route</name>
+    <desc>Walking route from NW to SE along Vinh Khanh street, District 4, HCMC</desc>
+  </metadata>
+  <trk>
+    <name>Vinh Khanh Walking Tour</name>
+    <trkseg>
+      <trkpt lat="10.76190" lon="106.70208"><ele>0</ele></trkpt>
+      <trkpt lat="10.76184" lon="106.70215"><ele>0</ele></trkpt>
+      <trkpt lat="10.76178" lon="106.70222"><ele>0</ele></trkpt>
+      <trkpt lat="10.76173" lon="106.70230"><ele>0</ele></trkpt>
+      <trkpt lat="10.76168" lon="106.70237"><ele>0</ele></trkpt>
+      <trkpt lat="10.76162" lon="106.70245"><ele>0</ele></trkpt>
+      <trkpt lat="10.76155" lon="106.70255"><ele>0</ele></trkpt>
+      <trkpt lat="10.76148" lon="106.70264"><ele>0</ele></trkpt>
+      <trkpt lat="10.76142" lon="106.70270"><ele>0</ele></trkpt>
+      <trkpt lat="10.76135" lon="106.70276"><ele>0</ele></trkpt>
+      <trkpt lat="10.76127" lon="106.70280"><ele>0</ele></trkpt>
+      <trkpt lat="10.76120" lon="106.70283"><ele>0</ele></trkpt>
+      <trkpt lat="10.76112" lon="106.70288"><ele>0</ele></trkpt>
+      <trkpt lat="10.76105" lon="106.70296"><ele>0</ele></trkpt>
+      <trkpt lat="10.76098" lon="106.70308"><ele>0</ele></trkpt>
+      <trkpt lat="10.76094" lon="106.70318"><ele>0</ele></trkpt>
+      <trkpt lat="10.76090" lon="106.70330"><ele>0</ele></trkpt>
+      <trkpt lat="10.76086" lon="106.70348"><ele>0</ele></trkpt>
+      <trkpt lat="10.76082" lon="106.70368"><ele>0</ele></trkpt>
+      <trkpt lat="10.76078" lon="106.70388"><ele>0</ele></trkpt>
+      <trkpt lat="10.76074" lon="106.70406"><ele>0</ele></trkpt>
+      <trkpt lat="10.76070" lon="106.70422"><ele>0</ele></trkpt>
+      <trkpt lat="10.76074" lon="106.70440"><ele>0</ele></trkpt>
+      <trkpt lat="10.76078" lon="106.70455"><ele>0</ele></trkpt>
+      <trkpt lat="10.76084" lon="106.70468"><ele>0</ele></trkpt>
+      <trkpt lat="10.76090" lon="106.70478"><ele>0</ele></trkpt>
+      <trkpt lat="10.76096" lon="106.70486"><ele>0</ele></trkpt>
+      <trkpt lat="10.76100" lon="106.70500"><ele>0</ele></trkpt>
+      <trkpt lat="10.76103" lon="106.70518"><ele>0</ele></trkpt>
+      <trkpt lat="10.76106" lon="106.70535"><ele>0</ele></trkpt>
+      <trkpt lat="10.76108" lon="106.70550"><ele>0</ele></trkpt>
+      <trkpt lat="10.76110" lon="106.70565"><ele>0</ele></trkpt>
+      <trkpt lat="10.76113" lon="106.70580"><ele>0</ele></trkpt>
+    </trkseg>
+  </trk>
+</gpx>

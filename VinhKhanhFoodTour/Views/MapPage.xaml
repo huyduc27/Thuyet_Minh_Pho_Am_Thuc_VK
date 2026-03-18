@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+             xmlns:vm="clr-namespace:VinhKhanhFoodTour.ViewModels"
+             x:Class="VinhKhanhFoodTour.Views.MapPage"
+             x:DataType="vm:MapViewModel"
+             Title="Ban do"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- Row 0: Header -->
+        <Border Grid.Row="0" BackgroundColor="#F8F8FA" Padding="14,8"
+                StrokeShape="RoundRectangle 0" Stroke="Transparent"
+                Shadow="{OnPlatform Default={Shadow Brush='#20000000', Offset='0,2', Radius='4'}}">
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Label Text="VINH KHANH FOOD MAP" FontSize="13" TextColor="#e94560" 
+                               FontAttributes="Bold" CharacterSpacing="1"/>
+                        <Label Text="{Binding LocationStatus}" FontSize="9" TextColor="#999"
+                               LineBreakMode="TailTruncation" MaxLines="1"/>
+                    </VerticalStackLayout>
+                    <Border Grid.Column="1" BackgroundColor="#F0F0F0" 
+                            StrokeShape="RoundRectangle 14" Stroke="#E0E0E0" StrokeThickness="1"
+                            Padding="8,4" VerticalOptions="Center">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ReloadCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="&#x21BB;" FontSize="14" TextColor="#666" 
+                               HorizontalTextAlignment="Center"/>
+                    </Border>
+                </Grid>
+
+                <HorizontalStackLayout Grid.Row="1" Spacing="8">
+                    <Border BackgroundColor="{Binding ManualButtonColor}" 
+                            StrokeShape="RoundRectangle 14" Stroke="Transparent"
+                            Padding="12,5">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleManualCommand}"/>
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="4">
+                            <Label Text="&#128205;" FontSize="11"/>
+                            <Label Text="Manual" FontSize="11" TextColor="White" FontAttributes="Bold"
+                                   VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Border>
+                    <Border BackgroundColor="{Binding RouteButtonColor}" 
+                            StrokeShape="RoundRectangle 14" Stroke="Transparent"
+                            Padding="12,5">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleRouteCommand}"/>
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="4">
+                            <Label Text="&#128694;" FontSize="11"/>
+                            <Label Text="Route" FontSize="11" TextColor="White" FontAttributes="Bold"
+                                   VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Border>
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+
+        <!-- Row 1: Route Controls (compact bar) -->
+        <Border Grid.Row="1" BackgroundColor="#F2F2F5" Padding="10,5"
+                StrokeShape="RoundRectangle 0" Stroke="Transparent"
+                IsVisible="{Binding ShowRouteControls}" HeightRequest="40">
+            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                <!-- Play/Pause button -->
+                <Border BackgroundColor="#e94560" StrokeShape="RoundRectangle 14" 
+                        Stroke="Transparent" Padding="10,4" VerticalOptions="Center"
+                        WidthRequest="40" HeightRequest="30">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding PlayPauseRouteCommand}"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding PlayPauseIcon}" FontSize="12" TextColor="White"
+                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+                           HorizontalOptions="Center"/>
+                </Border>
+                <!-- Stop button -->
+                <Border BackgroundColor="#E0E0E0" StrokeShape="RoundRectangle 14" 
+                        Stroke="Transparent" Padding="10,4" VerticalOptions="Center"
+                        WidthRequest="36" HeightRequest="30">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding StopRouteCommand}"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="&#9632;" FontSize="11" TextColor="#666"
+                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+                           HorizontalOptions="Center"/>
+                </Border>
+                <!-- Speed button -->
+                <Border BackgroundColor="White" StrokeShape="RoundRectangle 14" 
+                        Stroke="#E0E0E0" StrokeThickness="1" Padding="10,4" VerticalOptions="Center"
+                        HeightRequest="30">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding CycleSpeedCommand}"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding RouteSpeedText}" FontSize="11" TextColor="#2E7D32" 
+                           FontAttributes="Bold" HorizontalTextAlignment="Center"
+                           VerticalTextAlignment="Center"/>
+                </Border>
+                <!-- Status text -->
+                <Label Text="{Binding RouteStatusText}" FontSize="10" 
+                       TextColor="#888" VerticalOptions="Center"
+                       LineBreakMode="TailTruncation" MaxLines="1"/>
+            </HorizontalStackLayout>
+        </Border>
+
+        <!-- Row 2: Map (fills remaining space) -->
+        <maps:Map Grid.Row="2" x:Name="FoodMap"
+                  MapType="Street"
+                  IsShowingUser="False"/>
+
+        <ActivityIndicator Grid.Row="2" IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                           Color="#e94560" VerticalOptions="Center" HorizontalOptions="Center"
+                           WidthRequest="44" HeightRequest="44"/>
+    </Grid>
+</ContentPage>

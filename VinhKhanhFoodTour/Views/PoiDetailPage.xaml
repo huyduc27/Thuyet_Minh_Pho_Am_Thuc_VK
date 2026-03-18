@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:VinhKhanhFoodTour.ViewModels"
+             x:Class="VinhKhanhFoodTour.Views.PoiDetailPage"
+             x:DataType="vm:PoiDetailViewModel"
+             Title="{Binding DisplayName}"
+             BackgroundColor="#F8F9FA"
+             Shell.BackgroundColor="White"
+             Shell.ForegroundColor="#1a1a2e">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+            
+            <!-- Hero -->
+            <Grid HeightRequest="220">
+                <BoxView Color="{Binding CategoryColor}"/>
+                <BoxView Color="Black" Opacity="0.08"/>
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10"
+                                     Padding="24,0">
+                    <Label Text="{Binding CategoryIcon}" FontSize="60" HorizontalOptions="Center"/>
+                    <Label Text="{Binding DisplayName}" FontSize="22" TextColor="White"
+                           FontAttributes="Bold" HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"/>
+                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="12">
+                        <Border BackgroundColor="#30FFFFFF" StrokeShape="RoundRectangle 12"
+                                Stroke="Transparent" Padding="12,4">
+                            <Label Text="{Binding Poi.Category}" FontSize="12" TextColor="White" 
+                                   FontAttributes="Bold"/>
+                        </Border>
+                        <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                            <Label Text="&#9733;" FontSize="14" TextColor="#FFD700"/>
+                            <Label Text="{Binding Poi.Rating, StringFormat='{0:F1}'}" FontSize="14" 
+                                   TextColor="White" FontAttributes="Bold"/>
+                        </HorizontalStackLayout>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Play Button (floating) -->
+            <Border Margin="20,-24,20,0" Padding="0" 
+                    StrokeShape="RoundRectangle 25"
+                    Stroke="Transparent"
+                    BackgroundColor="#e94560"
+                    HeightRequest="48" ZIndex="10"
+                    Shadow="{OnPlatform Android={Shadow Brush='#30000000', Offset='0,3', Radius=6}}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ToggleNarrationCommand}"/>
+                </Border.GestureRecognizers>
+                <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                    <Label Text="&#9654;" FontSize="14" TextColor="White"/>
+                    <Label Text="{Binding PlayButtonText}" FontSize="15" TextColor="White" 
+                           FontAttributes="Bold"/>
+                </HorizontalStackLayout>
+            </Border>
+
+            <!-- Language -->
+            <Border Margin="16,14,16,0" BackgroundColor="White" 
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="#EEEEEE" StrokeThickness="1" Padding="14,10"
+                    Shadow="{OnPlatform Android={Shadow Brush='#08000000', Offset='0,1', Radius=4}}">
+                <HorizontalStackLayout Spacing="8">
+                    <Label Text="&#127760;" FontSize="16"/>
+                    <Label Text="Ngon ngu:" FontSize="13" TextColor="#999" VerticalOptions="Center"/>
+                    <Label Text="{Binding CurrentLanguage}" FontSize="13" TextColor="#2E7D32" 
+                           FontAttributes="Bold" VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+            </Border>
+
+            <!-- Description -->
+            <Border Margin="16,10,16,0" BackgroundColor="White" 
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="#EEEEEE" StrokeThickness="1" Padding="16"
+                    Shadow="{OnPlatform Android={Shadow Brush='#08000000', Offset='0,1', Radius=4}}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Gioi thieu" FontSize="16" TextColor="#e94560" FontAttributes="Bold"/>
+                    <BoxView HeightRequest="1" Color="#F0F0F0"/>
+                    <Label Text="{Binding DisplayDescription}" FontSize="14" TextColor="#555"
+                           LineHeight="1.6"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Info -->
+            <Border Margin="16,10,16,0" BackgroundColor="White" 
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="#EEEEEE" StrokeThickness="1" Padding="16"
+                    Shadow="{OnPlatform Android={Shadow Brush='#08000000', Offset='0,1', Radius=4}}">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Thong tin chi tiet" FontSize="16" TextColor="#e94560" FontAttributes="Bold"/>
+                    <BoxView HeightRequest="1" Color="#F0F0F0"/>
+                    
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Label Text="&#128205;" FontSize="16" VerticalOptions="Start"/>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                            <Label Text="Dia chi" FontSize="11" TextColor="#BBB"/>
+                            <Label Text="{Binding Poi.Address}" FontSize="14" TextColor="#333"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Label Text="&#128337;" FontSize="16" VerticalOptions="Start"/>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                            <Label Text="Gio mo cua" FontSize="11" TextColor="#BBB"/>
+                            <Label Text="{Binding Poi.OpeningHours}" FontSize="14" TextColor="#2E7D32"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Label Text="&#127759;" FontSize="16" VerticalOptions="Start"/>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                            <Label Text="Toa do" FontSize="11" TextColor="#BBB"/>
+                            <Label FontSize="13" TextColor="#999">
+                                <Label.Text>
+                                    <MultiBinding StringFormat="{}{0:F5}, {1:F5}">
+                                        <Binding Path="Poi.Latitude"/>
+                                        <Binding Path="Poi.Longitude"/>
+                                    </MultiBinding>
+                                </Label.Text>
+                            </Label>
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <BoxView HeightRequest="30" Color="Transparent"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

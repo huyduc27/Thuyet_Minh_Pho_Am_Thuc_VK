@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:VinhKhanhFoodTour.ViewModels"
+             x:Class="VinhKhanhFoodTour.Views.PoiListPage"
+             x:DataType="vm:PoiListViewModel"
+             Title="Danh sach"
+             BackgroundColor="White"
+             Shell.BackgroundColor="White"
+             Shell.ForegroundColor="#1a1a2e">
+
+    <Grid RowDefinitions="Auto,*" RowSpacing="0">
+
+        <!-- Search Bar -->
+        <Border Grid.Row="0" BackgroundColor="White" Padding="16,12,16,8"
+                StrokeShape="RoundRectangle 0" Stroke="Transparent">
+            <Border BackgroundColor="#F5F5F5" StrokeShape="RoundRectangle 12"
+                    Stroke="#E0E0E0" StrokeThickness="1" Padding="0">
+                <SearchBar Text="{Binding SearchText}" 
+                           Placeholder="Tim quan an..." 
+                           PlaceholderColor="#999"
+                           TextColor="#333"
+                           BackgroundColor="Transparent"
+                           CancelButtonColor="#e94560"/>
+            </Border>
+        </Border>
+
+        <!-- Main Content -->
+        <RefreshView Grid.Row="1" IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <ScrollView>
+                <VerticalStackLayout Spacing="0" Padding="0">
+
+                    <!-- Category Filter -->
+                    <CollectionView ItemsSource="{Binding Categories}" 
+                                    SelectionMode="Single" 
+                                    SelectedItem="{Binding SelectedCategory}"
+                                    ItemsLayout="HorizontalList"
+                                    HeightRequest="44" Margin="12,4,12,8">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Border Padding="16,6" 
+                                        StrokeShape="RoundRectangle 20"
+                                        BackgroundColor="#F5F5F5"
+                                        Stroke="#E8E8E8" StrokeThickness="1"
+                                        Margin="3,0">
+                                    <Label Text="{Binding .}" TextColor="#555" FontSize="12"
+                                           FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <!-- Featured Section -->
+                    <VerticalStackLayout Padding="16,8,0,12" Spacing="10">
+                        <Label Text="QUAN NOI BAT" FontSize="15" TextColor="#1a1a2e" 
+                               FontAttributes="Bold" CharacterSpacing="1"/>
+
+                        <CollectionView ItemsSource="{Binding FeaturedPois}"
+                                        ItemsLayout="HorizontalList"
+                                        HeightRequest="190">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:PoiItemViewModel">
+                                    <Border Margin="0,0,12,0" Padding="0" WidthRequest="200"
+                                            StrokeShape="RoundRectangle 16"
+                                            BackgroundColor="White"
+                                            Stroke="#EEEEEE" StrokeThickness="1"
+                                            Shadow="{OnPlatform Android={Shadow Brush='#18000000', Offset='0,2', Radius=8}}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer 
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PoiListViewModel}}, Path=NavigateToDetailCommand}"
+                                                CommandParameter="{Binding .}"/>
+                                        </Border.GestureRecognizers>
+                                        <Grid RowDefinitions="100,*">
+                                            <!-- Food Visual -->
+                                            <Border Grid.Row="0" BackgroundColor="{Binding CategoryColor}" 
+                                                    StrokeShape="RoundRectangle 16,16,0,0"
+                                                    Stroke="Transparent">
+                                                <Grid>
+                                                    <BoxView Opacity="0.15" Color="Black"/>
+                                                    <Label Text="{Binding CategoryIcon}" FontSize="48"
+                                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                    <!-- Rating badge -->
+                                                    <Border BackgroundColor="#20000000" StrokeShape="RoundRectangle 10"
+                                                            Stroke="Transparent" Padding="8,3"
+                                                            HorizontalOptions="End" VerticalOptions="Start"
+                                                            Margin="0,8,8,0">
+                                                        <HorizontalStackLayout Spacing="3">
+                                                            <Label Text="&#9733;" FontSize="11" TextColor="#FFD700"/>
+                                                            <Label Text="{Binding Poi.Rating, StringFormat='{0:F1}'}" 
+                                                                   FontSize="11" TextColor="White" FontAttributes="Bold"/>
+                                                        </HorizontalStackLayout>
+                                                    </Border>
+                                                </Grid>
+                                            </Border>
+                                            <!-- Info -->
+                                            <VerticalStackLayout Grid.Row="1" Padding="12,8" Spacing="3">
+                                                <Label Text="{Binding DisplayName}" FontSize="13" 
+                                                       FontAttributes="Bold" TextColor="#1a1a2e"
+                                                       LineBreakMode="TailTruncation" MaxLines="1"/>
+                                                <Label Text="{Binding Poi.Category}" FontSize="10" 
+                                                       TextColor="#888"/>
+                                                <HorizontalStackLayout Spacing="4">
+                                                    <Label Text="&#128337;" FontSize="10"/>
+                                                    <Label Text="{Binding Poi.OpeningHours}" FontSize="10" 
+                                                           TextColor="#2E7D32"/>
+                                                </HorizontalStackLayout>
+                                            </VerticalStackLayout>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+
+                    <!-- Divider -->
+                    <BoxView HeightRequest="1" Color="#F0F0F0" Margin="16,0"/>
+
+                    <!-- Restaurant List Header -->
+                    <Label Text="DANH SACH QUAN AN" FontSize="15" TextColor="#1a1a2e" 
+                           FontAttributes="Bold" CharacterSpacing="1"
+                           Margin="16,14,16,8"/>
+
+                    <!-- Restaurant List -->
+                    <CollectionView ItemsSource="{Binding FilteredPois}"
+                                    SelectionMode="None"
+                                    Margin="12,0">
+
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" 
+                                                 Spacing="6" Padding="20,40">
+                                <Label Text="Khong tim thay quan an" 
+                                       FontSize="15" TextColor="#999" HorizontalOptions="Center"/>
+                                <Label Text="Thu doi bo loc hoac tu khoa khac" 
+                                       FontSize="12" TextColor="#bbb" HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </CollectionView.EmptyView>
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PoiItemViewModel">
+                                <Border Margin="4,5" Padding="0" 
+                                        StrokeShape="RoundRectangle 14"
+                                        BackgroundColor="White"
+                                        Stroke="#EEEEEE" StrokeThickness="1"
+                                        Shadow="{OnPlatform Android={Shadow Brush='#10000000', Offset='0,1', Radius=6}}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer 
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PoiListViewModel}}, Path=NavigateToDetailCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                    </Border.GestureRecognizers>
+
+                                    <Grid ColumnDefinitions="72,*,Auto" Padding="10" ColumnSpacing="12">
+                                        
+                                        <!-- Food Visual -->
+                                        <Border Grid.Column="0" BackgroundColor="{Binding CategoryColor}" 
+                                                StrokeShape="RoundRectangle 14"
+                                                Stroke="Transparent"
+                                                WidthRequest="56" HeightRequest="56"
+                                                VerticalOptions="Center" HorizontalOptions="Center">
+                                            <Grid>
+                                                <BoxView Opacity="0.1" Color="Black"/>
+                                                <Label Text="{Binding CategoryIcon}" FontSize="28"
+                                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Info -->
+                                        <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                            <Label Text="{Binding DisplayName}" 
+                                                   FontSize="14" FontAttributes="Bold" TextColor="#1a1a2e"
+                                                   LineBreakMode="TailTruncation" MaxLines="1"/>
+                                            <Label Text="{Binding Poi.Address}" 
+                                                   FontSize="11" TextColor="#999" 
+                                                   LineBreakMode="TailTruncation" MaxLines="1"/>
+                                            <HorizontalStackLayout Spacing="8">
+                                                <HorizontalStackLayout Spacing="3">
+                                                    <Label Text="&#9733;" FontSize="10" TextColor="#FFB800"/>
+                                                    <Label Text="{Binding Poi.Rating, StringFormat='{0:F1}'}" 
+                                                           FontSize="10" TextColor="#FFB800" FontAttributes="Bold"/>
+                                                </HorizontalStackLayout>
+                                                <Label Text="|" FontSize="10" TextColor="#DDD"/>
+                                                <Label Text="{Binding Poi.OpeningHours}" 
+                                                       FontSize="10" TextColor="#2E7D32"/>
+                                            </HorizontalStackLayout>
+                                        </VerticalStackLayout>
+
+                                        <!-- Right Side -->
+                                        <VerticalStackLayout Grid.Column="2" Spacing="6" 
+                                                             VerticalOptions="Center" HorizontalOptions="End"
+                                                             MinimumWidthRequest="50">
+                                            <Border BackgroundColor="{Binding CategoryColor}" 
+                                                    StrokeShape="RoundRectangle 8"
+                                                    Stroke="Transparent" Padding="6,2"
+                                                    HorizontalOptions="End" Opacity="0.9">
+                                                <Label Text="{Binding Poi.Category}" 
+                                                       FontSize="9" TextColor="White" FontAttributes="Bold"
+                                                       HorizontalTextAlignment="Center"/>
+                                            </Border>
+                                            <Label Text="{Binding DistanceText}" 
+                                                   FontSize="10" TextColor="#999"
+                                                   HorizontalOptions="End"/>
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <BoxView HeightRequest="20" Color="Transparent"/>
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+        <!-- Loading -->
+        <ActivityIndicator Grid.Row="1" IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                           Color="#e94560" VerticalOptions="Center" HorizontalOptions="Center"/>
+    </Grid>
+</ContentPage>
