@@ -162,14 +162,18 @@ public class DatabaseService
         }
     }
 
-    private const int SeedVersion = 5;
+    private const int SeedVersion = 6;
 
     public async Task SeedDataAsync()
     {
         var db = await GetDatabaseAsync();
         var count = await GetPoiCountAsync();
 
-        var needReseed = count == 0 || Preferences.Get("seed_version", 0) < SeedVersion;
+        var needReseed = count == 0 || Preferences.Get("seed_version", 0) < SeedVersion
+#if DEBUG
+            || true   // Dev mode: luôn nạp lại data mới nhất
+#endif
+            ;
         if (!needReseed) return;
 
         await db.DeleteAllAsync<PointOfInterest>();
@@ -231,7 +235,7 @@ public class DatabaseService
                 Name = "Lãng Quán - Vĩnh Khánh", NameEn = "Lang Quan Restaurant",
                 Latitude = 10.76108, Longitude = 106.70550, RadiusMeters = 45, Priority = 3,
                 Category = "Lẩu", Address = "122/34/31 Vĩnh Khánh, P.10, Q.4",
-                DescriptionVi = "Lãng Quán là quán lẩu nướng nổi tiếng tại phố ẩm thực Vĩnh Khánh. Được đánh giá 'quán nhậu Q4 chất lượng nhà hàng'. Quán phục vụ các món lẩu, nướng đa dạng trong không gian thoáng mát.",
+                DescriptionVi = "Đức Huy Đức Huy Đức Huy Đức Huy Đức Huy",
                 DescriptionEn = "Lang Quan is a renowned hotpot and BBQ restaurant on Vinh Khanh food street. Praised as 'District 4 pub with restaurant quality.' Serves diverse hotpot and grilled dishes in a breezy setting.",
                 Rating = 4.0, OpeningHours = "16:00 - 22:00"
             },
