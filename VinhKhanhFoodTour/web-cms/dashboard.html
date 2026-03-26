@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vĩnh Khánh CMS — Quản trị</title>
+    <meta name="description" content="Dashboard quản lý nội dung Phố Ẩm Thực Vĩnh Khánh">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span class="logo">🍜</span>
+                <div>
+                    <h2>Vĩnh Khánh</h2>
+                    <small>Content Management</small>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
+                    <span class="icon">📊</span> Tổng quan
+                </button>
+                <button class="nav-item" data-section="poi" onclick="switchSection('poi')">
+                    <span class="icon">📍</span> Quản lý POI
+                </button>
+                <button class="nav-item" data-section="translation" onclick="switchSection('translation')">
+                    <span class="icon">🌐</span> Bản dịch
+                </button>
+                <button class="nav-item" data-section="audio" onclick="switchSection('audio')">
+                    <span class="icon">🎵</span> Audio
+                </button>
+                <button class="nav-item" data-section="history" onclick="switchSection('history')">
+                    <span class="icon">📋</span> Lịch sử
+                </button>
+                <button class="nav-item" data-section="tour" onclick="switchSection('tour')">
+                    <span class="icon">🗺️</span> Quản lý Tour
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <span class="user-email" id="userEmail">admin@email.com</span>
+                </div>
+                <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
+            </div>
+        </aside>
+
+        <!-- ============ MAIN CONTENT ============ -->
+        <main class="main-content">
+            <div id="toastContainer" class="toast-container"></div>
+
+            <!-- ===== DASHBOARD ===== -->
+            <div class="section-panel active" id="section-dashboard">
+                <div class="page-header">
+                    <div>
+                        <h1>📊 Tổng quan</h1>
+                        <p class="description">Thống kê hệ thống quản lý nội dung</p>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📍</div>
+                        <div class="stat-value" id="statPoi">0</div>
+                        <div class="stat-label">Điểm POI</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎵</div>
+                        <div class="stat-value" id="statAudio">0</div>
+                        <div class="stat-label">File Audio</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🗺️</div>
+                        <div class="stat-value" id="statTour">0</div>
+                        <div class="stat-label">Tour</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-value" id="statHistory">0</div>
+                        <div class="stat-label">Lượt thuyết minh</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== POI MANAGEMENT ===== -->
+            <div class="section-panel" id="section-poi">
+                <div class="page-header">
+                    <div>
+                        <h1>📍 Quản lý POI</h1>
+                        <p class="description">Thêm, sửa, xóa các điểm ẩm thực</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openPoiModal()">+ Thêm POI</button>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="poiSearch" placeholder="🔍 Tìm kiếm quán ăn..." oninput="filterPois()">
+                    <select id="poiCategoryFilter" onchange="filterPois()">
+                        <option value="">Tất cả</option>
+                        <option value="Ốc">🐚 Ốc</option>
+                        <option value="Lẩu">🍲 Lẩu</option>
+                        <option value="Nướng">🔥 Nướng</option>
+                        <option value="Hải sản">🦀 Hải sản</option>
+                        <option value="Bò">🥩 Bò</option>
+                        <option value="Cơm">🍚 Cơm</option>
+                        <option value="Ăn vặt">🍢 Ăn vặt</option>
+                        <option value="Chè">🍧 Chè</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tên</th>
+                                <th>Loại</th>
+                                <th>Địa chỉ</th>
+                                <th>Đánh giá</th>
+                                <th>Bán kính</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="poiTableBody">
+                            <tr><td colspan="6" class="empty-state"><div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== TRANSLATION ===== -->
+            <div class="section-panel" id="section-translation">
+                <div class="page-header">
+                    <div>
+                        <h1>🌐 Quản lý Bản dịch</h1>
+                        <p class="description">Chỉnh sửa nội dung đa ngôn ngữ cho từng POI</p>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="transSearch" placeholder="🔍 Tìm POI để dịch..." oninput="filterTranslations()">
+                </div>
+                <div id="translationList">
+                    <div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div>
+                </div>
+            </div>
+
+            <!-- ===== AUDIO ===== -->
+            <div class="section-panel" id="section-audio">
+                <div class="page-header">
+                    <div>
+                        <h1>🎵 Quản lý Audio</h1>
+                        <p class="description">Thêm link audio (Google Drive, Dropbox, URL) cho từng POI</p>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <select id="audioPoiFilter" onchange="loadAudioForPoi()">
+                        <option value="">-- Chọn POI --</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="openAudioUpload()" id="btnUploadAudio" disabled>+ Thêm Audio</button>
+                </div>
+                <div id="audioList">
+                    <div class="empty-state">
+                        <div class="icon">🎵</div>
+                        <p>Chọn một POI để xem audio</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== HISTORY ===== -->
+            <div class="section-panel" id="section-history">
+                <div class="page-header">
+                    <div>
+                        <h1>📋 Lịch sử sử dụng</h1>
+                        <p class="description">Xem log thuyết minh đã phát</p>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="clearHistory()">🗑️ Xóa lịch sử</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>POI</th>
+                                <th>Ngôn ngữ</th>
+                                <th>Thời gian</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr><td colspan="3" class="empty-state"><div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== TOUR MANAGEMENT ===== -->
+            <div class="section-panel" id="section-tour">
+                <div class="page-header">
+                    <div>
+                        <h1>🗺️ Quản lý Tour</h1>
+                        <p class="description">Tạo và quản lý các tuyến tour ẩm thực</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openTourModal()">+ Tạo Tour</button>
+                </div>
+                <div id="tourList">
+                    <div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ============ POI MODAL ============ -->
+    <div class="modal-overlay" id="poiModal">
+        <div class="modal">
+            <h2 id="poiModalTitle">📍 Thêm POI mới</h2>
+            <input type="hidden" id="poiEditId">
+            <div class="form-group">
+                <label>Tên quán (Tiếng Việt)</label>
+                <input type="text" id="poiName" placeholder="VD: Ốc Oanh - Vĩnh Khánh">
+            </div>
+            <div class="form-group">
+                <label>Tên quán (English)</label>
+                <input type="text" id="poiNameEn" placeholder="VD: Oc Oanh Snail Restaurant">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Vĩ độ (Latitude)</label>
+                    <input type="number" step="any" id="poiLat" placeholder="10.76120">
+                </div>
+                <div class="form-group">
+                    <label>Kinh độ (Longitude)</label>
+                    <input type="number" step="any" id="poiLng" placeholder="106.70350">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Loại (Category)</label>
+                    <select id="poiCategory">
+                        <option value="Ốc">🐚 Ốc</option>
+                        <option value="Lẩu">🍲 Lẩu</option>
+                        <option value="Nướng">🔥 Nướng</option>
+                        <option value="Hải sản">🦀 Hải sản</option>
+                        <option value="Bò">🥩 Bò</option>
+                        <option value="Cơm">🍚 Cơm</option>
+                        <option value="Ăn vặt">🍢 Ăn vặt</option>
+                        <option value="Chè">🍧 Chè</option>
+                        <option value="Tráng miệng">🍨 Tráng miệng</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Đánh giá (1-5)</label>
+                    <input type="number" step="0.1" min="1" max="5" id="poiRating" placeholder="4.0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Địa chỉ</label>
+                <input type="text" id="poiAddress" placeholder="VD: 534 Vĩnh Khánh, P.8, Q.4">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Bán kính Geofence (m)</label>
+                    <input type="number" id="poiRadius" placeholder="50" value="50">
+                </div>
+                <div class="form-group">
+                    <label>Độ ưu tiên (1-5)</label>
+                    <input type="number" min="1" max="5" id="poiPriority" placeholder="3" value="3">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Giờ mở cửa</label>
+                <input type="text" id="poiHours" placeholder="VD: 16:00 - 23:00">
+            </div>
+            <div class="form-group">
+                <label>Mô tả (Tiếng Việt)</label>
+                <textarea id="poiDescVi" placeholder="Mô tả chi tiết về quán ăn..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Mô tả (English)</label>
+                <textarea id="poiDescEn" placeholder="Detailed description in English..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closePoiModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="savePoi()">💾 Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ AUDIO MODAL ============ -->
+    <div class="modal-overlay" id="audioModal">
+        <div class="modal">
+            <h2 id="audioModalTitle">🎵 Thêm Audio</h2>
+            <input type="hidden" id="audioEditId">
+            <div class="form-group">
+                <label>POI</label>
+                <select id="audioPoiSelect" disabled>
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tên audio</label>
+                <input type="text" id="audioTitle" placeholder="VD: Thuyết minh Ốc Oanh">
+            </div>
+            <div class="form-group">
+                <label>URL Audio (Google Drive, Dropbox, link trực tiếp...)</label>
+                <input type="url" id="audioUrl" placeholder="https://drive.google.com/... hoặc link .mp3">
+                <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">💡 Google Drive: Chia sẻ file → Copy link → Dán vào đây</small>
+            </div>
+            <div class="form-group">
+                <label>Ngôn ngữ</label>
+                <select id="audioLang">
+                    <option value="vi">🇻🇳 Tiếng Việt</option>
+                    <option value="en">🇺🇸 English</option>
+                    <option value="zh">🇨🇳 中文</option>
+                    <option value="ko">🇰🇷 한국어</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeAudioModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="saveAudio()">💾 Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ TOUR MODAL ============ -->
+    <div class="modal-overlay" id="tourModal">
+        <div class="modal">
+            <h2 id="tourModalTitle">🗺️ Tạo Tour mới</h2>
+            <input type="hidden" id="tourEditId">
+            <div class="form-group">
+                <label>Tên tour</label>
+                <input type="text" id="tourName" placeholder="VD: Tour Ốc Vĩnh Khánh">
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea id="tourDesc" placeholder="Mô tả tour..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Thời gian ước tính (phút)</label>
+                <input type="number" id="tourDuration" placeholder="60" value="60">
+            </div>
+            <div class="form-group">
+                <label>Chọn POI cho tour (đánh dấu theo thứ tự)</label>
+                <div id="tourPoiChecklist" class="tour-poi-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeTourModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="saveTour()">💾 Lưu Tour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <!-- Storage không cần nữa - dùng URL thay vì upload -->
+
+    <!-- App Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/poi.js"></script>
+    <script src="js/translation.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/tour.js"></script>
+</body>
+</html>
