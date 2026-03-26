@@ -14,7 +14,8 @@ public partial class MapViewModel : ObservableObject
     private readonly LocationService _locationService;
     private readonly SettingsService _settingsService;
 
-    private Pin? _userPin;
+    private Circle? _userDot;       // Chấm xanh nhỏ (vị trí user)
+    private Circle? _userRing;      // Vòng xanh lớn bao quanh
     private Polyline? _routeLine;
 
     public Map? MapControl { get; set; }
@@ -104,7 +105,8 @@ public partial class MapViewModel : ObservableObject
 
             MapControl.Pins.Clear();
             MapControl.MapElements.Clear();
-            _userPin = null;
+            _userDot = null;
+            _userRing = null;
             _routeLine = null;
 
             AddPoiPinsWithRadius(pois, lang, settings.RadiusMultiplier);
@@ -358,32 +360,42 @@ public partial class MapViewModel : ObservableObject
     private void AddUserMarker(double lat, double lng)
     {
         if (MapControl == null) return;
+        RemoveUserMarker();
 
-        _userPin = new Pin
+        // Vòng xanh lớn bao ngoài (bán kính ~20m)
+        _userRing = new Circle
         {
-            Label = "Vi tri cua ban",
-            Address = $"{lat:F5}, {lng:F5}",
-            Location = new Location(lat, lng),
-            Type = PinType.Generic
+            Center = new Location(lat, lng),
+            Radius = Distance.FromMeters(20),
+            StrokeColor = Color.FromArgb("#604285F4"),
+            StrokeWidth = 2,
+            FillColor = Color.FromArgb("#204285F4")
         };
-        MapControl.Pins.Add(_userPin);
+        MapControl.MapElements.Add(_userRing);
+
+        // Chấm xanh nhỏ ở giữa (bán kính ~6m)
+        _userDot = new Circle
+        {
+            Center = new Location(lat, lng),
+            Radius = Distance.FromMeters(6),
+            StrokeColor = Colors.White,
+            StrokeWidth = 3,
+            FillColor = Color.FromArgb("#4285F4")
+        };
+        MapControl.MapElements.Add(_userDot);
     }
 
     private void MoveUserMarker(double lat, double lng)
     {
         if (MapControl == null) return;
+        RemoveUserMarker();
+        AddUserMarker(lat, lng);
+    }
 
-        if (_userPin != null)
-        {
-            MapControl.Pins.Remove(_userPin);
-        }
-        _userPin = new Pin
-        {
-            Label = _locationService.IsRouteRunning ? "Dang di route..." : "Vi tri gia lap",
-            Address = $"{lat:F5}, {lng:F5}",
-            Location = new Location(lat, lng),
-            Type = PinType.Generic
-        };
-        MapControl.Pins.Add(_userPin);
+    private void RemoveUserMarker()
+    {
+        if (MapControl == null) return;
+        if (_userRing != null) { MapControl.MapElements.Remove(_userRing); _userRing = null; }
+        if (_userDot != null) { MapControl.MapElements.Remove(_userDot); _userDot = null; }
     }
 }

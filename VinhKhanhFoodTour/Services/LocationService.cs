@@ -5,8 +5,9 @@ public class LocationService
     private CancellationTokenSource? _cts;
     private bool _isTracking;
 
-    public const double VinhKhanhLat = 10.76120;
-    public const double VinhKhanhLng = 106.70350;
+    // Vị trí mặc định: đầu đường Vĩnh Khánh (xa khu ẩm thực, không trigger thuyết minh)
+    public const double VinhKhanhLat = 10.76280;
+    public const double VinhKhanhLng = 106.70120;
     private const double MaxDistanceFromVinhKhanh = 50000;
 
     public event EventHandler<Location>? LocationChanged;
