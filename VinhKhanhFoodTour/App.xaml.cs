@@ -9,31 +9,34 @@ public partial class App : Application
     private readonly LocationService _locationService;
     private readonly GeofenceService _geofenceService;
     private readonly NarrationService _narrationService;
+    private readonly FirebaseSyncService _syncService;
 
     public App(
         DatabaseService databaseService,
         LocationService locationService,
         GeofenceService geofenceService,
-        NarrationService narrationService)
+        NarrationService narrationService,
+        FirebaseSyncService syncService)
     {
         InitializeComponent();
         _databaseService = databaseService;
         _locationService = locationService;
         _geofenceService = geofenceService;
         _narrationService = narrationService;
+        _syncService = syncService;
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        var window = new Window(new AppShell());
+        var window = new Window(new AppShell(_syncService));
 
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             await Task.Delay(500);
             try
             {
-                await _databaseService.SeedDataAsync();
-                System.Diagnostics.Debug.WriteLine("=== SEED DATA OK ===");
+                // SeedData cũ đã bị thay thế bằng Firebase Sync (trong AppShell)
+                System.Diagnostics.Debug.WriteLine("=== FIREBASE SYNC MODE ===");
 
                 _geofenceService.PoisInRange += OnPoisInRange;
 
@@ -62,5 +65,16 @@ public partial class App : Application
         {
             System.Diagnostics.Debug.WriteLine($"=== NARRATION ERROR: {ex} ===");
         }
+    }
+
+    /// <summary>
+    /// Khi app mở lại từ nền (Resume) → đồng bộ Firebase lần nữa.
+    /// Đảm bảo dữ liệu luôn cập nhật mỗi khi người dùng quay lại app.
+    /// </summary>
+    protected override void OnResume()
+    {
+        base.OnResume();
+        System.Diagnostics.Debug.WriteLine("[App] 🔄 App Resume → Đồng bộ lại từ Firebase...");
+        _ = _syncService.SyncPoisAsync();
     }
 }

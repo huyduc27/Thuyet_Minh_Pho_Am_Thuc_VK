@@ -69,7 +69,8 @@ function renderTranslations(pois) {
                 </div>
             </div>
 
-            <div style="text-align: right; margin-top: 12px;">
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px;">
+                <button class="btn btn-secondary btn-sm" id="btn-translate-${poi.id}" onclick="autoTranslate('${poi.id}')">🤖 Dịch tự động (Gemini AI)</button>
                 <button class="btn btn-primary btn-sm" onclick="saveTranslation('${poi.id}')">💾 Lưu bản dịch</button>
             </div>
         </div>

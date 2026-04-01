@@ -51,7 +51,7 @@ function filterPois() {
 
     const filtered = allPois.filter(poi => {
         const matchSearch = (poi.name || '').toLowerCase().includes(search) ||
-                          (poi.address || '').toLowerCase().includes(search);
+            (poi.address || '').toLowerCase().includes(search);
         const matchCategory = !category || poi.category === category;
         return matchSearch && matchCategory;
     });
@@ -168,12 +168,13 @@ async function seedPoisToFirestore() {
     }
 
     const seedData = [
+        // ===== ỐC (Snail Restaurants) =====
         {
             name: "Ốc Oanh 1 - Vĩnh Khánh", nameEn: "Oc Oanh Snail Restaurant", nameZh: "", nameKo: "",
             latitude: 10.76142, longitude: 106.70283, radiusMeters: 80, priority: 5,
             category: "Ốc", address: "534 Vĩnh Khánh, P.8, Q.4",
-            descriptionVi: "Ốc Oanh là quán ốc nổi tiếng nhất phố Vĩnh Khánh, được Michelin Guide công nhận. Đặc sản gồm nghêu nướng mỡ hành, sò điệp phô mai, càng ghẹ rang muối ớt.",
-            descriptionEn: "Oc Oanh is the most famous snail restaurant on Vinh Khanh Street, recognized by the Michelin Guide.",
+            descriptionVi: "Ốc Oanh là quán ốc nổi tiếng nhất phố Vĩnh Khánh, được Michelin Guide công nhận. Đặc sản gồm nghêu nướng mỡ hành, sò điệp phô mai, càng ghẹ rang muối ớt. Quán có hơn 50 món ốc và hải sản đa dạng, thường xuyên có hàng dài khách chờ.",
+            descriptionEn: "Oc Oanh is the most famous snail restaurant on Vinh Khanh Street, recognized by the Michelin Guide. Specialties include grilled clams with green onion oil, cheese-baked scallops, and salt-chili crab claws. With over 50 dishes, queues are common.",
             descriptionZh: "", descriptionKo: "",
             rating: 4.3, openingHours: "16:00 - 23:00"
         },
@@ -181,35 +182,127 @@ async function seedPoisToFirestore() {
             name: "Quán Ốc Sáu Nở", nameEn: "Sau No Snail Restaurant", nameZh: "", nameKo: "",
             latitude: 10.76115, longitude: 106.70275, radiusMeters: 60, priority: 4,
             category: "Ốc", address: "128 Vĩnh Khánh, P.8, Q.4",
-            descriptionVi: "Ốc Sáu Nở là một trong những quán ốc lâu đời trên phố ốc Vĩnh Khánh.",
-            descriptionEn: "Sau No is one of the long-established snail restaurants on Vinh Khanh snail street.",
+            descriptionVi: "Ốc Sáu Nở là một trong những quán ốc lâu đời trên phố ốc Vĩnh Khánh, nằm gần cầu Calmet. Quán phục vụ đa dạng món ốc và hải sản với giá bình dân, không gian thoáng mát phù hợp nhóm bạn.",
+            descriptionEn: "Sau No is one of the long-established snail restaurants on Vinh Khanh snail street, near Calmet Bridge. Serves a wide variety of snail and seafood dishes at affordable prices in a breezy open-air setting.",
             descriptionZh: "", descriptionKo: "",
             rating: 3.8, openingHours: "16:00 - 00:00"
         },
         {
-            name: "Hải Sản Bé Mặn", nameEn: "Be Man Seafood", nameZh: "", nameKo: "",
-            latitude: 10.76150, longitude: 106.70260, radiusMeters: 60, priority: 4,
-            category: "Hải sản", address: "466 Vĩnh Khánh, P.8, Q.4",
-            descriptionVi: "Hải Sản Bé Mặn nổi tiếng với hải sản tươi sống từ biển về mỗi ngày.",
-            descriptionEn: "Be Man Seafood is famous for daily fresh seafood.",
+            name: "Ốc Thảo - Vĩnh Khánh", nameEn: "Thao Snail Restaurant", nameZh: "", nameKo: "",
+            latitude: 10.76171, longitude: 106.70235, radiusMeters: 45, priority: 3,
+            category: "Ốc", address: "383 Vĩnh Khánh, P.8, Q.4",
+            descriptionVi: "Ốc Thảo là quán ốc và hải sản trên phố Vĩnh Khánh với không gian rộng rãi. Quán phục vụ nhiều loại ốc nướng, hải sản chế biến đa dạng. Giá hợp lý, dễ tìm trên đường Vĩnh Khánh.",
+            descriptionEn: "Oc Thao is a spacious snail and seafood restaurant on Vinh Khanh Street. Offers various grilled snail dishes and diverse seafood at reasonable prices.",
             descriptionZh: "", descriptionKo: "",
-            rating: 4.5, openingHours: "15:00 - 23:00"
+            rating: 3.5, openingHours: "10:00 - 00:00"
+        },
+        {
+            name: "Ốc Đào 2 - Vĩnh Khánh", nameEn: "Oc Dao 2 Snail Restaurant", nameZh: "", nameKo: "",
+            latitude: 10.76098, longitude: 106.70485, radiusMeters: 75, priority: 5,
+            category: "Ốc", address: "232/123 Vĩnh Khánh, P.10, Q.4",
+            descriptionVi: "Ốc Đào 2 là chi nhánh tại phố ẩm thực Vĩnh Khánh của quán ốc Ốc Đào nổi tiếng (gốc ở Quận 1). Quán nổi tiếng với ốc len xào dừa, nghêu nướng mỡ hành, và răng mực xào bơ. Không gian vỉa hè sôi động.",
+            descriptionEn: "Oc Dao 2 is the Vinh Khanh branch of the legendary Oc Dao (original in District 1). Famous for snails in coconut milk, grilled clams with scallion oil, and squid teeth in butter. Lively sidewalk atmosphere.",
+            descriptionZh: "", descriptionKo: "",
+            rating: 4.1, openingHours: "10:00 - 00:00"
+        },
+        {
+            name: "Quán Ốc Vũ", nameEn: "Vu Snail Restaurant", nameZh: "", nameKo: "",
+            latitude: 10.76144, longitude: 106.70267, radiusMeters: 45, priority: 3,
+            category: "Ốc", address: "37 Vĩnh Khánh, P.8, Q.4",
+            descriptionVi: "Quán Ốc Vũ nằm ở đầu phố Vĩnh Khánh, nổi tiếng với hải sản tươi sống và giá cả bình dân. Nhân viên phục vụ chu đáo, không gian rộng rãi. Đặc biệt đông khách vào cuối tuần.",
+            descriptionEn: "Oc Vu is located at the start of Vinh Khanh Street, known for fresh live seafood at very affordable prices. Attentive service and spacious seating. Especially popular on weekends.",
+            descriptionZh: "", descriptionKo: "",
+            rating: 4.2, openingHours: "15:00 - 22:00"
+        },
+        // ===== LẨU NƯỚNG =====
+        {
+            name: "Lãng Quán - Vĩnh Khánh", nameEn: "Lang Quan Restaurant", nameZh: "", nameKo: "",
+            latitude: 10.76108, longitude: 106.70550, radiusMeters: 45, priority: 3,
+            category: "Lẩu", address: "122/34/31 Vĩnh Khánh, P.10, Q.4",
+            descriptionVi: "Lãng Quán là quán lẩu nướng nổi tiếng được ví như 'pub thu nhỏ ở Quận 4'. Phục vụ các món lẩu và nướng đa dạng trong không gian mở thoáng mát.",
+            descriptionEn: "Lang Quan is a renowned hotpot and BBQ restaurant on Vinh Khanh food street. Praised as 'District 4 pub with restaurant quality.'",
+            descriptionZh: "", descriptionKo: "",
+            rating: 4.0, openingHours: "16:00 - 22:00"
+        },
+        {
+            name: "Ớt Xiêm Quán", nameEn: "Ot Xiem (Bird's Eye Chili) Restaurant", nameZh: "", nameKo: "",
+            latitude: 10.76096, longitude: 106.70312, radiusMeters: 40, priority: 3,
+            category: "Nướng", address: "568 Vĩnh Khánh, P.8, Q.4",
+            descriptionVi: "Ớt Xiêm Quán chuyên các món nướng và lẩu kiểu Việt. Nổi tiếng với đậu hủ khói lửa, cánh gà nướng, gà kho và lẩu gà cay. Giá bình dân.",
+            descriptionEn: "Ot Xiem specializes in Vietnamese-style grilled and hotpot dishes. Famous for smoky tofu, grilled chicken wings, braised chicken, and spicy chicken hotpot.",
+            descriptionZh: "", descriptionKo: "",
+            rating: 3.8, openingHours: "16:00 - 00:00"
         },
         {
             name: "Chilli - Lẩu Nướng Tự Chọn", nameEn: "Chilli Self-Select Hotpot & BBQ", nameZh: "", nameKo: "",
             latitude: 10.76079, longitude: 106.70458, radiusMeters: 60, priority: 4,
             category: "Lẩu", address: "232/105 Vĩnh Khánh, P.10, Q.4",
-            descriptionVi: "Chilli là quán lẩu nướng tự chọn nổi tiếng giữa phố ẩm thực Vĩnh Khánh.",
-            descriptionEn: "Chilli is a popular self-select hotpot and BBQ spot in the heart of Vinh Khanh.",
+            descriptionVi: "Chilli là quán lẩu nướng tự chọn nổi tiếng giữa phố ẩm thực Vĩnh Khánh. Menu đa dạng gồm lẩu hải sản, bạch tuộc, và đặc biệt dừa hỏa diệm sơn (dừa lửa).",
+            descriptionEn: "Chilli is a popular self-select hotpot and BBQ spot in the heart of Vinh Khanh. Diverse menu including seafood hotpot, octopus, and the signature 'fire meteor coconut' dessert.",
             descriptionZh: "", descriptionKo: "",
             rating: 4.3, openingHours: "16:00 - 23:00"
+        },
+        {
+            name: "A Fat Hot Pot - Lẩu HongKong", nameEn: "A Fat Hong Kong Hot Pot & BBQ", nameZh: "", nameKo: "",
+            latitude: 10.76066, longitude: 106.70424, radiusMeters: 45, priority: 3,
+            category: "Lẩu", address: "668 Vĩnh Khánh, P.8, Q.4",
+            descriptionVi: "A Fat Hot Pot là quán lẩu nướng phong cách Hong Kong trên đường Vĩnh Khánh. Có 4 loại nước lẩu, phục vụ bò chất lượng, bạch tuộc, và các món lựa chọn tự do.",
+            descriptionEn: "A Fat Hot Pot serves Hong Kong-style hotpot and BBQ on Vinh Khanh Street. Offers 4 types of broth, quality beef, octopus, and self-select sides.",
+            descriptionZh: "", descriptionKo: "",
+            rating: 4.0, openingHours: "17:00 - 23:00"
+        },
+        {
+            name: "Sườn Muối Ớt - Vĩnh Khánh", nameEn: "Salt & Chili Grilled Ribs", nameZh: "", nameKo: "",
+            latitude: 10.76088, longitude: 106.70330, radiusMeters: 35, priority: 3,
+            category: "Nướng", address: "Vĩnh Khánh, P.8, Q.4",
+            descriptionVi: "Sườn Muối Ớt chuyên sườn heo nướng muối ớt, một trong những món đặc trưng của phố ẩm thực. Sườn nướng than hoa thơm lừng, gia vị đậm đà, kèm rau sống.",
+            descriptionEn: "Suon Muoi Ot specializes in salt and chili grilled pork ribs, a signature dish. Charcoal-grilled ribs with rich seasoning, served with fresh vegetables.",
+            descriptionZh: "", descriptionKo: "",
+            rating: 4.0, openingHours: "16:00 - 23:00"
+        },
+        {
+            name: "Tỷ Muội Quán", nameEn: "Ty Muoi (Sisters) Restaurant", nameZh: "", nameKo: "",
+            latitude: 10.76095, longitude: 106.70480, radiusMeters: 40, priority: 3,
+            category: "Nướng", address: "232/59 Vĩnh Khánh, P.10, Q.4",
+            descriptionVi: "Tỷ Muội Quán là quán nhậu bình dân phục vụ các món nướng, lẩu, gà, bò, heo đa dạng. Mở cửa khuya đến 2 giờ sáng.",
+            descriptionEn: "Ty Muoi is a casual Vietnamese eatery serving diverse grilled, hotpot, chicken, beef, and pork dishes. Open late until 2 AM.",
+            descriptionZh: "", descriptionKo: "",
+            rating: 3.9, openingHours: "16:00 - 02:00"
+        },
+        {
+            name: "Ba Cô Tiên - Quán Ăn Gia Đình", nameEn: "Three Fairies Family Restaurant", nameZh: "", nameKo: "",
+            latitude: 10.76164, longitude: 106.70240, radiusMeters: 40, priority: 3,
+            category: "Nướng", address: "400 Vĩnh Khánh, P.8, Q.4",
+            descriptionVi: "Ba Cô Tiên là quán ăn gia đình trên phố ẩm thực. Phục vụ đa dạng món Việt từ hải sản, nướng, đến các món nhậu bình dân.",
+            descriptionEn: "Three Fairies is a family restaurant on Vinh Khanh food street. Serves diverse Vietnamese dishes from seafood and grilled items to casual pub fare.",
+            descriptionZh: "", descriptionKo: "",
+            rating: 3.8, openingHours: "16:00 - 23:00"
+        },
+        // ===== HẢI SẢN & TRÁNG MIỆNG =====
+        {
+            name: "Hải Sản Bé Mặn", nameEn: "Be Man Seafood", nameZh: "", nameKo: "",
+            latitude: 10.76150, longitude: 106.70260, radiusMeters: 60, priority: 4,
+            category: "Hải sản", address: "466 Vĩnh Khánh, P.8, Q.4",
+            descriptionVi: "Hải Sản Bé Mặn nổi tiếng với hải sản tươi sống từ biển về mỗi ngày. Đặc biệt có tôm hùm nướng phô mai, cua sốt trứng muối.",
+            descriptionEn: "Be Man Seafood is famous for daily fresh seafood. Highlights include cheese-baked lobster, salted egg crab, and Hong Kong-style steamed grouper.",
+            descriptionZh: "", descriptionKo: "",
+            rating: 4.5, openingHours: "15:00 - 23:00"
+        },
+        {
+            name: "Cua Biển Tươi Sống", nameEn: "Fresh Live Sea Crab", nameZh: "", nameKo: "",
+            latitude: 10.76094, longitude: 106.70316, radiusMeters: 55, priority: 4,
+            category: "Hải sản", address: "570 Vĩnh Khánh, P.8, Q.4",
+            descriptionVi: "Quán chuyên cua biển tươi sống với nhiều cách chế biến: cua rang me, cua sốt trứng muối, cua hấp bia. Cua được nhập từ Cà Mau, đảm bảo tươi sống mỗi ngày.",
+            descriptionEn: "Specializes in live sea crabs: tamarind crab, salted egg yolk crab, beer-steamed crab. Crabs sourced from Ca Mau, guaranteed fresh daily.",
+            descriptionZh: "", descriptionKo: "",
+            rating: 4.6, openingHours: "15:00 - 23:00"
         },
         {
             name: "Chè Vĩnh Khánh", nameEn: "Vinh Khanh Sweet Soup Dessert", nameZh: "", nameKo: "",
             latitude: 10.76112, longitude: 106.70280, radiusMeters: 30, priority: 2,
             category: "Chè", address: "150 Vĩnh Khánh, P.8, Q.4",
-            descriptionVi: "Quán chè mát lành giữa phố ẩm thực nóng bức.",
-            descriptionEn: "A refreshing dessert stop amid the hot food street.",
+            descriptionVi: "Quán chè mát lành giữa phố ẩm thực nóng bức. Có đa dạng chè như chè Thái, chè ba màu, chè đậu đỏ nước cốt dừa, sương sáo. Điểm dừng chân hoàn hảo sau bữa ốc.",
+            descriptionEn: "A refreshing dessert stop amid the hot food street. Offers Thai-style mixed dessert, three-color dessert, grass jelly. Perfect cooldown after seafood.",
             descriptionZh: "", descriptionKo: "",
             rating: 3.9, openingHours: "14:00 - 23:00"
         }

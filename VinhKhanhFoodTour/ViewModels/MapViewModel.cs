@@ -13,6 +13,7 @@ public partial class MapViewModel : ObservableObject
     private readonly DatabaseService _databaseService;
     private readonly LocationService _locationService;
     private readonly SettingsService _settingsService;
+    private readonly FirebaseSyncService _syncService;
 
     private Pin? _userPin;
     private Polyline? _routeLine;
@@ -59,11 +60,13 @@ public partial class MapViewModel : ObservableObject
     public MapViewModel(
         DatabaseService databaseService,
         LocationService locationService,
-        SettingsService settingsService)
+        SettingsService settingsService,
+        FirebaseSyncService syncService)
     {
         _databaseService = databaseService;
         _locationService = locationService;
         _settingsService = settingsService;
+        _syncService = syncService;
 
         _locationService.RouteProgressChanged += OnRouteProgress;
         _locationService.RouteFinished += OnRouteFinished;
@@ -154,6 +157,21 @@ public partial class MapViewModel : ObservableObject
     public async Task ReloadAsync()
     {
         StopAllSimulation();
+
+        // Refresh = Đồng bộ từ Firebase CMS trước khi tải lại bản đồ
+        try
+        {
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+            {
+                await _syncService.SyncPoisAsync();
+                System.Diagnostics.Debug.WriteLine("[Map Refresh] ✅ Đã đồng bộ từ Firebase!");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Map Refresh] Sync error: {ex.Message}");
+        }
+
         await LoadMapAsync();
     }
 

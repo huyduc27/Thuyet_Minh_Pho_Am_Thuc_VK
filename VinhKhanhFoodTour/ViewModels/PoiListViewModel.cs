@@ -12,6 +12,7 @@ public partial class PoiListViewModel : ObservableObject
     private readonly LocationService _locationService;
     private readonly NarrationService _narrationService;
     private readonly SettingsService _settingsService;
+    private readonly FirebaseSyncService _syncService;
 
     [ObservableProperty]
     private ObservableCollection<PoiItemViewModel> _pois = new();
@@ -40,12 +41,14 @@ public partial class PoiListViewModel : ObservableObject
     };
 
     public PoiListViewModel(DatabaseService dbService, LocationService locService,
-        NarrationService narService, SettingsService settingsService)
+        NarrationService narService, SettingsService settingsService,
+        FirebaseSyncService syncService)
     {
         _databaseService = dbService;
         _locationService = locService;
         _narrationService = narService;
         _settingsService = settingsService;
+        _syncService = syncService;
     }
 
     [RelayCommand]
@@ -104,6 +107,20 @@ public partial class PoiListViewModel : ObservableObject
     private async Task RefreshAsync()
     {
         IsRefreshing = true;
+        try
+        {
+            // Kéo xuống = Đồng bộ từ Firebase CMS trước
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+            {
+                await _syncService.SyncPoisAsync();
+                System.Diagnostics.Debug.WriteLine("[Refresh] ✅ Đã đồng bộ từ Firebase!");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Refresh] Sync error: {ex.Message}");
+        }
+        // Sau khi sync xong → load lại từ SQLite
         await LoadPoisAsync();
     }
 

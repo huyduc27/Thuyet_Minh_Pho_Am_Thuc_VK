@@ -24,6 +24,7 @@ public static class MauiProgram
 
         // === Services (Singleton) ===
         builder.Services.AddSingleton<DatabaseService>();
+        builder.Services.AddSingleton<FirebaseSyncService>();
         builder.Services.AddSingleton<LocationService>();
         builder.Services.AddSingleton<SettingsService>();
         builder.Services.AddSingleton<GeofenceService>();
