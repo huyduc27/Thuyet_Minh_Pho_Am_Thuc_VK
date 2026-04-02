@@ -1,20 +1,10 @@
 {
-    "hosting": {
-        "site": "vinhkhanhfoodtour",
-        "public": ".",
-        "ignore": [
-            "firebase.json",
-            ".firebaserc",
-            "**/node_modules/**",
-            "firebase.exe",
-            "node.zip",
-            "node-v20.11.1-win-x64/**"
-        ],
-        "rewrites": [
-            {
-                "source": "**",
-                "destination": "/index.html"
-            }
-        ]
-    }
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
 }

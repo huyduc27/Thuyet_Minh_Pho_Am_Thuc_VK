@@ -30,6 +30,7 @@ function switchSection(section) {
         case 'audio': loadAudioPoiFilter(); break;
         case 'history': loadHistory(); break;
         case 'tour': loadTours(); break;
+        case 'qrcode': loadQrCodes(); break;
     }
 }
 

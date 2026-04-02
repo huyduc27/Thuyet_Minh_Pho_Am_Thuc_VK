@@ -103,7 +103,13 @@ public partial class PoiDetailViewModel : ObservableObject
     {
         try
         {
-            if (Poi == null) return;
+            if (Poi == null)
+            {
+                System.Diagnostics.Debug.WriteLine("=== TOGGLE NARRATION: Poi is NULL! ===");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"=== TOGGLE NARRATION: '{Poi.Name}' | IsSpeaking={IsSpeaking} | DescVi='{Poi.DescriptionVi?.Length}' chars ===");
 
             if (IsSpeaking)
             {

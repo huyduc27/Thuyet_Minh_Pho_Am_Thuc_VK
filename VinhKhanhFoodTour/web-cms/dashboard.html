@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vĩnh Khánh CMS — Quản trị</title>
     <meta name="description" content="Dashboard quản lý nội dung Phố Ẩm Thực Vĩnh Khánh">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>">
 </head>
+
 <body>
     <div class="app-layout">
         <!-- ============ SIDEBAR ============ -->
@@ -38,6 +41,9 @@
                 </button>
                 <button class="nav-item" data-section="tour" onclick="switchSection('tour')">
                     <span class="icon">🗺️</span> Quản lý Tour
+                </button>
+                <button class="nav-item" data-section="qrcode" onclick="switchSection('qrcode')">
+                    <span class="icon">📱</span> Mã QR
                 </button>
             </nav>
 
@@ -122,7 +128,11 @@
                             </tr>
                         </thead>
                         <tbody id="poiTableBody">
-                            <tr><td colspan="6" class="empty-state"><div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div></td></tr>
+                            <tr>
+                                <td colspan="6" class="empty-state">
+                                    <div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -137,7 +147,8 @@
                     </div>
                 </div>
                 <div class="search-bar">
-                    <input type="text" id="transSearch" placeholder="🔍 Tìm POI để dịch..." oninput="filterTranslations()">
+                    <input type="text" id="transSearch" placeholder="🔍 Tìm POI để dịch..."
+                        oninput="filterTranslations()">
                 </div>
                 <div id="translationList">
                     <div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div>
@@ -156,7 +167,8 @@
                     <select id="audioPoiFilter" onchange="loadAudioForPoi()">
                         <option value="">-- Chọn POI --</option>
                     </select>
-                    <button class="btn btn-primary" onclick="openAudioUpload()" id="btnUploadAudio" disabled>+ Thêm Audio</button>
+                    <button class="btn btn-primary" onclick="openAudioUpload()" id="btnUploadAudio" disabled>+ Thêm
+                        Audio</button>
                 </div>
                 <div id="audioList">
                     <div class="empty-state">
@@ -185,7 +197,11 @@
                             </tr>
                         </thead>
                         <tbody id="historyTableBody">
-                            <tr><td colspan="3" class="empty-state"><div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div></td></tr>
+                            <tr>
+                                <td colspan="3" class="empty-state">
+                                    <div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -202,6 +218,28 @@
                 </div>
                 <div id="tourList">
                     <div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div>
+                </div>
+            </div>
+
+            <!-- ===== QR CODE MANAGEMENT ===== -->
+            <div class="section-panel" id="section-qrcode">
+                <div class="page-header">
+                    <div>
+                        <h1>📱 Mã QR — Quét để nghe</h1>
+                        <p class="description">Tạo mã QR cho từng quán ăn. Khách quét → nghe thuyết minh trên web.</p>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <span style="font-size:13px; color:var(--text-muted);">Tổng: <strong id="qrCount">0</strong> mã</span>
+                        <button class="btn btn-secondary btn-sm" onclick="downloadAllQrCodes()">⬇️ Tải tất cả</button>
+                        <button class="btn btn-secondary btn-sm" onclick="printAllQrCodes()">🖨️ In tất cả</button>
+                        <button class="btn btn-primary btn-sm" onclick="loadQrCodes()">🔄 Tạo lại</button>
+                    </div>
+                </div>
+                <div class="qr-grid" id="qrCodeGrid">
+                    <div class="empty-state">
+                        <div class="icon">📱</div>
+                        <p>Nhấn "Tạo lại" hoặc chuyển vào tab này để tạo mã QR</p>
+                    </div>
                 </div>
             </div>
         </main>
@@ -301,7 +339,8 @@
             <div class="form-group">
                 <label>URL Audio (Google Drive, Dropbox, link trực tiếp...)</label>
                 <input type="url" id="audioUrl" placeholder="https://drive.google.com/... hoặc link .mp3">
-                <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">💡 Google Drive: Chia sẻ file → Copy link → Dán vào đây</small>
+                <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">💡 Google
+                    Drive: Chia sẻ file → Copy link → Dán vào đây</small>
             </div>
             <div class="form-group">
                 <label>Ngôn ngữ</label>
@@ -365,5 +404,9 @@
     <script src="js/audio.js"></script>
     <script src="js/history.js"></script>
     <script src="js/tour.js"></script>
+    <!-- QR Code -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="js/qrcode-manager.js"></script>
 </body>
+
 </html>

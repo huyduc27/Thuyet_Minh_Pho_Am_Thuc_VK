@@ -35,15 +35,29 @@ public partial class App : Application
             await Task.Delay(500);
             try
             {
-                // SeedData cũ đã bị thay thế bằng Firebase Sync (trong AppShell)
-                System.Diagnostics.Debug.WriteLine("=== FIREBASE SYNC MODE ===");
+                // === Bước 1: Đồng bộ Firebase trước (nếu có mạng) ===
+                if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+                {
+                    System.Diagnostics.Debug.WriteLine("[App] Có mạng → Đồng bộ Firebase trước khi start geofence...");
+                    var success = await _syncService.SyncPoisAsync();
+                    System.Diagnostics.Debug.WriteLine(success
+                        ? "[App] ✅ Đồng bộ Firebase xong!"
+                        : "[App] ⚠️ Đồng bộ thất bại, dùng dữ liệu cũ.");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[App] 📴 Không có mạng → Dùng dữ liệu Offline.");
+                }
 
+                // === Bước 2: Start Geofence SAU KHI sync xong (đảm bảo có POI) ===
                 _geofenceService.PoisInRange += OnPoisInRange;
-
                 await _geofenceService.StartMonitoringAsync();
+
+                // === Bước 3: Start GPS tracking ===
                 _ = _locationService.StartTrackingAsync();
 
-                System.Diagnostics.Debug.WriteLine("=== GPS TRACKING + GEOFENCE STARTED ===");
+                var poiCount = await _databaseService.GetPoiCountAsync();
+                System.Diagnostics.Debug.WriteLine($"=== GPS TRACKING + GEOFENCE STARTED ({poiCount} POIs) ===");
             }
             catch (Exception ex)
             {
@@ -68,13 +82,34 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Khi app mở lại từ nền (Resume) → đồng bộ Firebase lần nữa.
-    /// Đảm bảo dữ liệu luôn cập nhật mỗi khi người dùng quay lại app.
+    /// Khi app mở lại từ nền (Resume) → đồng bộ Firebase lần nữa → refresh geofence.
     /// </summary>
     protected override void OnResume()
     {
         base.OnResume();
-        System.Diagnostics.Debug.WriteLine("[App] 🔄 App Resume → Đồng bộ lại từ Firebase...");
-        _ = _syncService.SyncPoisAsync();
+        _ = SyncAndRefreshAsync();
+    }
+
+    private async Task SyncAndRefreshAsync()
+    {
+        try
+        {
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+            {
+                System.Diagnostics.Debug.WriteLine("[App] 🔄 App Resume → Đồng bộ lại từ Firebase...");
+                var success = await _syncService.SyncPoisAsync();
+
+                if (success)
+                {
+                    // Refresh geofence để dùng danh sách POI mới
+                    await _geofenceService.RefreshPoisAsync();
+                    System.Diagnostics.Debug.WriteLine("[App] ✅ Đồng bộ + Refresh geofence xong!");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[App] Sync/Refresh error: {ex.Message}");
+        }
     }
 }

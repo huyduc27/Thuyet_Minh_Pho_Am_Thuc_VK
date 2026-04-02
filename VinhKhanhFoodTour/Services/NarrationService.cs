@@ -124,8 +124,16 @@ public class NarrationService
     private async Task SpeakSingleAsync(PointOfInterest poi)
     {
         var settings = _settingsService.GetSettings();
-        var text = poi.GetLocalizedDescription(settings.SelectedLanguage);
-        if (string.IsNullOrWhiteSpace(text)) return;
+        var lang = settings.SelectedLanguage;
+        var text = poi.GetLocalizedDescription(lang);
+
+        System.Diagnostics.Debug.WriteLine($"=== TTS ATTEMPT: '{poi.Name}' | lang={lang} | text length={text?.Length ?? 0} ===");
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            System.Diagnostics.Debug.WriteLine($"=== TTS SKIP: '{poi.Name}' — DescriptionVi='{poi.DescriptionVi}', text is empty for lang={lang} ===");
+            return;
+        }
 
         _isSpeaking = true;
         _cts = new CancellationTokenSource();
@@ -133,7 +141,8 @@ public class NarrationService
 
         try
         {
-            var locale = await GetLocaleForLanguageAsync(settings.SelectedLanguage);
+            var locale = await GetLocaleForLanguageAsync(lang);
+            System.Diagnostics.Debug.WriteLine($"=== TTS LOCALE: {(locale != null ? $"{locale.Language}-{locale.Country}" : "NULL (dùng default)")} ===");
 
             var speechOptions = new SpeechOptions
             {
@@ -146,8 +155,10 @@ public class NarrationService
                 speechOptions.Locale = locale;
             }
 
+            System.Diagnostics.Debug.WriteLine($"=== TTS SPEAKING: '{text[..Math.Min(text.Length, 50)]}...' volume={settings.TtsVolume} ===");
             await TextToSpeech.Default.SpeakAsync(text, speechOptions, _cts.Token);
-            await _databaseService.LogNarrationAsync(poi.Id, settings.SelectedLanguage);
+            await _databaseService.LogNarrationAsync(poi.Id, lang);
+            System.Diagnostics.Debug.WriteLine($"=== TTS DONE: '{poi.Name}' ===");
         }
         catch (TaskCanceledException)
         {
@@ -155,7 +166,8 @@ public class NarrationService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"=== TTS ERROR: {ex.Message} ===");
+            System.Diagnostics.Debug.WriteLine($"=== TTS ERROR: {poi.Name} | {ex.GetType().Name}: {ex.Message} ===");
+            System.Diagnostics.Debug.WriteLine($"=== TTS STACK: {ex.StackTrace} ===");
         }
         finally
         {

@@ -14,6 +14,7 @@ public partial class MapViewModel : ObservableObject
     private readonly LocationService _locationService;
     private readonly SettingsService _settingsService;
     private readonly FirebaseSyncService _syncService;
+    private readonly GeofenceService _geofenceService;
 
     private Pin? _userPin;
     private Polyline? _routeLine;
@@ -61,12 +62,14 @@ public partial class MapViewModel : ObservableObject
         DatabaseService databaseService,
         LocationService locationService,
         SettingsService settingsService,
-        FirebaseSyncService syncService)
+        FirebaseSyncService syncService,
+        GeofenceService geofenceService)
     {
         _databaseService = databaseService;
         _locationService = locationService;
         _settingsService = settingsService;
         _syncService = syncService;
+        _geofenceService = geofenceService;
 
         _locationService.RouteProgressChanged += OnRouteProgress;
         _locationService.RouteFinished += OnRouteFinished;
@@ -163,8 +166,12 @@ public partial class MapViewModel : ObservableObject
         {
             if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
             {
-                await _syncService.SyncPoisAsync();
-                System.Diagnostics.Debug.WriteLine("[Map Refresh] ✅ Đã đồng bộ từ Firebase!");
+                var success = await _syncService.SyncPoisAsync();
+                if (success)
+                {
+                    await _geofenceService.RefreshPoisAsync();
+                    System.Diagnostics.Debug.WriteLine("[Map Refresh] ✅ Đã đồng bộ + refresh geofence!");
+                }
             }
         }
         catch (Exception ex)

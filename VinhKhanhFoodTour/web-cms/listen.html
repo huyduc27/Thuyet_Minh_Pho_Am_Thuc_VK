@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Nghe Thuyết Minh — Phố Ẩm Thực Vĩnh Khánh</title>
+    <meta name="description" content="Quét QR để nghe thông tin quán ăn trên phố ẩm thực Vĩnh Khánh, Quận 4, TP.HCM">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #e94560;
+            --primary-dark: #c0392b;
+            --bg-dark: #0f0f23;
+            --bg-card: #1a1a2e;
+            --bg-surface: #16213e;
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0b0;
+            --accent-glow: rgba(233, 69, 96, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* === Animated Background === */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(233, 69, 96, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(30, 60, 120, 0.1) 0%, transparent 50%);
+            animation: bgShift 15s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes bgShift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-5%, -3%); }
+        }
+
+        /* === Loading Screen === */
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-logo {
+            font-size: 48px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* === Main Content === */
+        .listen-container {
+            width: 100%;
+            max-width: 440px;
+            padding: 24px 20px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* === Brand Header === */
+        .brand-header {
+            text-align: center;
+            margin-bottom: 24px;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .brand-header .brand-icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .brand-header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .brand-header p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* === POI Card === */
+        .poi-card {
+            width: 100%;
+            background: var(--bg-card);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 0.2s forwards;
+        }
+
+        .poi-hero {
+            position: relative;
+            padding: 32px 24px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--bg-surface), var(--bg-card));
+        }
+
+        .poi-hero .category-icon {
+            font-size: 56px;
+            display: block;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+        }
+
+        .poi-hero .poi-name {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 8px;
+        }
+
+        .poi-hero .poi-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .poi-meta .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .poi-meta .badge.rating {
+            color: #FFD700;
+        }
+
+        /* === Description === */
+        .poi-description {
+            padding: 20px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .poi-description .desc-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .poi-description p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        /* === Info Row === */
+        .poi-info {
+            padding: 0 24px 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .info-item .info-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .info-item .info-value {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* === Language Selector === */
+        .lang-selector {
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .lang-selector label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .lang-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .lang-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .lang-btn:hover {
+            border-color: var(--primary);
+            color: var(--text-primary);
+        }
+
+        .lang-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* === PLAY BUTTON (Autoplay workaround) === */
+        .play-section {
+            width: 100%;
+            margin-top: 24px;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 0.4s forwards;
+        }
+
+        .play-button {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px var(--accent-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .play-button:hover::before {
+            opacity: 1;
+        }
+
+        .play-button:active {
+            transform: scale(0.98);
+        }
+
+        .play-button.playing {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            box-shadow: 0 4px 20px rgba(46, 204, 113, 0.3);
+        }
+
+        .play-button .play-icon {
+            font-size: 24px;
+            transition: all 0.3s;
+        }
+
+        /* === Audio Progress Bar === */
+        .audio-progress {
+            width: 100%;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .audio-progress.visible {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #ff6b81);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.2s linear;
+        }
+
+        .progress-time {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* === TTS Fallback === */
+        .tts-section {
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .tts-button {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .tts-button:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+            color: var(--text-primary);
+        }
+
+        /* === Error State === */
+        .error-state {
+            text-align: center;
+            padding: 60px 24px;
+        }
+
+        .error-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .error-state h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .error-state p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* === Footer === */
+        .listen-footer {
+            margin-top: auto;
+            padding: 24px 0 16px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        /* === Animations === */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* === Sound Wave Animation === */
+        .sound-wave {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            height: 24px;
+        }
+
+        .sound-wave.active {
+            display: flex;
+        }
+
+        .sound-wave .bar {
+            width: 3px;
+            background: #fff;
+            border-radius: 2px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        .sound-wave .bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+        .sound-wave .bar:nth-child(2) { height: 16px; animation-delay: 0.15s; }
+        .sound-wave .bar:nth-child(3) { height: 12px; animation-delay: 0.3s; }
+        .sound-wave .bar:nth-child(4) { height: 20px; animation-delay: 0.45s; }
+        .sound-wave .bar:nth-child(5) { height: 10px; animation-delay: 0.6s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1.2); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <span class="loading-logo">🍜</span>
+        <div class="loading-text">ĐANG TẢI...</div>
+    </div>
+
+    <div class="listen-container" id="listenContainer" style="display:none;">
+        <!-- Brand -->
+        <div class="brand-header">
+            <span class="brand-icon">🍜</span>
+            <h1>Phố Ẩm Thực Vĩnh Khánh</h1>
+            <p>Audio Narration — Quận 4, TP.HCM</p>
+        </div>
+
+        <!-- POI Card -->
+        <div class="poi-card">
+            <div class="poi-hero">
+                <span class="category-icon" id="categoryIcon">🐚</span>
+                <div class="poi-name" id="poiName">Đang tải...</div>
+                <div class="poi-meta">
+                    <span class="badge" id="poiCategory">🐚 Ốc</span>
+                    <span class="badge rating" id="poiRating">⭐ 0.0</span>
+                </div>
+            </div>
+
+            <div class="poi-description">
+                <div class="desc-label">Giới thiệu</div>
+                <p id="poiDescription">Đang tải thông tin...</p>
+            </div>
+
+            <div class="poi-info">
+                <div class="info-item">
+                    <div class="info-label">📍 Địa chỉ</div>
+                    <div class="info-value" id="poiAddress">—</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">🕐 Giờ mở cửa</div>
+                    <div class="info-value" id="poiHours">—</div>
+                </div>
+            </div>
+
+            <!-- Language Selector -->
+            <div class="lang-selector">
+                <label>🌐 Ngôn ngữ thuyết minh</label>
+                <div class="lang-buttons">
+                    <button class="lang-btn active" data-lang="vi" onclick="switchLang('vi')">🇻🇳 VI</button>
+                    <button class="lang-btn" data-lang="en" onclick="switchLang('en')">🇺🇸 EN</button>
+                    <button class="lang-btn" data-lang="zh" onclick="switchLang('zh')">🇨🇳 ZH</button>
+                    <button class="lang-btn" data-lang="ko" onclick="switchLang('ko')">🇰🇷 KO</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Play Button — Workaround Autoplay Policy -->
+        <div class="play-section">
+            <!-- Audio Play (nếu có file audio) -->
+            <button class="play-button" id="playButton" onclick="handlePlay()">
+                <span class="play-icon" id="playIcon">▶️</span>
+                <span id="playText">Chạm để nghe thuyết minh</span>
+                <div class="sound-wave" id="soundWave">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                    <div class="bar"></div><div class="bar"></div>
+                </div>
+            </button>
+
+            <!-- Audio Progress -->
+            <div class="audio-progress" id="audioProgress">
+                <div class="progress-bar" id="progressBar" onclick="seekAudio(event)">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-time">
+                    <span id="currentTime">0:00</span>
+                    <span id="totalTime">0:00</span>
+                </div>
+            </div>
+
+            <!-- TTS Fallback (nếu không có audio file) -->
+            <div class="tts-section" id="ttsSection" style="display:none;">
+                <button class="tts-button" onclick="speakTTS()">
+                    🗣️ Đọc bằng giọng máy (TTS)
+                </button>
+            </div>
+        </div>
+
+        <div class="listen-footer">
+            🍜 Phố Ẩm Thực Vĩnh Khánh — Quét QR • Nghe • Khám phá
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div class="listen-container" id="errorContainer" style="display:none;">
+        <div class="error-state">
+            <div class="icon">😢</div>
+            <h2>Không tìm thấy quán ăn</h2>
+            <p>Mã QR không hợp lệ hoặc quán ăn đã bị xóa.</p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // === Firebase Config ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEnL_IT-9OY5mfrRV2TJgPW7ctfDffK4I",
+            authDomain: "vinhkhanhfoodtour.firebaseapp.com",
+            projectId: "vinhkhanhfoodtour",
+            storageBucket: "vinhkhanhfoodtour.firebasestorage.app",
+            messagingSenderId: "755585686441",
+            appId: "1:755585686441:web:374fe76a54a572ab2902b8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // === State ===
+        let poiData = null;
+        let audioFiles = [];
+        let currentLang = 'vi';
+        let audioPlayer = null;
+        let isPlaying = false;
+
+        const categoryIcons = {
+            'Ốc': '🐚', 'Lẩu': '🍲', 'Nướng': '🔥', 'Hải sản': '🦀',
+            'Bò': '🥩', 'Cơm': '🍚', 'Ăn vặt': '🍢', 'Chè': '🍧', 'Tráng miệng': '🍨'
+        };
+
+        // === Init ===
+        (async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const poiId = params.get('id');
+
+            if (!poiId) {
+                showError();
+                return;
+            }
+
+            try {
+                // Load POI data
+                const poiDoc = await db.collection('pois').doc(poiId).get();
+                if (!poiDoc.exists) {
+                    showError();
+                    return;
+                }
+
+                poiData = { id: poiDoc.id, ...poiDoc.data() };
+
+                // Load audio files
+                const audioSnap = await db.collection('audioFiles')
+                    .where('poiId', '==', poiId)
+                    .get();
+                audioFiles = audioSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                // Render
+                renderPoi();
+                hideLoading();
+
+                // Log visit (analytics)
+                try {
+                    await db.collection('qrScans').add({
+                        poiId: poiId,
+                        poiName: poiData.name,
+                        scannedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        userAgent: navigator.userAgent
+                    });
+                } catch (e) { /* silent fail */ }
+
+            } catch (error) {
+                console.error('Error loading POI:', error);
+                showError();
+            }
+        })();
+
+        function renderPoi() {
+            if (!poiData) return;
+
+            const icon = categoryIcons[poiData.category] || '🍽️';
+            document.getElementById('categoryIcon').textContent = icon;
+            document.getElementById('poiName').textContent = poiData.name || '';
+            document.getElementById('poiCategory').textContent = `${icon} ${poiData.category || ''}`;
+            document.getElementById('poiRating').textContent = `⭐ ${(poiData.rating || 0).toFixed(1)}`;
+            document.getElementById('poiAddress').textContent = poiData.address || '—';
+            document.getElementById('poiHours').textContent = poiData.openingHours || '—';
+
+            updateDescription();
+            updateAudioButton();
+
+            // Update page title
+            document.title = `${poiData.name} — Nghe Thuyết Minh`;
+        }
+
+        function updateDescription() {
+            const descMap = {
+                'vi': poiData.descriptionVi,
+                'en': poiData.descriptionEn || poiData.descriptionVi,
+                'zh': poiData.descriptionZh || poiData.descriptionVi,
+                'ko': poiData.descriptionKo || poiData.descriptionVi
+            };
+            document.getElementById('poiDescription').textContent = descMap[currentLang] || poiData.descriptionVi || 'Chưa có mô tả.';
+        }
+
+        function updateAudioButton() {
+            const audio = audioFiles.find(a => a.language === currentLang);
+            const hasAudio = audio && audio.url;
+            const ttsSection = document.getElementById('ttsSection');
+
+            if (hasAudio) {
+                ttsSection.style.display = 'none';
+            } else {
+                // Không có audio file → hiện nút TTS fallback
+                ttsSection.style.display = 'block';
+            }
+        }
+
+        // === Language Switch ===
+        function switchLang(lang) {
+            currentLang = lang;
+
+            // Update button states
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            // Stop current audio
+            stopAudio();
+
+            updateDescription();
+            updateAudioButton();
+        }
+
+        // === PLAY — Autoplay Workaround ===
+        // Trình duyệt yêu cầu user gesture (tap/click) trước khi phát audio.
+        // Nút "Chạm để nghe" chính là user gesture đó!
+        function handlePlay() {
+            if (isPlaying) {
+                stopAudio();
+                return;
+            }
+
+            const audio = audioFiles.find(a => a.language === currentLang);
+
+            if (audio && audio.url) {
+                playAudioFile(audio.url);
+            } else {
+                // Fallback: dùng TTS
+                speakTTS();
+            }
+        }
+
+        function playAudioFile(url) {
+            stopAudio();
+
+            audioPlayer = new Audio(url);
+            audioPlayer.crossOrigin = 'anonymous';
+
+            const playBtn = document.getElementById('playButton');
+            const playIcon = document.getElementById('playIcon');
+            const playText = document.getElementById('playText');
+            const soundWave = document.getElementById('soundWave');
+            const progressDiv = document.getElementById('audioProgress');
+
+            // Show loading state
+            playText.textContent = 'Đang tải...';
+            playIcon.style.display = 'inline';
+            soundWave.classList.remove('active');
+
+            audioPlayer.addEventListener('canplay', () => {
+                audioPlayer.play().then(() => {
+                    isPlaying = true;
+                    playBtn.classList.add('playing');
+                    playIcon.style.display = 'none';
+                    playText.textContent = 'Đang phát...';
+                    soundWave.classList.add('active');
+                    progressDiv.classList.add('visible');
+                }).catch(err => {
+                    console.error('Play failed:', err);
+                    playText.textContent = 'Lỗi — Nhấn thử lại';
+                });
+            }, { once: true });
+
+            audioPlayer.addEventListener('timeupdate', () => {
+                if (audioPlayer.duration) {
+                    const pct = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                    document.getElementById('progressFill').style.width = pct + '%';
+                    document.getElementById('currentTime').textContent = formatTime(audioPlayer.currentTime);
+                    document.getElementById('totalTime').textContent = formatTime(audioPlayer.duration);
+                }
+            });
+
+            audioPlayer.addEventListener('ended', () => {
+                stopAudio();
+            });
+
+            audioPlayer.addEventListener('error', (e) => {
+                console.error('Audio error:', e);
+                playText.textContent = 'Lỗi tải audio';
+                playIcon.textContent = '⚠️';
+                playIcon.style.display = 'inline';
+                soundWave.classList.remove('active');
+                isPlaying = false;
+            });
+
+            audioPlayer.load();
+        }
+
+        function stopAudio() {
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+                audioPlayer = null;
+            }
+
+            // Stop TTS
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+
+            isPlaying = false;
+
+            const playBtn = document.getElementById('playButton');
+            const playIcon = document.getElementById('playIcon');
+            const playText = document.getElementById('playText');
+            const soundWave = document.getElementById('soundWave');
+            const progressDiv = document.getElementById('audioProgress');
+
+            playBtn.classList.remove('playing');
+            playIcon.textContent = '▶️';
+            playIcon.style.display = 'inline';
+            playText.textContent = 'Chạm để nghe thuyết minh';
+            soundWave.classList.remove('active');
+            progressDiv.classList.remove('visible');
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        function seekAudio(e) {
+            if (!audioPlayer || !audioPlayer.duration) return;
+            const bar = document.getElementById('progressBar');
+            const rect = bar.getBoundingClientRect();
+            const pct = (e.clientX - rect.left) / rect.width;
+            audioPlayer.currentTime = pct * audioPlayer.duration;
+        }
+
+        // === TTS Fallback ===
+        function speakTTS() {
+            if (!('speechSynthesis' in window)) {
+                alert('Trình duyệt không hỗ trợ đọc văn bản.');
+                return;
+            }
+
+            // Cancel any existing speech
+            window.speechSynthesis.cancel();
+
+            const descMap = {
+                'vi': poiData.descriptionVi,
+                'en': poiData.descriptionEn,
+                'zh': poiData.descriptionZh,
+                'ko': poiData.descriptionKo
+            };
+            const text = descMap[currentLang] || poiData.descriptionVi || '';
+
+            if (!text) {
+                alert('Chưa có nội dung thuyết minh cho ngôn ngữ này.');
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = currentLang === 'vi' ? 'vi-VN' :
+                currentLang === 'en' ? 'en-US' :
+                    currentLang === 'zh' ? 'zh-CN' : 'ko-KR';
+            utterance.rate = 0.9;
+
+            const playBtn = document.getElementById('playButton');
+            const playIcon = document.getElementById('playIcon');
+            const playText = document.getElementById('playText');
+            const soundWave = document.getElementById('soundWave');
+
+            utterance.onstart = () => {
+                isPlaying = true;
+                playBtn.classList.add('playing');
+                playIcon.style.display = 'none';
+                playText.textContent = 'Đang đọc...';
+                soundWave.classList.add('active');
+            };
+
+            utterance.onend = () => {
+                stopAudio();
+            };
+
+            utterance.onerror = () => {
+                stopAudio();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // === Helpers ===
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('listenContainer').style.display = 'flex';
+        }
+
+        function showError() {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('errorContainer').style.display = 'flex';
+        }
+    </script>
+</body>
+
+</html>
