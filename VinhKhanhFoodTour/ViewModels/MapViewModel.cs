@@ -16,7 +16,8 @@ public partial class MapViewModel : ObservableObject
     private readonly FirebaseSyncService _syncService;
     private readonly GeofenceService _geofenceService;
 
-    private Pin? _userPin;
+    private Circle? _userDot;
+    private Circle? _userHalo;
     private Polyline? _routeLine;
 
     public Map? MapControl { get; set; }
@@ -110,7 +111,8 @@ public partial class MapViewModel : ObservableObject
 
             MapControl.Pins.Clear();
             MapControl.MapElements.Clear();
-            _userPin = null;
+            _userDot = null;
+            _userHalo = null;
             _routeLine = null;
 
             AddPoiPinsWithRadius(pois, lang, settings.RadiusMultiplier);
@@ -138,6 +140,37 @@ public partial class MapViewModel : ObservableObject
 
             var centerLat = userLocation?.Latitude ?? LocationService.VinhKhanhLat;
             var centerLng = userLocation?.Longitude ?? LocationService.VinhKhanhLng;
+
+            // Ensure the initial location does not overlap with any POI's radius 
+            // so we can test entering geofence areas.
+            bool isOverlapping = true;
+            int loopCount = 0;
+            while (isOverlapping && loopCount < 50)
+            {
+                isOverlapping = false;
+                foreach (var poi in pois)
+                {
+                    double dist = LocationService.CalculateDistance(centerLat, centerLng, poi.Latitude, poi.Longitude);
+                    double effectiveRadius = poi.RadiusMeters * settings.RadiusMultiplier;
+                    
+                    if (dist <= effectiveRadius)
+                    {
+                        // Overlaps, move slightly outwards (~11m north-west)
+                        centerLat += 0.0001;
+                        centerLng -= 0.0001;
+                        isOverlapping = true;
+                        break;
+                    }
+                }
+                loopCount++;
+            }
+
+            // Sync the possibly adjusted location back to LocationService 
+            // so geofence starts correctly from outside.
+            if (loopCount > 1 || _locationService.IsSimulationMode)
+            {
+                _locationService.SetSimulatedLocation(centerLat, centerLng);
+            }
 
             AddUserMarker(centerLat, centerLng);
 
@@ -384,31 +417,43 @@ public partial class MapViewModel : ObservableObject
     {
         if (MapControl == null) return;
 
-        _userPin = new Pin
+        // Outer halo
+        _userHalo = new Circle
         {
-            Label = "Vi tri cua ban",
-            Address = $"{lat:F5}, {lng:F5}",
-            Location = new Location(lat, lng),
-            Type = PinType.Generic
+            Center = new Location(lat, lng),
+            Radius = Distance.FromMeters(15), 
+            FillColor = Color.FromArgb("#334285F4"), // 20% opacity blue
+            StrokeColor = Colors.Transparent,
+            StrokeWidth = 0
         };
-        MapControl.Pins.Add(_userPin);
+
+        // Inner blue dot
+        _userDot = new Circle
+        {
+            Center = new Location(lat, lng),
+            Radius = Distance.FromMeters(4),
+            FillColor = Color.FromArgb("#4285F4"), // Google blue
+            StrokeColor = Color.FromArgb("#FFFFFF"), // White border
+            StrokeWidth = 2
+        };
+
+        MapControl.MapElements.Add(_userHalo);
+        MapControl.MapElements.Add(_userDot);
     }
 
     private void MoveUserMarker(double lat, double lng)
     {
         if (MapControl == null) return;
 
-        if (_userPin != null)
+        if (_userHalo != null)
         {
-            MapControl.Pins.Remove(_userPin);
+            MapControl.MapElements.Remove(_userHalo);
         }
-        _userPin = new Pin
+        if (_userDot != null)
         {
-            Label = _locationService.IsRouteRunning ? "Dang di route..." : "Vi tri gia lap",
-            Address = $"{lat:F5}, {lng:F5}",
-            Location = new Location(lat, lng),
-            Type = PinType.Generic
-        };
-        MapControl.Pins.Add(_userPin);
+            MapControl.MapElements.Remove(_userDot);
+        }
+
+        AddUserMarker(lat, lng);
     }
 }

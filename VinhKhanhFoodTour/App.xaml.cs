@@ -16,9 +16,14 @@ public partial class App : Application
         LocationService locationService,
         GeofenceService geofenceService,
         NarrationService narrationService,
-        FirebaseSyncService syncService)
+        FirebaseSyncService syncService,
+        SettingsService settingsService)
     {
         InitializeComponent();
+        
+        // Load default language from preferences
+        LocalizationResourceManager.Instance.SetCulture(settingsService.GetSelectedLanguage());
+
         _databaseService = databaseService;
         _locationService = locationService;
         _geofenceService = geofenceService;

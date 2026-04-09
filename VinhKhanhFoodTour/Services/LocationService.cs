@@ -5,8 +5,9 @@ public class LocationService
     private CancellationTokenSource? _cts;
     private bool _isTracking;
 
-    public const double VinhKhanhLat = 10.76120;
-    public const double VinhKhanhLng = 106.70350;
+    // Vị trí mặc định (cách xa khu ẩm thực khoảng 400m) để KHÔNG bao giờ bị dính Geofence lúc khởi động App
+    public const double VinhKhanhLat = 10.76500;
+    public const double VinhKhanhLng = 106.69800;
     private const double MaxDistanceFromVinhKhanh = 50000;
 
     public event EventHandler<Location>? LocationChanged;

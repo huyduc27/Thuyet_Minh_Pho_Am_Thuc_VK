@@ -260,6 +260,16 @@
             </div>
             <div class="form-row">
                 <div class="form-group">
+                    <label>Tên quán (中文)</label>
+                    <input type="text" id="poiNameZh" placeholder="VD: 蜗牛街">
+                </div>
+                <div class="form-group">
+                    <label>Tên quán (한국어)</label>
+                    <input type="text" id="poiNameKo" placeholder="VD: 빈칸 거리 달팽이">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
                     <label>Vĩ độ (Latitude)</label>
                     <input type="number" step="any" id="poiLat" placeholder="10.76120">
                 </div>
@@ -313,6 +323,14 @@
             <div class="form-group">
                 <label>Mô tả (English)</label>
                 <textarea id="poiDescEn" placeholder="Detailed description in English..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Mô tả (中文)</label>
+                <textarea id="poiDescZh" placeholder="Mô tả bằng tiếng Trung..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Mô tả (한국어)</label>
+                <textarea id="poiDescKo" placeholder="Mô tả bằng tiếng Hàn..."></textarea>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closePoiModal()">Hủy</button>

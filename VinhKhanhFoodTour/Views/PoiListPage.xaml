@@ -2,9 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:VinhKhanhFoodTour.ViewModels"
+             xmlns:services="clr-namespace:VinhKhanhFoodTour.Services"
              x:Class="VinhKhanhFoodTour.Views.PoiListPage"
              x:DataType="vm:PoiListViewModel"
-             Title="Danh sach"
+             Title="{Binding [Tab_List], Source={x:Static services:LocalizationResourceManager.Instance}}"
              BackgroundColor="White"
              Shell.BackgroundColor="White"
              Shell.ForegroundColor="#1a1a2e">
@@ -17,7 +18,7 @@
             <Border BackgroundColor="#F5F5F5" StrokeShape="RoundRectangle 12"
                     Stroke="#E0E0E0" StrokeThickness="1" Padding="0">
                 <SearchBar Text="{Binding SearchText}" 
-                           Placeholder="Tim quan an..." 
+                           Placeholder="{Binding [List_Search], Source={x:Static services:LocalizationResourceManager.Instance}}" 
                            PlaceholderColor="#999"
                            TextColor="#333"
                            BackgroundColor="Transparent"
@@ -38,13 +39,13 @@
                                     ItemsLayout="HorizontalList"
                                     HeightRequest="44" Margin="12,4,12,8">
                         <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="x:String">
+                            <DataTemplate x:DataType="vm:CategoryViewModel">
                                 <Border Padding="16,6" 
                                         StrokeShape="RoundRectangle 20"
                                         BackgroundColor="#F5F5F5"
                                         Stroke="#E8E8E8" StrokeThickness="1"
                                         Margin="3,0">
-                                    <Label Text="{Binding .}" TextColor="#555" FontSize="12"
+                                    <Label Text="{Binding DisplayName}" TextColor="#555" FontSize="12"
                                            FontAttributes="Bold" HorizontalTextAlignment="Center"/>
                                 </Border>
                             </DataTemplate>
@@ -53,7 +54,7 @@
 
                     <!-- Featured Section -->
                     <VerticalStackLayout Padding="16,8,0,12" Spacing="10">
-                        <Label Text="QUAN NOI BAT" FontSize="15" TextColor="#1a1a2e" 
+                        <Label Text="{Binding [List_Featured], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="15" TextColor="#1a1a2e" 
                                FontAttributes="Bold" CharacterSpacing="1"/>
 
                         <CollectionView ItemsSource="{Binding FeaturedPois}"
@@ -98,7 +99,7 @@
                                                 <Label Text="{Binding DisplayName}" FontSize="13" 
                                                        FontAttributes="Bold" TextColor="#1a1a2e"
                                                        LineBreakMode="TailTruncation" MaxLines="1"/>
-                                                <Label Text="{Binding Poi.Category}" FontSize="10" 
+                                                <Label Text="{Binding DisplayCategory}" FontSize="10" 
                                                        TextColor="#888"/>
                                                 <HorizontalStackLayout Spacing="4">
                                                     <Label Text="&#128337;" FontSize="10"/>
@@ -117,7 +118,7 @@
                     <BoxView HeightRequest="1" Color="#F0F0F0" Margin="16,0"/>
 
                     <!-- Restaurant List Header -->
-                    <Label Text="DANH SACH QUAN AN" FontSize="15" TextColor="#1a1a2e" 
+                    <Label Text="{Binding [List_Title], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="15" TextColor="#1a1a2e" 
                            FontAttributes="Bold" CharacterSpacing="1"
                            Margin="16,14,16,8"/>
 
@@ -129,10 +130,8 @@
                         <CollectionView.EmptyView>
                             <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" 
                                                  Spacing="6" Padding="20,40">
-                                <Label Text="Khong tim thay quan an" 
+                                <Label Text="{Binding [List_Empty], Source={x:Static services:LocalizationResourceManager.Instance}}" 
                                        FontSize="15" TextColor="#999" HorizontalOptions="Center"/>
-                                <Label Text="Thu doi bo loc hoac tu khoa khac" 
-                                       FontSize="12" TextColor="#bbb" HorizontalOptions="Center"/>
                             </VerticalStackLayout>
                         </CollectionView.EmptyView>
 
@@ -192,7 +191,7 @@
                                                     StrokeShape="RoundRectangle 8"
                                                     Stroke="Transparent" Padding="6,2"
                                                     HorizontalOptions="End" Opacity="0.9">
-                                                <Label Text="{Binding Poi.Category}" 
+                                                <Label Text="{Binding DisplayCategory}" 
                                                        FontSize="9" TextColor="White" FontAttributes="Bold"
                                                        HorizontalTextAlignment="Center"/>
                                             </Border>

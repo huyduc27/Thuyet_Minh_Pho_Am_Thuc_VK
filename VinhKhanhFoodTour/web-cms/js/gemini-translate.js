@@ -4,7 +4,7 @@
 // Gộp 1 prompt duy nhất, chống spam bấm
 // ========================================
 
-const GEMINI_API_KEY = 'AIzaSyBkgiG_eA2ihOruqqWIFkDq31Wg_lJCnu8';
+const GEMINI_API_KEY = 'AIzaSyDQ-V9B3n070Iz9DRUXhuV2WPtVRDF3xB4';
 const GEMINI_MODEL = 'gemini-2.5-flash';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 

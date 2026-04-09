@@ -3,9 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
              xmlns:vm="clr-namespace:VinhKhanhFoodTour.ViewModels"
+             xmlns:services="clr-namespace:VinhKhanhFoodTour.Services"
              x:Class="VinhKhanhFoodTour.Views.MapPage"
              x:DataType="vm:MapViewModel"
-             Title="Ban do"
+             Title="{Binding [Tab_Map], Source={x:Static services:LocalizationResourceManager.Instance}}"
              BackgroundColor="White"
              Shell.NavBarIsVisible="False">
 
@@ -18,7 +19,7 @@
             <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                     <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                        <Label Text="VINH KHANH FOOD MAP" FontSize="13" TextColor="#e94560" 
+                        <Label Text="{Binding [Map_Header], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="13" TextColor="#e94560" 
                                FontAttributes="Bold" CharacterSpacing="1"/>
                         <Label Text="{Binding LocationStatus}" FontSize="9" TextColor="#999"
                                LineBreakMode="TailTruncation" MaxLines="1"/>
@@ -43,7 +44,7 @@
                         </Border.GestureRecognizers>
                         <HorizontalStackLayout Spacing="4">
                             <Label Text="&#128205;" FontSize="11"/>
-                            <Label Text="Manual" FontSize="11" TextColor="White" FontAttributes="Bold"
+                            <Label Text="{Binding [Map_Manual], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="11" TextColor="White" FontAttributes="Bold"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
                     </Border>
@@ -55,7 +56,7 @@
                         </Border.GestureRecognizers>
                         <HorizontalStackLayout Spacing="4">
                             <Label Text="&#128694;" FontSize="11"/>
-                            <Label Text="Route" FontSize="11" TextColor="White" FontAttributes="Bold"
+                            <Label Text="{Binding [Map_Route], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="11" TextColor="White" FontAttributes="Bold"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
                     </Border>

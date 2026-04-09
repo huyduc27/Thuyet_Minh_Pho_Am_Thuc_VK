@@ -66,7 +66,7 @@ function openPoiModal(editData = null) {
     document.getElementById('poiModalTitle').textContent = '📍 Thêm POI mới';
 
     // Clear form
-    ['poiName', 'poiNameEn', 'poiLat', 'poiLng', 'poiAddress', 'poiRadius', 'poiPriority', 'poiRating', 'poiHours', 'poiDescVi', 'poiDescEn'].forEach(id => {
+    ['poiName', 'poiNameEn', 'poiNameZh', 'poiNameKo', 'poiLat', 'poiLng', 'poiAddress', 'poiRadius', 'poiPriority', 'poiRating', 'poiHours', 'poiDescVi', 'poiDescEn', 'poiDescZh', 'poiDescKo'].forEach(id => {
         document.getElementById(id).value = '';
     });
     document.getElementById('poiRadius').value = '50';
@@ -77,6 +77,8 @@ function openPoiModal(editData = null) {
         document.getElementById('poiEditId').value = editData.id;
         document.getElementById('poiName').value = editData.name || '';
         document.getElementById('poiNameEn').value = editData.nameEn || '';
+        document.getElementById('poiNameZh').value = editData.nameZh || '';
+        document.getElementById('poiNameKo').value = editData.nameKo || '';
         document.getElementById('poiLat').value = editData.latitude || '';
         document.getElementById('poiLng').value = editData.longitude || '';
         document.getElementById('poiCategory').value = editData.category || 'Ốc';
@@ -87,6 +89,8 @@ function openPoiModal(editData = null) {
         document.getElementById('poiHours').value = editData.openingHours || '';
         document.getElementById('poiDescVi').value = editData.descriptionVi || '';
         document.getElementById('poiDescEn').value = editData.descriptionEn || '';
+        document.getElementById('poiDescZh').value = editData.descriptionZh || '';
+        document.getElementById('poiDescKo').value = editData.descriptionKo || '';
     }
 }
 
@@ -105,8 +109,8 @@ async function savePoi() {
     const data = {
         name: document.getElementById('poiName').value.trim(),
         nameEn: document.getElementById('poiNameEn').value.trim(),
-        nameZh: '',
-        nameKo: '',
+        nameZh: document.getElementById('poiNameZh').value.trim(),
+        nameKo: document.getElementById('poiNameKo').value.trim(),
         latitude: parseFloat(document.getElementById('poiLat').value) || 0,
         longitude: parseFloat(document.getElementById('poiLng').value) || 0,
         category: document.getElementById('poiCategory').value,
@@ -117,8 +121,8 @@ async function savePoi() {
         openingHours: document.getElementById('poiHours').value.trim(),
         descriptionVi: document.getElementById('poiDescVi').value.trim(),
         descriptionEn: document.getElementById('poiDescEn').value.trim(),
-        descriptionZh: '',
-        descriptionKo: '',
+        descriptionZh: document.getElementById('poiDescZh').value.trim(),
+        descriptionKo: document.getElementById('poiDescKo').value.trim(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 

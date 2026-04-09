@@ -71,9 +71,11 @@ public partial class SettingsViewModel : ObservableObject
         RadiusMultiplier = settings.RadiusMultiplier;
         CooldownMinutes = settings.CooldownMinutes;
         AutoNarrate = settings.AutoNarrate;
-        TtsSpeed = settings.TtsSpeed;
         TtsVolume = settings.TtsVolume;
         UpdateDisplayTexts();
+        
+        // Initialize UI language on boot if arriving from Settings
+        LocalizationResourceManager.Instance.SetCulture(SelectedLanguage);
     }
 
     partial void OnSelectedLanguageIndexChanged(int value)
@@ -82,6 +84,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             SelectedLanguage = _languageCodes[value];
             SaveSettings();
+            LocalizationResourceManager.Instance.SetCulture(SelectedLanguage);
         }
     }
 
