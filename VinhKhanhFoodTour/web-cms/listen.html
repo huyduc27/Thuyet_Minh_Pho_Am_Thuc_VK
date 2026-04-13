@@ -727,6 +727,23 @@
                 // Fallback: dùng TTS
                 speakTTS();
             }
+
+            // Ghi log lượt nghe vào narrationLogs (source = 'qr')
+            logNarrationPlay();
+        }
+
+        // Ghi log thuyết minh qua QR vào Firestore (cùng collection với app mobile)
+        function logNarrationPlay() {
+            if (!poiData) return;
+            try {
+                db.collection('narrationLogs').add({
+                    poiId: poiData.id,
+                    poiName: poiData.name || '',
+                    language: currentLang,
+                    source: 'qr',
+                    playedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (e) { console.error('Log narration error:', e); }
         }
 
         function playAudioFile(url) {

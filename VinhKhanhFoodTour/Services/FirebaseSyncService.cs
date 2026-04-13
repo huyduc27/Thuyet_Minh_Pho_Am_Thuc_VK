@@ -160,4 +160,78 @@ public class FirebaseSyncService
         }
         return 0;
     }
+
+    // ===== Sync NarrationLogs LÊN Firestore =====
+
+    /// <summary>
+    /// Đẩy các NarrationLog chưa sync từ SQLite lên Firestore.
+    /// Gọi khi app mở hoặc resume (nếu có mạng).
+    /// </summary>
+    public async Task<int> SyncLogsToFirestoreAsync()
+    {
+        try
+        {
+            var unsyncedLogs = await _db.GetUnsyncedLogsAsync();
+            if (unsyncedLogs.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("[FirebaseSync] Không có log mới để sync.");
+                return 0;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[FirebaseSync] Đang sync {unsyncedLogs.Count} narration logs lên Firestore...");
+
+            var syncedIds = new List<int>();
+
+            foreach (var log in unsyncedLogs)
+            {
+                try
+                {
+                    var firestoreDoc = new
+                    {
+                        fields = new Dictionary<string, object>
+                        {
+                            ["poiId"] = new { integerValue = log.PoiId.ToString() },
+                            ["poiName"] = new { stringValue = log.PoiName ?? "" },
+                            ["language"] = new { stringValue = log.Language ?? "vi" },
+                            ["source"] = new { stringValue = log.Source ?? "geofence" },
+                            ["playedAt"] = new { timestampValue = log.PlayedAt.ToUniversalTime().ToString("o") }
+                        }
+                    };
+
+                    var json = JsonSerializer.Serialize(firestoreDoc);
+                    var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+                    var url = $"{BaseUrl}/narrationLogs";
+                    var response = await _http.PostAsync(url, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        syncedIds.Add(log.Id);
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[FirebaseSync] Log sync failed: {response.StatusCode}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[FirebaseSync] Log sync error: {ex.Message}");
+                }
+            }
+
+            // Đánh dấu đã sync thành công
+            if (syncedIds.Count > 0)
+            {
+                await _db.MarkLogsSyncedAsync(syncedIds);
+                System.Diagnostics.Debug.WriteLine($"[FirebaseSync] ✅ Đã sync {syncedIds.Count}/{unsyncedLogs.Count} logs lên Firestore!");
+            }
+
+            return syncedIds.Count;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[FirebaseSync] SyncLogs error: {ex.Message}");
+            return 0;
+        }
+    }
 }

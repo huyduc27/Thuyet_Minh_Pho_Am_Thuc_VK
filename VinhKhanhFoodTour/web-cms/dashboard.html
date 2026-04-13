@@ -187,18 +187,20 @@
                     </div>
                     <button class="btn btn-danger btn-sm" onclick="clearHistory()">🗑️ Xóa lịch sử</button>
                 </div>
+                <div id="historySourceStats" style="display:flex; gap:16px; padding:0 0 12px; font-size:13px; color:var(--text-muted);"></div>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
                                 <th>POI</th>
                                 <th>Ngôn ngữ</th>
+                                <th>Nguồn</th>
                                 <th>Thời gian</th>
                             </tr>
                         </thead>
                         <tbody id="historyTableBody">
                             <tr>
-                                <td colspan="3" class="empty-state">
+                                <td colspan="4" class="empty-state">
                                     <div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div>
                                 </td>
                             </tr>

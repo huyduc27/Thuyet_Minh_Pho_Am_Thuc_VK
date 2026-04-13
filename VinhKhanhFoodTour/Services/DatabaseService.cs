@@ -98,7 +98,7 @@ public class DatabaseService
 
     // ===== NarrationLog =====
 
-    public async Task<int> LogNarrationAsync(int poiId, string language)
+    public async Task<int> LogNarrationAsync(int poiId, string language, string source = "geofence", string poiName = "")
     {
         try
         {
@@ -107,7 +107,10 @@ public class DatabaseService
             {
                 PoiId = poiId,
                 PlayedAt = DateTime.Now,
-                Language = language
+                Language = language,
+                Source = source,
+                PoiName = poiName,
+                IsSynced = false
             };
             return await db.InsertAsync(log);
         }
@@ -144,6 +147,43 @@ public class DatabaseService
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"ClearLogs error: {ex}");
+        }
+    }
+
+    /// <summary>
+    /// Lấy danh sách log chưa đồng bộ lên Firestore
+    /// </summary>
+    public async Task<List<NarrationLog>> GetUnsyncedLogsAsync()
+    {
+        try
+        {
+            var db = await GetDatabaseAsync();
+            return await db.Table<NarrationLog>()
+                .Where(l => !l.IsSynced)
+                .ToListAsync();
+        }
+        catch
+        {
+            return new List<NarrationLog>();
+        }
+    }
+
+    /// <summary>
+    /// Đánh dấu các log đã sync thành công lên Firestore
+    /// </summary>
+    public async Task MarkLogsSyncedAsync(List<int> logIds)
+    {
+        try
+        {
+            var db = await GetDatabaseAsync();
+            foreach (var id in logIds)
+            {
+                await db.ExecuteAsync("UPDATE NarrationLog SET IsSynced = 1 WHERE Id = ?", id);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"MarkLogsSynced error: {ex}");
         }
     }
 

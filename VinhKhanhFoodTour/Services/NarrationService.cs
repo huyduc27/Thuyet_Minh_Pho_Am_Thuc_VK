@@ -15,6 +15,7 @@ public class NarrationService
     private int _currentPoiId;
     private CancellationTokenSource? _cts;
     private bool _isSpeaking;
+    private string _currentSource = "geofence";
 
     public event EventHandler<PointOfInterest>? NarrationStarted;
     public event EventHandler<PointOfInterest>? NarrationFinished;
@@ -67,6 +68,7 @@ public class NarrationService
 
         if (added > 0 && !_isProcessing)
         {
+            _currentSource = "geofence";
             await ProcessQueueAsync();
         }
     }
@@ -157,8 +159,8 @@ public class NarrationService
 
             System.Diagnostics.Debug.WriteLine($"=== TTS SPEAKING: '{text[..Math.Min(text.Length, 50)]}...' volume={settings.TtsVolume} ===");
             await TextToSpeech.Default.SpeakAsync(text, speechOptions, _cts.Token);
-            await _databaseService.LogNarrationAsync(poi.Id, lang);
-            System.Diagnostics.Debug.WriteLine($"=== TTS DONE: '{poi.Name}' ===");
+            await _databaseService.LogNarrationAsync(poi.Id, lang, _currentSource, poi.Name);
+            System.Diagnostics.Debug.WriteLine($"=== TTS DONE: '{poi.Name}' | source={_currentSource} ===");
         }
         catch (TaskCanceledException)
         {
@@ -201,6 +203,7 @@ public class NarrationService
         await StopAsync();
         await Task.Delay(200);
         _currentPoiId = poi.Id;
+        _currentSource = "manual";
         await SpeakSingleAsync(poi);
         _currentPoiId = 0;
     }
