@@ -48,6 +48,9 @@ public partial class App : Application
                     System.Diagnostics.Debug.WriteLine(success
                         ? "[App] ✅ Đồng bộ Firebase xong!"
                         : "[App] ⚠️ Đồng bộ thất bại, dùng dữ liệu cũ.");
+
+                    // Đẩy narration logs lên Firestore (fire-and-forget)
+                    _ = _syncService.SyncLogsToFirestoreAsync();
                 }
                 else
                 {
@@ -56,6 +59,7 @@ public partial class App : Application
 
                 // === Bước 2: Start Geofence SAU KHI sync xong (đảm bảo có POI) ===
                 _geofenceService.PoisInRange += OnPoisInRange;
+                _narrationService.NarrationFinished += OnNarrationFinished;
                 await _geofenceService.StartMonitoringAsync();
 
                 // === Bước 3: Start GPS tracking ===
@@ -87,6 +91,26 @@ public partial class App : Application
     }
 
     /// <summary>
+    /// Khi phát thuyết minh xong → đẩy log lên Firestore ngay lập tức
+    /// </summary>
+    private async void OnNarrationFinished(object? sender, PointOfInterest poi)
+    {
+        try
+        {
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+            {
+                System.Diagnostics.Debug.WriteLine($"[App] 📤 Narration xong '{poi.Name}' → Sync log lên Firestore...");
+                var count = await _syncService.SyncLogsToFirestoreAsync();
+                System.Diagnostics.Debug.WriteLine($"[App] ✅ Đã sync {count} log!");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[App] Sync log error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// Khi app mở lại từ nền (Resume) → đồng bộ Firebase lần nữa → refresh geofence.
     /// </summary>
     protected override void OnResume()
@@ -110,6 +134,9 @@ public partial class App : Application
                     await _geofenceService.RefreshPoisAsync();
                     System.Diagnostics.Debug.WriteLine("[App] ✅ Đồng bộ + Refresh geofence xong!");
                 }
+
+                // Đẩy narration logs lên Firestore
+                _ = _syncService.SyncLogsToFirestoreAsync();
             }
         }
         catch (Exception ex)
