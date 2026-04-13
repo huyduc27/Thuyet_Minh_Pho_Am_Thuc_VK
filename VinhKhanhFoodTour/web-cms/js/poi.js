@@ -6,14 +6,53 @@ let allPois = [];
 
 async function loadPois() {
     try {
-        const snapshot = await db.collection('pois').orderBy('name').get();
-        allPois = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // 1. Phân quyền truy vấn dữ liệu
+        if (window.currentUser && window.currentUser.role === 'owner') {
+            // Dành cho CHỦ QUÁN: Dùng cái shopIds mình dán trong Database hồi nãy 
+            // để vào kho lấy danh sách quán đó ra.
+            if (!window.currentUser.shopIds || window.currentUser.shopIds.length === 0) {
+                showToast('Lỗi: Bạn chưa được cài mã quán ăn (shopIds) trong Database!', 'error');
+                allPois = [];
+            } else {
+                const promises = window.currentUser.shopIds.map(id => db.collection('pois').doc(id).get());
+                const docs = await Promise.all(promises);
+                const validDocs = docs.filter(d => d.exists);
+                allPois = validDocs.map(doc => ({ id: doc.id, ...doc.data() })); 
+            }
+        } else {
+            // Dành cho ADMIN: Lôi hết tất cả ra
+            const snapshot = await db.collection('pois').orderBy('name').get();
+            allPois = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        }
+
+        // 2. Chắp vá cái bảng danh sách hiện ra màn hình
         renderPoiTable(allPois);
+
+        // 3. "Phong ấn" các nút Tối Cao nếu là Chủ quán (Giấu nút Thêm, Xóa)
+        if (window.currentUser && window.currentUser.role === 'owner') {
+            // Hiển thị lại nút [+ Thêm POI] để Chủ Quán có thể tạo Request
+            const addBtn = document.querySelector('button[onclick="openPoiModal()"]');
+            if (addBtn) addBtn.style.display = 'inline-block';
+
+            // Ẩn thanh tìm kiếm (có mỗi 1 quán thì tìm kiếm cái gì nữa :D)
+            const searchBar = document.querySelector('#section-poi .search-bar');
+            if (searchBar) searchBar.style.display = 'none';
+
+            // Ẩn luôn nút Thùng rác (Xóa quán) ở thao tác
+            document.querySelectorAll('.action-btns .delete').forEach(btn => {
+                btn.style.display = 'none';
+            });
+
+            // Tải danh sách yêu cầu của Chủ quán
+            loadOwnerRequests();
+        }
+
     } catch (error) {
         console.error('Error loading POIs:', error);
         showToast('Lỗi tải danh sách POI', 'error');
     }
 }
+
 
 function renderPoiTable(pois) {
     const tbody = document.getElementById('poiTableBody');
@@ -92,6 +131,26 @@ function openPoiModal(editData = null) {
         document.getElementById('poiDescZh').value = editData.descriptionZh || '';
         document.getElementById('poiDescKo').value = editData.descriptionKo || '';
     }
+
+    // Nếu là Owner: Disable Location, Radius, Priority, Category (Chỉ cho nhập Text)
+    if (window.currentUser && window.currentUser.role === 'owner') {
+        const disabledIds = ['poiLat', 'poiLng', 'poiAddress', 'poiRadius', 'poiPriority', 'poiCategory', 'poiRating'];
+        disabledIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = true;
+                el.style.backgroundColor = '#f0f0f0';
+            }
+        });
+        document.getElementById('poiModalTitle').innerHTML += ' <br><small style="color:#e94560; font-size:12px;">(Admin sẽ duyệt thông tin trước khi áp dụng)</small>';
+    } else {
+        // Trả lại form bình thường cho Admin
+        const disabledIds = ['poiLat', 'poiLng', 'poiAddress', 'poiRadius', 'poiPriority', 'poiCategory', 'poiRating'];
+        disabledIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.disabled = false; el.style.backgroundColor = ''; }
+        });
+    }
 }
 
 function closePoiModal() {
@@ -132,13 +191,28 @@ async function savePoi() {
     }
 
     try {
-        if (editId) {
-            await db.collection('pois').doc(editId).update(data);
-            showToast('Đã cập nhật POI thành công!');
+        if (window.currentUser && window.currentUser.role === 'owner') {
+            // Luồng của Owner: Bắn Request để chờ duyệt thay vì lưu thẳng
+            await db.collection('poiRequests').add({
+                type: editId ? 'EDIT' : 'ADD',
+                targetPoiId: editId || null,
+                requestedData: data,
+                status: 'PENDING',
+                requestedBy: window.currentUser.email || 'Không rõ email',
+                requestedByUid: window.currentUser.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            showToast('Đã gửi yêu cầu cho Admin phê duyệt!');
         } else {
-            data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-            await db.collection('pois').add(data);
-            showToast('Đã thêm POI mới thành công!');
+            // Luồng của Admin: Lưu thẳng cánh
+            if (editId) {
+                await db.collection('pois').doc(editId).update(data);
+                showToast('Đã cập nhật POI thành công!');
+            } else {
+                data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                await db.collection('pois').add(data);
+                showToast('Đã thêm POI mới thành công!');
+            }
         }
 
         closePoiModal();
@@ -330,4 +404,73 @@ async function seedPoisToFirestore() {
         console.error('Seed error:', error);
         showToast('Lỗi seed data: ' + error.message, 'error');
     }
+}
+
+// ------ LỊCH SỬ YÊU CẦU DÀNH CHO CHỦ QUÁN ------
+async function loadOwnerRequests() {
+    try {
+        const authEmail = window.currentUser ? window.currentUser.email : '';
+        const uid = window.currentUser ? window.currentUser.uid : '';
+        // Truy vấn xem thẻ có khớp 1 trong 2 giá trị này không
+        const query = await db.collection('poiRequests')
+            .where('requestedBy', 'in', [authEmail, uid])
+            .get();
+        if (query.empty) return;
+
+        const requests = query.docs.map(doc => ({id: doc.id, ...doc.data()}));
+        // Sắp xếp local để tránh dính lỗi bắt tạo Index trên Firebase
+        requests.sort((a, b) => {
+            const tA = a.createdAt ? a.createdAt.toMillis() : 0;
+            const tB = b.createdAt ? b.createdAt.toMillis() : 0;
+            return tB - tA;
+        });
+
+        let reqHtml = '<ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;">';
+
+        requests.forEach(req => {
+            let statusBadge = '';
+            if (req.status === 'PENDING') statusBadge = '<span style="background:#f39c12; color:#fff; padding:3px 8px; border-radius:4px; font-size:11px;">ĐANG CHỜ</span>';
+            else if (req.status === 'APPROVED') statusBadge = '<span style="background:#2ecc71; color:#fff; padding:3px 8px; border-radius:4px; font-size:11px;">ĐÃ DUYỆT</span>';
+            else if (req.status === 'REJECTED') statusBadge = '<span style="background:#e74c3c; color:#fff; padding:3px 8px; border-radius:4px; font-size:11px;">BỊ TỪ CHỐI</span>';
+
+            const type = req.type === 'ADD' ? 'Thêm mới' : 'Chỉnh sửa';
+            const name = req.requestedData?.name || 'Không rõ';
+
+            let rejectInfo = '';
+            if (req.status === 'REJECTED' && req.rejectReason) {
+                rejectInfo = `<div style="color:#e74c3c; font-size:13px; margin-top:6px; padding-left:12px; border-left:3px solid #e74c3c;"><strong>Lý do từ chối:</strong> ${req.rejectReason}</div>`;
+            }
+
+            reqHtml += `
+                <li style="border:1px solid #ddd; background:#fafafa; border-radius:8px; padding:12px; margin-bottom:4px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span><strong style="color:var(--accent);">[${type}]</strong> ${name}</span>
+                        ${statusBadge}
+                    </div>
+                    ${rejectInfo}
+                    <div style="font-size:11px; color:#888; margin-top:4px;">Tạo lúc: ${req.createdAt ? new Date(req.createdAt.toDate()).toLocaleString('vi-VN') : 'Mới'}</div>
+                </li>
+            `;
+        });
+
+        reqHtml += '</ul>';
+
+        // Đổ vảo Modal container
+        const container = document.getElementById('ownerRequestsContainer');
+        if (container) container.innerHTML = reqHtml;
+
+        // Hiện nút bấm Notification
+        const btn = document.getElementById('btnOwnerRequests');
+        if (btn) btn.style.display = 'inline-block';
+
+    } catch(err) {
+        console.error('Error load owner requests', err);
+    }
+}
+
+function openOwnerRequestsModal() {
+    document.getElementById('ownerRequestsModal').classList.add('show');
+}
+function closeOwnerRequestsModal() {
+    document.getElementById('ownerRequestsModal').classList.remove('show');
 }

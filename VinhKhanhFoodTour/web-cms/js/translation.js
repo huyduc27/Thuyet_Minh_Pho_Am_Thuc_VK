@@ -6,7 +6,19 @@ let translationPois = [];
 
 async function loadTranslations() {
     try {
-        const snapshot = await db.collection('pois').orderBy('name').get();
+        let snapshot;
+        if (window.currentUser && window.currentUser.role === 'owner') {
+            if (window.currentUser.shopIds && window.currentUser.shopIds.length > 0) {
+                const promises = window.currentUser.shopIds.map(id => db.collection('pois').doc(id).get());
+                const docs = await Promise.all(promises);
+                const validDocs = docs.filter(d => d.exists);
+                snapshot = { empty: validDocs.length === 0, docs: validDocs, size: validDocs.length };
+            } else {
+                snapshot = { empty: true, docs: [], size: 0 };
+            }
+        } else {
+            snapshot = await db.collection('pois').orderBy('name').get();
+        }
         translationPois = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderTranslations(translationPois);
     } catch (error) {

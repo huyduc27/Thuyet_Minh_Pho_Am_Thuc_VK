@@ -16,7 +16,19 @@ async function loadQrCodes() {
     container.innerHTML = '<div class="loading-overlay"><span class="loading-spinner"></span> Đang tạo mã QR...</div>';
 
     try {
-        const snapshot = await db.collection('pois').orderBy('name').get();
+        let snapshot;
+        if (window.currentUser && window.currentUser.role === 'owner') {
+            if (window.currentUser.shopIds && window.currentUser.shopIds.length > 0) {
+                const promises = window.currentUser.shopIds.map(id => db.collection('pois').doc(id).get());
+                const docs = await Promise.all(promises);
+                const validDocs = docs.filter(d => d.exists);
+                snapshot = { empty: validDocs.length === 0, docs: validDocs, size: validDocs.length };
+            } else {
+                snapshot = { empty: true, docs: [], size: 0 };
+            }
+        } else {
+            snapshot = await db.collection('pois').orderBy('name').get();
+        }
 
         if (snapshot.empty) {
             container.innerHTML = `<div class="empty-state"><div class="icon">📱</div><p>Chưa có POI nào để tạo QR</p></div>`;

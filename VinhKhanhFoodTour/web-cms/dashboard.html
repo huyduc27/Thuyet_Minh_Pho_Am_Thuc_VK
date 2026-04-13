@@ -27,6 +27,9 @@
                 <button class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
                     <span class="icon">📊</span> Tổng quan
                 </button>
+                <button class="nav-item" id="nav-item-approvals" data-section="approvals" onclick="switchSection('approvals')">
+                    <span class="icon">🔔</span> Duyệt Yêu Cầu
+                </button>
                 <button class="nav-item" data-section="poi" onclick="switchSection('poi')">
                     <span class="icon">📍</span> Quản lý POI
                 </button>
@@ -92,6 +95,53 @@
                 </div>
             </div>
 
+            <!-- ===== APPROVALS ===== -->
+            <div class="section-panel" id="section-approvals">
+                <div class="page-header">
+                    <div>
+                        <h1>🔔 Duyệt Yêu Cầu</h1>
+                        <p class="description">Phê duyệt yêu cầu thêm/sửa quán từ Chủ cửa hàng</p>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Chủ quán (ID)</th>
+                                <th>Hành động</th>
+                                <th>Tên quán yêu cầu</th>
+                                <th>Ngày tạo</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="approvalsTableBody">
+                            <tr>
+                                <td colspan="6" class="empty-state">
+                                    <div class="loading-overlay"><span class="loading-spinner"></span> Đang tải...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal từ chối -->
+            <div class="modal-overlay" id="rejectReasonModal">
+                <div class="modal" style="max-width: 400px; z-index: 10001">
+                    <h2>❌ Từ chối yêu cầu</h2>
+                    <input type="hidden" id="rejectReqId">
+                    <div class="form-group">
+                        <label>Lý do từ chối (Ghi chú cho Chủ quán)</label>
+                        <textarea id="rejectReasonText" placeholder="VD: Sai địa chỉ, tên không hợp lệ..." style="height: 100px;"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary" onclick="closeRejectModal()">Hủy</button>
+                        <button class="btn" style="background:#e74c3c; color:#fff;" onclick="confirmReject()">Xác nhận từ chối</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- ===== POI MANAGEMENT ===== -->
             <div class="section-panel" id="section-poi">
                 <div class="page-header">
@@ -99,7 +149,12 @@
                         <h1>📍 Quản lý POI</h1>
                         <p class="description">Thêm, sửa, xóa các điểm ẩm thực</p>
                     </div>
-                    <button class="btn btn-primary" onclick="openPoiModal()">+ Thêm POI</button>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-secondary" id="btnOwnerRequests" style="display:none; background:#ff9f43; color:#fff;" onclick="openOwnerRequestsModal()">
+                            🔔 Lịch sử Yêu cầu
+                        </button>
+                        <button class="btn btn-primary" onclick="openPoiModal()">+ Thêm POI</button>
+                    </div>
                 </div>
                 <div class="search-bar">
                     <input type="text" id="poiSearch" placeholder="🔍 Tìm kiếm quán ăn..." oninput="filterPois()">
@@ -406,6 +461,19 @@
         </div>
     </div>
 
+    <!-- Modal Lịch sử yêu cầu (Owner) -->
+    <div class="modal-overlay" id="ownerRequestsModal">
+        <div class="modal" style="max-width: 600px; max-height: 80vh; display:flex; flex-direction:column; z-index: 10001">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 style="margin: 0; color:var(--text-primary);">📝 Lịch sử yêu cầu</h2>
+                <button class="btn btn-secondary btn-sm" onclick="closeOwnerRequestsModal()">❌ Đóng</button>
+            </div>
+            <div id="ownerRequestsContainer" style="overflow-y: auto; flex:1; padding-right:8px;">
+                <!-- HTML rendered here -->
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -422,6 +490,7 @@
     <script src="js/audio.js"></script>
     <script src="js/history.js"></script>
     <script src="js/tour.js"></script>
+    <script src="js/approvals.js"></script>
     <!-- QR Code -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="js/qrcode-manager.js"></script>

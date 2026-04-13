@@ -59,17 +59,41 @@ if (loginForm) {
 }
 
 // Utility: Check auth on protected pages
+// Utility: Check auth on protected pages
 function requireAuth() {
     return new Promise((resolve) => {
-        auth.onAuthStateChanged(user => {
+        // Thêm chữ async ở đây để nhận phản hồi từ Database
+        auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = 'index.html';
             } else {
-                resolve(user);
+                try {
+                    // 1. Chóp lấy thông tin quyền từ Database
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+
+                    if (userDoc.exists) {
+                        // 2. Nếu tìm thấy dữ liệu, ép vào object user
+                        const userData = userDoc.data();
+                        user.role = userData.role;       // gán quyền (admin / owner)
+                        user.shopIds = userData.shopIds || [];   // gán thẻ shopIds mới
+
+                        // 3. Phê duyệt thành công, cho phép vào dashboard
+                        resolve(user);
+                    } else {
+                        // 4. Nếu đăng nhập đúng email/pass nhưng Firebase không có UID này ở bảng users
+                        alert("Tài khoản của bạn chưa được cấp quyền truy cập hệ thống!");
+                        await auth.signOut(); // Bắt đăng xuất ngay
+                        window.location.href = 'index.html';
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi kiểm tra dữ liệu phân quyền:", error);
+                    alert("Lỗi truy vấn quyền dữ liệu: " + error.message);
+                }
             }
         });
     });
 }
+
 
 // Utility: Logout
 function logout() {
