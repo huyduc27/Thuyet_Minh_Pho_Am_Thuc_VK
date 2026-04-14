@@ -11,7 +11,7 @@ async function loadPois() {
             // Dành cho CHỦ QUÁN: Dùng cái shopIds mình dán trong Database hồi nãy 
             // để vào kho lấy danh sách quán đó ra.
             if (!window.currentUser.shopIds || window.currentUser.shopIds.length === 0) {
-                showToast('Lỗi: Bạn chưa được cài mã quán ăn (shopIds) trong Database!', 'error');
+                // Đây là chuyện bình thường với user mới đăng ký, không cần hiển thị thông báo lỗi
                 allPois = [];
             } else {
                 const promises = window.currentUser.shopIds.map(id => db.collection('pois').doc(id).get());
@@ -228,8 +228,22 @@ async function deletePoi(id, name) {
     if (!confirm(`Bạn có chắc muốn xóa "${name}"?`)) return;
 
     try {
+        // 1. Xóa POI khỏi bảng danh sách POIs
         await db.collection('pois').doc(id).delete();
-        showToast(`Đã xóa "${name}"`);
+        
+        // 2. TÌM VÀ DIỆT: Xóa sạch ID của Quán này khỏi túi (shopIds) của tất cả Owner đang giữ nó
+        const usersSnap = await db.collection('users').where('shopIds', 'array-contains', id).get();
+        if (!usersSnap.empty) {
+            const batch = db.batch();
+            usersSnap.docs.forEach(doc => {
+                batch.update(doc.ref, {
+                    shopIds: firebase.firestore.FieldValue.arrayRemove(id)
+                });
+            });
+            await batch.commit(); // Xóa đồng loạt khỏi tất cả user liên quan
+        }
+
+        showToast(`Đã xóa "${name}" và làm sạch dữ liệu thành công!`);
         loadPois();
         loadDashboardStats();
     } catch (error) {

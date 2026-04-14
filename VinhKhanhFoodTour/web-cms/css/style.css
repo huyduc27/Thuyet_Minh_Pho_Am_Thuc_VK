@@ -798,7 +798,8 @@ tbody tr:last-child td {
 }
 
 @keyframes fadeOut {
-    to { opacity: 0; transform: translateX(100px); }
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100px); opacity: 0; }
 }
 
 /* ========================================

@@ -12,7 +12,13 @@
 </head>
 
 <body>
-    <div class="app-layout">
+    <!-- Màn hình chờ rà soát quyền -->
+    <div id="initialLoader" class="initial-loader">
+        <div class="spinner"></div>
+        <p>Đang tải dữ liệu phân quyền...</p>
+    </div>
+
+    <div class="app-layout" id="mainAppLayout" style="opacity: 0; pointer-events: none; transition: opacity 0.5s ease;">
         <!-- ============ SIDEBAR ============ -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -47,6 +53,9 @@
                 </button>
                 <button class="nav-item" data-section="qrcode" onclick="switchSection('qrcode')">
                     <span class="icon">📱</span> Mã QR
+                </button>
+                <button class="nav-item" data-section="users" onclick="switchSection('users')">
+                    <span class="icon">👥</span> Quản lý Owner
                 </button>
             </nav>
 
@@ -240,7 +249,7 @@
                         <h1>📋 Lịch sử sử dụng</h1>
                         <p class="description">Xem log thuyết minh đã phát</p>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="clearHistory()">🗑️ Xóa lịch sử</button>
+                    <button class="btn btn-danger btn-sm" id="btnClearHistory" onclick="clearHistory()">🗑️ Xóa lịch sử</button>
                 </div>
                 <div id="historySourceStats" style="display:flex; gap:16px; padding:0 0 12px; font-size:13px; color:var(--text-muted);"></div>
                 <div class="table-container">
@@ -300,6 +309,37 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Màn hình quản lý Owner (Admin only) -->
+    <div id="section-users" class="section-panel" style="position: absolute; top: 0; left: 260px; right: 0; padding: 32px; background: var(--bg-primary); min-height: 100vh;">
+        <div class="page-header">
+            <div>
+                <h1>👥 Quản trị Chủ Quán</h1>
+                <p class="description">Điều phối tài khoản và phân quyền cho người dùng</p>
+            </div>
+        </div>
+        
+        <div class="table-container" style="margin-top: 24px;">
+            <div class="table-header">
+                <h3>Danh sách Chủ Quán (Owner)</h3>
+                <button class="btn btn-primary btn-sm" onclick="loadUsers()">🔄 Làm mới</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Trạng thái</th>
+                        <th>Số lượng Quán (POI)</th>
+                        <th>Ngày đăng ký</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr><td colspan="5"><div class="empty-state"><div class="icon">⏳</div><p>Đang tải dữ liệu...</p></div></td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- ============ POI MODAL ============ -->
@@ -493,6 +533,7 @@
     <script src="js/history.js"></script>
     <script src="js/tour.js"></script>
     <script src="js/approvals.js"></script>
+    <script src="js/users.js"></script>
     <!-- QR Code -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="js/qrcode-manager.js"></script>

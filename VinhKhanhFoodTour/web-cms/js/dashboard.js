@@ -19,7 +19,7 @@ requireAuth().then(user => {
     // 2. CHECK ROLE: Nếu là Chủ cửa hàng (owner) thì ẨN một số thứ đi
     if (user.role === 'owner') {
         // Ẩn Dashboard, Tour và Approvals, còn lại (POI, Bản dịch, Audio, History, QR) vẫn hiển thị
-        const restrictedMenus = ['dashboard', 'tour', 'approvals'];
+        const restrictedMenus = ['dashboard', 'tour', 'approvals', 'users'];
 
         restrictedMenus.forEach(menu => {
             const menuElement = document.querySelector(`.nav-item[data-section="${menu}"]`);
@@ -28,12 +28,26 @@ requireAuth().then(user => {
             }
         });
 
+        // Ẩn nút xóa lịch sử đối với Chủ quán
+        const btnClear = document.getElementById('btnClearHistory');
+        if (btnClear) btnClear.style.display = 'none';
+
         // ÁP GIẢI CHỦ QUÁN: Vừa vào web là đẩy bắt buộc sang tab Quản lý POI luôn
         switchSection('poi');
 
     } else {
         // 3. Nếu role là 'admin', mặc định vào sẽ thấy và đọc dữ liệu Tổng quan
         loadDashboardStats();
+    }
+
+    // 4. KIỂM TRA QUYỀN XONG: Giấu màn hình Loading và mở bức màn Sân khấu
+    const loader = document.getElementById('initialLoader');
+    const appLayout = document.getElementById('mainAppLayout');
+    if (loader && appLayout) {
+        loader.style.opacity = '0';
+        appLayout.style.opacity = '1';
+        appLayout.style.pointerEvents = 'all';
+        setTimeout(() => loader.style.display = 'none', 500); // Đợi hiệu ứng mờ kết thúc rồi xóa hẳn
     }
 });
 
@@ -58,6 +72,7 @@ function switchSection(section) {
         case 'history': loadHistory(); break;
         case 'tour': loadTours(); break;
         case 'qrcode': loadQrCodes(); break;
+        case 'users': loadUsers(); break;
     }
 }
 
