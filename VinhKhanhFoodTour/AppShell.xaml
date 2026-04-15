@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:VinhKhanhFoodTour.Views"
+    xmlns:services="clr-namespace:VinhKhanhFoodTour.Services"
     Shell.FlyoutBehavior="Disabled"
     Shell.TabBarBackgroundColor="White"
     Shell.TabBarTitleColor="#e94560"
@@ -12,13 +13,14 @@
     Shell.ForegroundColor="#1a1a2e">
 
     <TabBar>
-        <ShellContent Title="Danh sach"
+        <ShellContent Route="PoiListTab"
+                      Title="{Binding [Tab_List], Source={x:Static services:LocalizationResourceManager.Instance}}"
                       Icon="tab_list.svg"
                       ContentTemplate="{DataTemplate views:PoiListPage}"/>
-        <ShellContent Title="Ban do"
+        <ShellContent Title="{Binding [Tab_Map], Source={x:Static services:LocalizationResourceManager.Instance}}"
                       Icon="tab_map.svg"
                       ContentTemplate="{DataTemplate views:MapPage}"/>
-        <ShellContent Title="Cai dat"
+        <ShellContent Title="{Binding [Tab_Settings], Source={x:Static services:LocalizationResourceManager.Instance}}"
                       Icon="tab_settings.svg"
                       ContentTemplate="{DataTemplate views:SettingsPage}"/>
     </TabBar>

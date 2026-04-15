@@ -2,9 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:VinhKhanhFoodTour.ViewModels"
+             xmlns:services="clr-namespace:VinhKhanhFoodTour.Services"
              x:Class="VinhKhanhFoodTour.Views.SettingsPage"
              x:DataType="vm:SettingsViewModel"
-             Title="Cai dat"
+             Title="{Binding [Tab_Settings], Source={x:Static services:LocalizationResourceManager.Instance}}"
              BackgroundColor="#F8F9FA"
              Shell.BackgroundColor="White"
              Shell.ForegroundColor="#1a1a2e">
@@ -12,8 +13,73 @@
     <ScrollView>
         <VerticalStackLayout Spacing="12" Padding="16,14">
 
-            <Label Text="CAI DAT" FontSize="20" TextColor="#1a1a2e" FontAttributes="Bold" 
+            <Label Text="{Binding [Settings_Title], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="20" TextColor="#1a1a2e" FontAttributes="Bold" 
                    CharacterSpacing="1" Margin="4,0,0,4"/>
+
+            <!-- === Account Card === -->
+            <Border BackgroundColor="White" StrokeShape="RoundRectangle 14"
+                    Stroke="#EEEEEE" StrokeThickness="1" Padding="16"
+                    Shadow="{OnPlatform Android={Shadow Brush='#08000000', Offset='0,1', Radius=4}}">
+                <VerticalStackLayout Spacing="10">
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="👤" FontSize="18"/>
+                        <Label Text="Tài khoản" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                    <BoxView HeightRequest="1" Color="#F0F0F0"/>
+
+                    <!-- Logged In State -->
+                    <VerticalStackLayout IsVisible="{Binding IsLoggedIn}" Spacing="10">
+                        <HorizontalStackLayout Spacing="12">
+                            <Border BackgroundColor="#e94560"
+                                    StrokeShape="RoundRectangle 22"
+                                    Stroke="Transparent"
+                                    WidthRequest="44" HeightRequest="44">
+                                <Label Text="{Binding UserDisplayName[0]}"
+                                       TextColor="White"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+                            </Border>
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="{Binding UserDisplayName}"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="#1a1a2e"/>
+                                <Label Text="{Binding UserEmail}"
+                                       FontSize="12"
+                                       TextColor="#999"/>
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+                        <Button Text="🚪  Đăng xuất"
+                                Command="{Binding LogoutCommand}"
+                                BackgroundColor="#FFF0F0"
+                                TextColor="#e94560"
+                                CornerRadius="12"
+                                BorderColor="#FFCCCC"
+                                BorderWidth="1"
+                                FontSize="14"
+                                HeightRequest="44"/>
+                    </VerticalStackLayout>
+
+                    <!-- Logged Out State -->
+                    <VerticalStackLayout IsVisible="{Binding IsLoggedIn, Converter={x:StaticResource InvertedBoolConverter}}" Spacing="10">
+                        <Label Text="Đăng nhập để sử dụng bản đồ và nghe thuyết minh tự động."
+                               FontSize="13"
+                               TextColor="#999"
+                               LineHeight="1.4"/>
+                        <Button Text="🔑  Đăng nhập / Đăng ký"
+                                Command="{Binding GoToLoginCommand}"
+                                BackgroundColor="#e94560"
+                                TextColor="White"
+                                CornerRadius="12"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                HeightRequest="44"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
 
             <!-- Language -->
             <Border BackgroundColor="White" StrokeShape="RoundRectangle 14"
@@ -22,15 +88,15 @@
                 <VerticalStackLayout Spacing="10">
                     <HorizontalStackLayout Spacing="8">
                         <Label Text="&#127760;" FontSize="18"/>
-                        <Label Text="Ngon ngu" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
+                        <Label Text="{Binding [Settings_Language], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
                                VerticalOptions="Center"/>
                     </HorizontalStackLayout>
                     <BoxView HeightRequest="1" Color="#F0F0F0"/>
-                    <Label Text="Chon ngon ngu thuyet minh:" FontSize="13" TextColor="#999"/>
+                    <Label Text="{Binding [Settings_SelectLanguageLabel], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="13" TextColor="#999"/>
                     <Picker ItemsSource="{Binding LanguageOptions}"
                             SelectedIndex="{Binding SelectedLanguageIndex}"
                             TextColor="#333" TitleColor="#999"
-                            Title="Chon ngon ngu"
+                            Title="{Binding [Settings_PickLanguage], Source={x:Static services:LocalizationResourceManager.Instance}}"
                             BackgroundColor="#F8F9FA"/>
                 </VerticalStackLayout>
             </Border>
@@ -42,14 +108,14 @@
                 <VerticalStackLayout Spacing="10">
                     <HorizontalStackLayout Spacing="8">
                         <Label Text="&#128205;" FontSize="18"/>
-                        <Label Text="Vung phat hien" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
+                        <Label Text="{Binding [Settings_Geofence], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
                                VerticalOptions="Center"/>
                     </HorizontalStackLayout>
                     <BoxView HeightRequest="1" Color="#F0F0F0"/>
-                    <Label Text="Dieu chinh he so de tang/giam do nhay phat hien." 
+                    <Label Text="{Binding [Settings_GeofenceDesc], Source={x:Static services:LocalizationResourceManager.Instance}}" 
                            FontSize="11" TextColor="#BBB" LineHeight="1.4"/>
                     <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
-                        <Label Text="Do nhay:" FontSize="14" TextColor="#555" VerticalOptions="Center"/>
+                        <Label Text="{Binding [Settings_Sensitivity], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="14" TextColor="#555" VerticalOptions="Center"/>
                         <Label Grid.Column="1" Text="{Binding RadiusMultiplierText}" FontSize="16" 
                                TextColor="#2E7D32" FontAttributes="Bold"/>
                     </Grid>
@@ -57,9 +123,11 @@
                             MinimumTrackColor="#e94560" MaximumTrackColor="#E0E0E0"
                             ThumbColor="#e94560"/>
                     <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
-                        <Label Text="Cooldown:" FontSize="14" TextColor="#555" VerticalOptions="Center"/>
-                        <Label Grid.Column="1" Text="{Binding CooldownText}" FontSize="16" 
-                               TextColor="#2E7D32" FontAttributes="Bold"/>
+                        <Label Text="{Binding [Settings_Cooldown], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="14" TextColor="#555" VerticalOptions="Center"/>
+                        <HorizontalStackLayout Grid.Column="1" Spacing="4">
+                            <Label Text="{Binding CooldownMinutes}" FontSize="16" TextColor="#2E7D32" FontAttributes="Bold"/>
+                            <Label Text="{Binding [Settings_Minutes], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="16" TextColor="#2E7D32" FontAttributes="Bold"/>
+                        </HorizontalStackLayout>
                     </Grid>
                     <Slider Minimum="1" Maximum="60" Value="{Binding CooldownMinutes}"
                             MinimumTrackColor="#e94560" MaximumTrackColor="#E0E0E0"
@@ -74,24 +142,24 @@
                 <VerticalStackLayout Spacing="10">
                     <HorizontalStackLayout Spacing="8">
                         <Label Text="&#128264;" FontSize="18"/>
-                        <Label Text="Thuyet minh" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
+                        <Label Text="{Binding [Settings_Narration], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
                                VerticalOptions="Center"/>
                     </HorizontalStackLayout>
                     <BoxView HeightRequest="1" Color="#F0F0F0"/>
                     <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="Tu dong phat:" FontSize="14" TextColor="#555" VerticalOptions="Center"/>
+                        <Label Text="{Binding [Settings_AutoPlay], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="14" TextColor="#555" VerticalOptions="Center"/>
                         <Switch Grid.Column="1" IsToggled="{Binding AutoNarrate}" 
                                 OnColor="#e94560" ThumbColor="White"/>
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
-                        <Label Text="Am luong:" FontSize="14" TextColor="#555" VerticalOptions="Center"/>
+                        <Label Text="{Binding [Settings_Volume], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="14" TextColor="#555" VerticalOptions="Center"/>
                         <Label Grid.Column="1" Text="{Binding TtsVolume, StringFormat='{0:P0}'}" 
                                FontSize="14" TextColor="#2E7D32" FontAttributes="Bold"/>
                     </Grid>
                     <Slider Minimum="0" Maximum="1" Value="{Binding TtsVolume}"
                             MinimumTrackColor="#e94560" MaximumTrackColor="#E0E0E0"
                             ThumbColor="#e94560"/>
-                    <Button Text="&#9654;  Thu TTS" Command="{Binding TestTtsCommand}"
+                    <Button Text="{Binding [Settings_TestTTS], Source={x:Static services:LocalizationResourceManager.Instance}}" Command="{Binding TestTtsCommand}"
                             BackgroundColor="#e94560" TextColor="White"
                             CornerRadius="12" FontAttributes="Bold" FontSize="14"
                             HeightRequest="44" Margin="0,4,0,0"/>
@@ -105,11 +173,11 @@
                 <VerticalStackLayout Spacing="10">
                     <HorizontalStackLayout Spacing="8">
                         <Label Text="&#128451;" FontSize="18"/>
-                        <Label Text="Du lieu" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
+                        <Label Text="{Binding [Settings_Data], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
                                VerticalOptions="Center"/>
                     </HorizontalStackLayout>
                     <BoxView HeightRequest="1" Color="#F0F0F0"/>
-                    <Button Text="Xoa lich su thuyet minh" 
+                    <Button Text="{Binding [Settings_ClearHistory], Source={x:Static services:LocalizationResourceManager.Instance}}" 
                             Command="{Binding ClearNarrationHistoryCommand}"
                             BackgroundColor="#FFF0F0" TextColor="#e94560"
                             CornerRadius="12" BorderColor="#FFCCCC" BorderWidth="1"
@@ -124,14 +192,14 @@
                 <VerticalStackLayout Spacing="5">
                     <HorizontalStackLayout Spacing="8">
                         <Label Text="&#9432;" FontSize="18" TextColor="#CCC"/>
-                        <Label Text="Thong tin" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
+                        <Label Text="{Binding [Settings_About], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
                                VerticalOptions="Center"/>
                     </HorizontalStackLayout>
                     <BoxView HeightRequest="1" Color="#F0F0F0"/>
-                    <Label Text="Pho Am Thuc Vinh Khanh" FontSize="14" TextColor="#333" Margin="0,4,0,0"/>
-                    <Label Text="Ung dung thuyet minh da ngon ngu" FontSize="12" TextColor="#999"/>
-                    <Label Text="Phien ban 1.0.0" FontSize="12" TextColor="#BBB"/>
-                    <Label Text="2026 - Do an .NET MAUI" FontSize="11" TextColor="#DDD"/>
+                    <Label Text="{Binding [Settings_AppTitle], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="14" TextColor="#333" Margin="0,4,0,0"/>
+                    <Label Text="{Binding [Settings_AppDesc], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="12" TextColor="#999"/>
+                    <Label Text="{Binding [Settings_Version], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="12" TextColor="#BBB"/>
+                    <Label Text="{Binding [Settings_AppFoot], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="11" TextColor="#DDD"/>
                 </VerticalStackLayout>
             </Border>
 

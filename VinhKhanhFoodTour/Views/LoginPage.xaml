@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:VinhKhanhFoodTour.ViewModels"
+             x:Class="VinhKhanhFoodTour.Views.LoginPage"
+             x:DataType="vm:AuthViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#0f0f23"
+             Title="Đăng nhập">
+
+    <ScrollView>
+        <Grid RowDefinitions="*, Auto" Padding="0">
+
+            <!-- Background gradient accent -->
+            <BoxView Grid.Row="0" Grid.RowSpan="2"
+                     Color="#0f0f23" VerticalOptions="Fill"/>
+
+            <!-- Top decorative blob -->
+            <Ellipse Grid.Row="0"
+                     HeightRequest="300" WidthRequest="300"
+                     Fill="#12e9456020"
+                     HorizontalOptions="End"
+                     VerticalOptions="Start"
+                     Margin="0,-80,-80,0"/>
+
+            <!-- Main content -->
+            <VerticalStackLayout Grid.Row="0"
+                                 Padding="32,52,32,32"
+                                 Spacing="0">
+
+                <!-- Nut quay lai -->
+                <Border BackgroundColor="#ffffff12"
+                        StrokeShape="RoundRectangle 20"
+                        Stroke="Transparent"
+                        Padding="14,8"
+                        HorizontalOptions="Start"
+                        Margin="0,0,0,20">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoBackCommand}"/>
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout Spacing="6">
+                        <Label Text="←" FontSize="16" TextColor="#a0a0b0" VerticalOptions="Center"/>
+                        <Label Text="Quay lại" FontSize="14" TextColor="#a0a0b0" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- Logo & Brand -->
+                <Label Text="🍜"
+                       FontSize="56"
+                       HorizontalOptions="Center"
+                       Margin="0,0,0,12"/>
+
+                <Label Text="Phố Ẩm Thực Vĩnh Khánh"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="#f0f0f0"
+                       HorizontalOptions="Center"
+                       Margin="0,0,0,4"/>
+
+                <Label Text="Đăng nhập để trải nghiệm đầy đủ"
+                       FontSize="13"
+                       TextColor="#a0a0b0"
+                       HorizontalOptions="Center"
+                       Margin="0,0,0,48"/>
+
+                <!-- Form Card -->
+                <Border StrokeShape="RoundRectangle 20"
+                        BackgroundColor="#1a1a2e"
+                        Stroke="#ffffff10"
+                        StrokeThickness="1"
+                        Padding="24"
+                        Margin="0,0,0,24">
+                    <VerticalStackLayout Spacing="16">
+
+                        <!-- Email -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Email" 
+                                   FontSize="12"
+                                   TextColor="#a0a0b0"
+                                   FontAttributes="Bold"/>
+                            <Border StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="#ffffff08"
+                                    Stroke="#ffffff15"
+                                    StrokeThickness="1"
+                                    Padding="16,0">
+                                <Entry x:Name="EmailEntry"
+                                       Text="{Binding Email}"
+                                       Placeholder="you@example.com"
+                                       PlaceholderColor="#606070"
+                                       TextColor="#f0f0f0"
+                                       Keyboard="Email"
+                                       ReturnType="Next"
+                                       HeightRequest="48"
+                                       BackgroundColor="Transparent"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Password -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Mật khẩu"
+                                   FontSize="12"
+                                   TextColor="#a0a0b0"
+                                   FontAttributes="Bold"/>
+                            <Border StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="#ffffff08"
+                                    Stroke="#ffffff15"
+                                    StrokeThickness="1"
+                                    Padding="16,0">
+                                <Entry Text="{Binding Password}"
+                                       Placeholder="Tối thiểu 6 ký tự"
+                                       PlaceholderColor="#606070"
+                                       TextColor="#f0f0f0"
+                                       IsPassword="True"
+                                       ReturnType="Done"
+                                       HeightRequest="48"
+                                       BackgroundColor="Transparent"
+                                       ReturnCommand="{Binding LoginCommand}"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Error message -->
+                        <Label Text="{Binding ErrorMessage}"
+                               TextColor="#ff6b6b"
+                               FontSize="13"
+                               IsVisible="{Binding ErrorMessage, Converter={x:StaticResource StringNotEmptyConverter}}"
+                               HorizontalOptions="Center"/>
+
+                        <!-- Login Button -->
+                        <Button Text="Đăng nhập"
+                                Command="{Binding LoginCommand}"
+                                IsEnabled="{Binding IsLoading, Converter={x:StaticResource InvertedBoolConverter}}"
+                                BackgroundColor="#e94560"
+                                TextColor="White"
+                                FontSize="16"
+                                FontAttributes="Bold"
+                                CornerRadius="12"
+                                HeightRequest="52"
+                                Margin="0,8,0,0"/>
+
+                        <!-- Loading indicator -->
+                        <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                           IsVisible="{Binding IsLoading}"
+                                           Color="#e94560"
+                                           HorizontalOptions="Center"/>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Register link -->
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+                    <Label Text="Chưa có tài khoản?"
+                           TextColor="#a0a0b0"
+                           FontSize="14"
+                           VerticalOptions="Center"/>
+                    <Button Text="Đăng ký ngay"
+                            Command="{Binding GoToRegisterCommand}"
+                            BackgroundColor="Transparent"
+                            TextColor="#e94560"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            Padding="4,0"/>
+                </HorizontalStackLayout>
+
+            </VerticalStackLayout>
+
+        </Grid>
+    </ScrollView>
+</ContentPage>

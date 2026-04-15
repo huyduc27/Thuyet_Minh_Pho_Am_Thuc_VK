@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using VinhKhanhFoodTour.Models;
 using VinhKhanhFoodTour.Services;
+using VinhKhanhFoodTour.Views;
 
 namespace VinhKhanhFoodTour.ViewModels;
 
@@ -12,6 +13,15 @@ public partial class PoiListViewModel : ObservableObject
     private readonly LocationService _locationService;
     private readonly NarrationService _narrationService;
     private readonly SettingsService _settingsService;
+    private readonly FirebaseSyncService _syncService;
+    private readonly AuthService _authService;
+
+    [ObservableProperty]
+    private bool _isLoggedIn;
+
+    // Hien overlay "can dang nhap" khi user tap POI ma chua login
+    [ObservableProperty]
+    private bool _isAuthOverlayVisible;
 
     [ObservableProperty]
     private ObservableCollection<PoiItemViewModel> _pois = new();
@@ -26,7 +36,7 @@ public partial class PoiListViewModel : ObservableObject
     private string _searchText = string.Empty;
 
     [ObservableProperty]
-    private string _selectedCategory = "All";
+    private CategoryViewModel _selectedCategory;
 
     [ObservableProperty]
     private bool _isLoading;
@@ -34,18 +44,36 @@ public partial class PoiListViewModel : ObservableObject
     [ObservableProperty]
     private bool _isRefreshing;
 
-    public List<string> Categories { get; } = new()
+    public ObservableCollection<CategoryViewModel> Categories { get; } = new()
     {
-        "All", "Ốc", "Lẩu", "Nướng", "Hải sản", "Bò", "Cơm", "Ăn vặt", "Chè", "Tráng miệng"
+        new CategoryViewModel { DatabaseValue = "All", TranslationKey = "Category_All" },
+        new CategoryViewModel { DatabaseValue = "Ốc", TranslationKey = "Category_Oc" },
+        new CategoryViewModel { DatabaseValue = "Lẩu", TranslationKey = "Category_Lau" },
+        new CategoryViewModel { DatabaseValue = "Nướng", TranslationKey = "Category_Nuong" },
+        new CategoryViewModel { DatabaseValue = "Hải sản", TranslationKey = "Category_HaiSan" },
+        new CategoryViewModel { DatabaseValue = "Bò", TranslationKey = "Category_Bo" },
+        new CategoryViewModel { DatabaseValue = "Cơm", TranslationKey = "Category_Com" },
+        new CategoryViewModel { DatabaseValue = "Ăn vặt", TranslationKey = "Category_AnVat" },
+        new CategoryViewModel { DatabaseValue = "Chè", TranslationKey = "Category_Che" },
+        new CategoryViewModel { DatabaseValue = "Tráng miệng", TranslationKey = "Category_TrangMieng" }
     };
 
     public PoiListViewModel(DatabaseService dbService, LocationService locService,
-        NarrationService narService, SettingsService settingsService)
+        NarrationService narService, SettingsService settingsService,
+        FirebaseSyncService syncService, AuthService authService)
     {
         _databaseService = dbService;
         _locationService = locService;
         _narrationService = narService;
         _settingsService = settingsService;
+        _syncService = syncService;
+        _authService = authService;
+
+        _selectedCategory = Categories[0];
+
+        // Track auth state cho UI (PoiListPage an/hien search + filter)
+        IsLoggedIn = _authService.IsLoggedIn;
+        _authService.AuthStateChanged += (_, isLoggedIn) => { IsLoggedIn = isLoggedIn; };
     }
 
     [RelayCommand]
@@ -104,6 +132,20 @@ public partial class PoiListViewModel : ObservableObject
     private async Task RefreshAsync()
     {
         IsRefreshing = true;
+        try
+        {
+            // Kéo xuống = Đồng bộ từ Firebase CMS trước
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+            {
+                await _syncService.SyncPoisAsync();
+                System.Diagnostics.Debug.WriteLine("[Refresh] ✅ Đã đồng bộ từ Firebase!");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Refresh] Sync error: {ex.Message}");
+        }
+        // Sau khi sync xong → load lại từ SQLite
         await LoadPoisAsync();
     }
 
@@ -112,7 +154,7 @@ public partial class PoiListViewModel : ObservableObject
         ApplyFilter();
     }
 
-    partial void OnSelectedCategoryChanged(string value)
+    partial void OnSelectedCategoryChanged(CategoryViewModel value)
     {
         ApplyFilter();
     }
@@ -123,9 +165,9 @@ public partial class PoiListViewModel : ObservableObject
         {
             var filtered = Pois.AsEnumerable();
 
-            if (SelectedCategory != "All")
+            if (SelectedCategory.DatabaseValue != "All")
             {
-                filtered = filtered.Where(p => p.Poi.Category == SelectedCategory);
+                filtered = filtered.Where(p => p.Poi.Category == SelectedCategory.DatabaseValue);
             }
 
             if (!string.IsNullOrWhiteSpace(SearchText))
@@ -163,8 +205,28 @@ public partial class PoiListViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void DismissAuthOverlay()
+    {
+        IsAuthOverlayVisible = false;
+    }
+
+    [RelayCommand]
+    private async Task GoToLoginAsync()
+    {
+        IsAuthOverlayVisible = false;
+        await Shell.Current.GoToAsync(nameof(LoginPage));
+    }
+
+    [RelayCommand]
     private async Task NavigateToDetailAsync(PoiItemViewModel? item)
     {
+        // Chua dang nhap -> hien overlay trong page (khong dung modal/alert)
+        if (!_authService.IsLoggedIn)
+        {
+            IsAuthOverlayVisible = true;
+            return;
+        }
+
         try
         {
             if (item?.Poi != null)
@@ -236,4 +298,40 @@ public partial class PoiItemViewModel : ObservableObject
     public string DistanceText { get; set; } = string.Empty;
     public string CategoryIcon { get; set; } = "\U0001F37D";
     public string CategoryColor { get; set; } = "#636E72";
+
+    public string DisplayCategory => LocalizationResourceManager.Instance[GetTranslationKey(Poi.Category)];
+
+    public PoiItemViewModel()
+    {
+        LocalizationResourceManager.Instance.PropertyChanged += (s, e) => OnPropertyChanged(nameof(DisplayCategory));
+    }
+
+    private static string GetTranslationKey(string dbValue)
+    {
+        return dbValue switch
+        {
+            "Ốc" => "Category_Oc",
+            "Lẩu" => "Category_Lau",
+            "Nướng" => "Category_Nuong",
+            "Hải sản" => "Category_HaiSan",
+            "Bò" => "Category_Bo",
+            "Cơm" => "Category_Com",
+            "Ăn vặt" => "Category_AnVat",
+            "Chè" => "Category_Che",
+            "Tráng miệng" => "Category_TrangMieng",
+            _ => "Category_All"
+        };
+    }
+}
+
+public partial class CategoryViewModel : ObservableObject
+{
+    public string DatabaseValue { get; set; } = "";
+    public string TranslationKey { get; set; } = "";
+    public string DisplayName => LocalizationResourceManager.Instance[TranslationKey];
+
+    public CategoryViewModel()
+    {
+        LocalizationResourceManager.Instance.PropertyChanged += (s, e) => OnPropertyChanged(nameof(DisplayName));
+    }
 }

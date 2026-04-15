@@ -5,9 +5,9 @@ public class LocationService
     private CancellationTokenSource? _cts;
     private bool _isTracking;
 
-    // Vị trí mặc định: đầu đường Vĩnh Khánh (xa khu ẩm thực, không trigger thuyết minh)
-    public const double VinhKhanhLat = 10.76280;
-    public const double VinhKhanhLng = 106.70120;
+    // Vị trí mặc định (cách xa khu ẩm thực khoảng 400m) để KHÔNG bao giờ bị dính Geofence lúc khởi động App
+    public const double VinhKhanhLat = 10.76500;
+    public const double VinhKhanhLng = 106.69800;
     private const double MaxDistanceFromVinhKhanh = 50000;
 
     public event EventHandler<Location>? LocationChanged;

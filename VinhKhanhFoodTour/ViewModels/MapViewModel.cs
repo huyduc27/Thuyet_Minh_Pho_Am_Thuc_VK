@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 using VinhKhanhFoodTour.Models;
 using VinhKhanhFoodTour.Services;
+using VinhKhanhFoodTour.Views;
 using Map = Microsoft.Maui.Controls.Maps.Map;
 
 namespace VinhKhanhFoodTour.ViewModels;
@@ -13,9 +14,12 @@ public partial class MapViewModel : ObservableObject
     private readonly DatabaseService _databaseService;
     private readonly LocationService _locationService;
     private readonly SettingsService _settingsService;
+    private readonly FirebaseSyncService _syncService;
+    private readonly GeofenceService _geofenceService;
+    private readonly AuthService _authService;
 
-    private Circle? _userDot;       // Chấm xanh nhỏ (vị trí user)
-    private Circle? _userRing;      // Vòng xanh lớn bao quanh
+    private Circle? _userDot;
+    private Circle? _userHalo;
     private Polyline? _routeLine;
 
     public Map? MapControl { get; set; }
@@ -54,20 +58,40 @@ public partial class MapViewModel : ObservableObject
     [ObservableProperty]
     private string _playPauseIcon = "\u25B6";
 
+    // === Auth Guard ===
+    [ObservableProperty]
+    private bool _isAuthRequired;
+
     private readonly double[] _speedOptions = { 1, 2, 3, 5, 10 };
     private int _speedIndex = 0;
 
     public MapViewModel(
         DatabaseService databaseService,
         LocationService locationService,
-        SettingsService settingsService)
+        SettingsService settingsService,
+        FirebaseSyncService syncService,
+        GeofenceService geofenceService,
+        AuthService authService)
     {
         _databaseService = databaseService;
         _locationService = locationService;
         _settingsService = settingsService;
+        _syncService = syncService;
+        _geofenceService = geofenceService;
+        _authService = authService;
 
         _locationService.RouteProgressChanged += OnRouteProgress;
         _locationService.RouteFinished += OnRouteFinished;
+
+        // Khi user đăng nhập → tự reload bản đồ
+        _authService.AuthStateChanged += async (_, isLoggedIn) =>
+        {
+            if (isLoggedIn)
+            {
+                IsAuthRequired = false;
+                await MainThread.InvokeOnMainThreadAsync(async () => await LoadMapAsync());
+            }
+        };
     }
 
     private void OnRouteProgress(object? sender, (Location Location, int Index, int Total) e)
@@ -96,6 +120,15 @@ public partial class MapViewModel : ObservableObject
     {
         if (MapControl == null) return;
 
+        // === Auth Guard: chưa đăng nhập → hiện overlay, không tải bản đồ ===
+        if (!_authService.IsLoggedIn)
+        {
+            IsAuthRequired = true;
+            IsLoading = false;
+            return;
+        }
+
+        IsAuthRequired = false;
         IsLoading = true;
         try
         {
@@ -106,7 +139,7 @@ public partial class MapViewModel : ObservableObject
             MapControl.Pins.Clear();
             MapControl.MapElements.Clear();
             _userDot = null;
-            _userRing = null;
+            _userHalo = null;
             _routeLine = null;
 
             AddPoiPinsWithRadius(pois, lang, settings.RadiusMultiplier);
@@ -135,6 +168,37 @@ public partial class MapViewModel : ObservableObject
             var centerLat = userLocation?.Latitude ?? LocationService.VinhKhanhLat;
             var centerLng = userLocation?.Longitude ?? LocationService.VinhKhanhLng;
 
+            // Ensure the initial location does not overlap with any POI's radius 
+            // so we can test entering geofence areas.
+            bool isOverlapping = true;
+            int loopCount = 0;
+            while (isOverlapping && loopCount < 50)
+            {
+                isOverlapping = false;
+                foreach (var poi in pois)
+                {
+                    double dist = LocationService.CalculateDistance(centerLat, centerLng, poi.Latitude, poi.Longitude);
+                    double effectiveRadius = poi.RadiusMeters * settings.RadiusMultiplier;
+                    
+                    if (dist <= effectiveRadius)
+                    {
+                        // Overlaps, move slightly outwards (~11m north-west)
+                        centerLat += 0.0001;
+                        centerLng -= 0.0001;
+                        isOverlapping = true;
+                        break;
+                    }
+                }
+                loopCount++;
+            }
+
+            // Sync the possibly adjusted location back to LocationService 
+            // so geofence starts correctly from outside.
+            if (loopCount > 1 || _locationService.IsSimulationMode)
+            {
+                _locationService.SetSimulatedLocation(centerLat, centerLng);
+            }
+
             AddUserMarker(centerLat, centerLng);
 
             MapControl.MoveToRegion(MapSpan.FromCenterAndRadius(
@@ -156,6 +220,25 @@ public partial class MapViewModel : ObservableObject
     public async Task ReloadAsync()
     {
         StopAllSimulation();
+
+        // Refresh = Đồng bộ từ Firebase CMS trước khi tải lại bản đồ
+        try
+        {
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+            {
+                var success = await _syncService.SyncPoisAsync();
+                if (success)
+                {
+                    await _geofenceService.RefreshPoisAsync();
+                    System.Diagnostics.Debug.WriteLine("[Map Refresh] ✅ Đã đồng bộ + refresh geofence!");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Map Refresh] Sync error: {ex.Message}");
+        }
+
         await LoadMapAsync();
     }
 
@@ -252,6 +335,12 @@ public partial class MapViewModel : ObservableObject
         _locationService.SetSimulatedLocation(lat, lng);
         LocationStatus = $"MANUAL: {lat:F5}, {lng:F5}";
         MoveUserMarker(lat, lng);
+    }
+
+    [RelayCommand]
+    public async Task GoToLoginAsync()
+    {
+        await Shell.Current.GoToAsync(nameof(LoginPage));
     }
 
     private void StopAllSimulation()
@@ -360,28 +449,28 @@ public partial class MapViewModel : ObservableObject
     private void AddUserMarker(double lat, double lng)
     {
         if (MapControl == null) return;
-        RemoveUserMarker();
 
-        // Vòng xanh lớn bao ngoài (bán kính ~20m)
-        _userRing = new Circle
+        // Outer halo
+        _userHalo = new Circle
         {
             Center = new Location(lat, lng),
-            Radius = Distance.FromMeters(20),
-            StrokeColor = Color.FromArgb("#604285F4"),
-            StrokeWidth = 2,
-            FillColor = Color.FromArgb("#204285F4")
+            Radius = Distance.FromMeters(15), 
+            FillColor = Color.FromArgb("#334285F4"), // 20% opacity blue
+            StrokeColor = Colors.Transparent,
+            StrokeWidth = 0
         };
-        MapControl.MapElements.Add(_userRing);
 
-        // Chấm xanh nhỏ ở giữa (bán kính ~6m)
+        // Inner blue dot
         _userDot = new Circle
         {
             Center = new Location(lat, lng),
-            Radius = Distance.FromMeters(6),
-            StrokeColor = Colors.White,
-            StrokeWidth = 3,
-            FillColor = Color.FromArgb("#4285F4")
+            Radius = Distance.FromMeters(4),
+            FillColor = Color.FromArgb("#4285F4"), // Google blue
+            StrokeColor = Color.FromArgb("#FFFFFF"), // White border
+            StrokeWidth = 2
         };
+
+        MapControl.MapElements.Add(_userHalo);
         MapControl.MapElements.Add(_userDot);
     }
 
@@ -392,10 +481,15 @@ public partial class MapViewModel : ObservableObject
         AddUserMarker(lat, lng);
     }
 
-    private void RemoveUserMarker()
-    {
-        if (MapControl == null) return;
-        if (_userRing != null) { MapControl.MapElements.Remove(_userRing); _userRing = null; }
-        if (_userDot != null) { MapControl.MapElements.Remove(_userDot); _userDot = null; }
+        if (_userHalo != null)
+        {
+            MapControl.MapElements.Remove(_userHalo);
+        }
+        if (_userDot != null)
+        {
+            MapControl.MapElements.Remove(_userDot);
+        }
+
+        AddUserMarker(lat, lng);
     }
 }

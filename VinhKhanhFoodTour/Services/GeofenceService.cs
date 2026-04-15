@@ -33,6 +33,18 @@ public class GeofenceService
         _pois = await _databaseService.GetAllPoisAsync();
         _isMonitoring = true;
         _locationService.LocationChanged += OnLocationChanged;
+        System.Diagnostics.Debug.WriteLine($"[Geofence] Started monitoring with {_pois.Count} POIs");
+    }
+
+    /// <summary>
+    /// Reload danh sách POI từ SQLite (gọi sau khi Firebase sync xong).
+    /// </summary>
+    public async Task RefreshPoisAsync()
+    {
+        _pois = await _databaseService.GetAllPoisAsync();
+        _currentPoiIds.Clear();
+        _currentPoi = null;
+        System.Diagnostics.Debug.WriteLine($"[Geofence] Refreshed → {_pois.Count} POIs loaded");
     }
 
     public void StopMonitoring()

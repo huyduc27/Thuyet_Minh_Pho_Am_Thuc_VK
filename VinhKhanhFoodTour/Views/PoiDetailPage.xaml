@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:VinhKhanhFoodTour.ViewModels"
+             xmlns:services="clr-namespace:VinhKhanhFoodTour.Services"
              x:Class="VinhKhanhFoodTour.Views.PoiDetailPage"
              x:DataType="vm:PoiDetailViewModel"
              Title="{Binding DisplayName}"
@@ -61,7 +62,7 @@
                     Shadow="{OnPlatform Android={Shadow Brush='#08000000', Offset='0,1', Radius=4}}">
                 <HorizontalStackLayout Spacing="8">
                     <Label Text="&#127760;" FontSize="16"/>
-                    <Label Text="Ngon ngu:" FontSize="13" TextColor="#999" VerticalOptions="Center"/>
+                    <Label Text="{Binding [Settings_Language], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="13" TextColor="#999" VerticalOptions="Center"/>
                     <Label Text="{Binding CurrentLanguage}" FontSize="13" TextColor="#2E7D32" 
                            FontAttributes="Bold" VerticalOptions="Center"/>
                 </HorizontalStackLayout>
@@ -73,7 +74,7 @@
                     Stroke="#EEEEEE" StrokeThickness="1" Padding="16"
                     Shadow="{OnPlatform Android={Shadow Brush='#08000000', Offset='0,1', Radius=4}}">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Gioi thieu" FontSize="16" TextColor="#e94560" FontAttributes="Bold"/>
+                    <Label Text="{Binding [Detail_Desc], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="16" TextColor="#e94560" FontAttributes="Bold"/>
                     <BoxView HeightRequest="1" Color="#F0F0F0"/>
                     <Label Text="{Binding DisplayDescription}" FontSize="14" TextColor="#555"
                            LineHeight="1.6"/>
@@ -86,13 +87,13 @@
                     Stroke="#EEEEEE" StrokeThickness="1" Padding="16"
                     Shadow="{OnPlatform Android={Shadow Brush='#08000000', Offset='0,1', Radius=4}}">
                 <VerticalStackLayout Spacing="14">
-                    <Label Text="Thong tin chi tiet" FontSize="16" TextColor="#e94560" FontAttributes="Bold"/>
+                    <Label Text="{Binding [Detail_Info], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="16" TextColor="#e94560" FontAttributes="Bold"/>
                     <BoxView HeightRequest="1" Color="#F0F0F0"/>
                     
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <Label Text="&#128205;" FontSize="16" VerticalOptions="Start"/>
                         <VerticalStackLayout Grid.Column="1" Spacing="2">
-                            <Label Text="Dia chi" FontSize="11" TextColor="#BBB"/>
+                            <Label Text="{Binding [Detail_Address], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="11" TextColor="#BBB"/>
                             <Label Text="{Binding Poi.Address}" FontSize="14" TextColor="#333"/>
                         </VerticalStackLayout>
                     </Grid>
@@ -100,7 +101,7 @@
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <Label Text="&#128337;" FontSize="16" VerticalOptions="Start"/>
                         <VerticalStackLayout Grid.Column="1" Spacing="2">
-                            <Label Text="Gio mo cua" FontSize="11" TextColor="#BBB"/>
+                            <Label Text="{Binding [Detail_Opening], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="11" TextColor="#BBB"/>
                             <Label Text="{Binding Poi.OpeningHours}" FontSize="14" TextColor="#2E7D32"/>
                         </VerticalStackLayout>
                     </Grid>
