@@ -55,8 +55,11 @@
                 <button class="nav-item" data-section="qrcode" onclick="switchSection('qrcode')">
                     <span class="icon">📱</span> Mã QR
                 </button>
-                <button class="nav-item" data-section="users" onclick="switchSection('users')">
-                    <span class="icon">👥</span> Quản lý Owner
+                <button class="nav-item" data-section="owners" onclick="switchSection('owners')">
+                    <span class="icon">👑</span> Chủ sở hữu
+                </button>
+                <button class="nav-item" data-section="tourists" onclick="switchSection('tourists')">
+                    <span class="icon">🧳</span> Khách du lịch
                 </button>
             </nav>
 
@@ -85,6 +88,17 @@
                     </button>
                 </div>
                 <div class="stats-grid">
+                    <div class="stat-card stat-card--online">
+                        <div class="stat-card-inner">
+                            <div class="stat-left">
+                                <div class="stat-value" id="statOnline">0</div>
+                                <div class="stat-label">Đang online</div>
+                            </div>
+                            <div class="stat-icon-wrap" style="background: rgba(46, 204, 113, 0.15); color: #2ecc71;">
+                                🟢
+                            </div>
+                        </div>
+                    </div>
                     <div class="stat-card stat-card--poi">
                         <div class="stat-card-inner">
                             <div class="stat-left">
@@ -366,36 +380,75 @@
             </div>
     </div>
 
-    <!-- Màn hình quản lý Owner (Admin only) -->
-    <div id="section-users" class="section-panel" style="position: absolute; top: 0; left: 260px; right: 0; padding: 32px; background: var(--bg-primary); min-height: 100vh;">
+    <!-- Màn hình quản lý Chủ sở hữu (Admin only) -->
+    <div id="section-owners" class="section-panel" style="position: absolute; top: 0; left: 260px; right: 0; padding: 32px; background: var(--bg-primary); min-height: 100vh;">
         <div class="page-header">
             <div>
-                <h1>👥 Quản trị Chủ Quán</h1>
-                <p class="description">Điều phối tài khoản và phân quyền cho người dùng</p>
+                <h1>👑 Quản lý Chủ Sở Hữu (Owners)</h1>
+                <p class="description">Điều phối tài khoản và cấp quyền quản lý POI cho chủ quán</p>
             </div>
         </div>
         
         <div class="table-container" style="margin-top: 24px;">
-            <div class="table-header">
-                <h3>Danh sách Chủ Quán (Owner)</h3>
-                <button class="btn btn-primary btn-sm" onclick="loadUsers()">🔄 Làm mới</button>
+            <div class="table-header" style="justify-content: space-between;">
+                <h3>Danh sách Chủ Quán</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="searchOwners" placeholder="Tìm tên/email..." style="padding: 6px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-input); color: white;" oninput="onSearchOwners()">
+                    <button class="btn btn-primary btn-sm" onclick="loadOwners()">🔄 Làm mới</button>
+                </div>
             </div>
             <table>
                 <thead>
                     <tr>
-                        <th>Email</th>
+                        <th>Người dùng</th>
+                        <th>Vai trò</th>
+                        <th>Số quán</th>
                         <th>Trạng thái</th>
-                        <th>Số lượng Quán (POI)</th>
                         <th>Ngày đăng ký</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
-                <tbody id="usersTableBody">
+                <tbody id="ownersTableBody">
                     <tr><td colspan="5"><div class="empty-state"><div class="icon">⏳</div><p>Đang tải dữ liệu...</p></div></td></tr>
                 </tbody>
             </table>
         </div>
-        <div id="usersPagination"></div>
+        <div id="ownersPagination"></div>
+    </div>
+
+    <!-- Màn hình quản lý Khách du lịch (Admin only) -->
+    <div id="section-tourists" class="section-panel" style="position: absolute; top: 0; left: 260px; right: 0; padding: 32px; background: var(--bg-primary); min-height: 100vh;">
+        <div class="page-header">
+            <div>
+                <h1>🧳 Quản lý Khách Du Lịch (Tourists)</h1>
+                <p class="description">Theo dõi tài khoản của khách du lịch trên hệ thống</p>
+            </div>
+        </div>
+        
+        <div class="table-container" style="margin-top: 24px;">
+            <div class="table-header" style="justify-content: space-between;">
+                <h3>Danh sách Khách</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="searchTourists" placeholder="Tìm tên/email..." style="padding: 6px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-input); color: white;" oninput="onSearchTourists()">
+                    <button class="btn btn-primary btn-sm" onclick="loadTourists()">🔄 Làm mới</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Người dùng</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái & Lượt truy cập cuối</th>
+                        <th>Ngày đăng ký</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="touristsTableBody">
+                    <tr><td colspan="5"><div class="empty-state"><div class="icon">⏳</div><p>Đang tải dữ liệu...</p></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="touristsPagination"></div>
     </div>
 
     <!-- ============ POI MODAL ============ -->

@@ -19,7 +19,7 @@ requireAuth().then(user => {
     // 2. CHECK ROLE: Nếu là Chủ cửa hàng (owner) thì ẨN một số thứ đi
     if (user.role === 'owner') {
         // Ẩn Dashboard, Tour và Approvals, còn lại (POI, Bản dịch, Audio, History, QR) vẫn hiển thị
-        const restrictedMenus = ['dashboard', 'tour', 'approvals', 'users'];
+        const restrictedMenus = ['dashboard', 'tour', 'approvals', 'owners', 'tourists'];
 
         restrictedMenus.forEach(menu => {
             const menuElement = document.querySelector(`.nav-item[data-section="${menu}"]`);
@@ -72,7 +72,8 @@ function switchSection(section) {
         case 'history': loadHistory(); break;
         case 'tour': loadTours(); break;
         case 'qrcode': loadQrCodes(); break;
-        case 'users': loadUsers(); break;
+        case 'owners': loadOwners(); break;
+        case 'tourists': loadTourists(); break;
     }
 }
 
@@ -109,8 +110,68 @@ async function loadDashboardStats() {
 
         // Render biểu đồ Top 5
         loadTop5Chart(poisSnap, historySnap);
+
+        // Kích hoạt Real-time Listener cho số người Online (nếu chưa bật)
+        if (!window._onlineUsersListenerActive) {
+            initOnlineUsersListener();
+            window._onlineUsersListenerActive = true;
+        }
+
     } catch (error) {
         console.error('Error loading stats:', error);
+    }
+}
+
+// === Theo dõi Người dùng Trực tuyến ===
+let onlineUsersUnsubscribe = null;
+
+function initOnlineUsersListener() {
+    if (onlineUsersUnsubscribe) onlineUsersUnsubscribe();
+    
+    onlineUsersUnsubscribe = db.collection('users')
+        .where('status', '==', 'active')
+        .onSnapshot(snapshot => {
+            window._lastActiveUsersDocs = snapshot.docs; 
+            updateOnlineUsersCount(snapshot.docs);
+        }, err => {
+            console.error('Lỗi khi lắng nghe user online:', err);
+        });
+
+    // Cập nhật lại số đếm mỗi 30s để tự động lọc những người đã thoái trào (quá thời gian ngưỡng)
+    if (!window._onlineInterval) {
+        window._onlineInterval = setInterval(() => {
+            if (window._lastActiveUsersDocs) {
+                updateOnlineUsersCount(window._lastActiveUsersDocs);
+            }
+        }, 30000);
+    }
+}
+
+function updateOnlineUsersCount(docs) {
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000); // Ngưỡng 2 phút
+    let onlineCount = 0;
+    
+    docs.forEach(doc => {
+        const user = doc.data();
+        if (user.lastSeen) {
+            // lastSeen có thể là Timestamp của Firestore hoặc chuỗi ISO 
+            const lastSeenDate = user.lastSeen.toDate ? user.lastSeen.toDate() : new Date(user.lastSeen);
+            if (lastSeenDate >= twoMinutesAgo) {
+                onlineCount++;
+            }
+        }
+    });
+
+    const statOnline = document.getElementById('statOnline');
+    if (statOnline) {
+        // Có thể thêm một hiệu ứng nhấp nháy (blink) nhẹ khi có thay đổi
+        if (statOnline.textContent !== onlineCount.toString()) {
+            statOnline.textContent = onlineCount;
+            statOnline.style.transform = 'scale(1.2)';
+            setTimeout(() => statOnline.style.transform = 'scale(1)', 200);
+        } else {
+            statOnline.textContent = onlineCount;
+        }
     }
 }
 

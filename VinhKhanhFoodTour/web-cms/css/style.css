@@ -442,6 +442,7 @@ a:hover {
     font-weight: 700;
     color: var(--accent);
     line-height: 1.1;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .stat-card .stat-value--small {
@@ -462,12 +463,20 @@ a:hover {
 }
 
 /* Per-card accent colors */
+.stat-card--online { 
+    border-left-color: #10b981; 
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.1); 
+}
 .stat-card--poi    { border-left-color: #e8a838; }
 .stat-card--audio  { border-left-color: #a78bfa; }
 .stat-card--tour   { border-left-color: #22d3ee; }
 .stat-card--history{ border-left-color: #2ecc71; }
 .stat-card--pending{ border-left-color: #f97316; }
 
+.stat-card--online .stat-value { 
+    color: #10b981; 
+    text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
 .stat-card--poi    .stat-value { color: #e8a838; }
 .stat-card--audio  .stat-value { color: #a78bfa; }
 .stat-card--tour   .stat-value { color: #22d3ee; }

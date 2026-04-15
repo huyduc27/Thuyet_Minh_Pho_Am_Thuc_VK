@@ -24,12 +24,34 @@ async function loadHistory() {
                 return;
             }
 
-            // Chia shopIds thành từng mảng con tối đa 10 phần tử (giới hạn của Firebase 'in' query)
+            // BƯỚC 1: Lấy danh sách "Tên quán" (poiName) tương ứng với các shopIds
+            // Lý do: Giao diện Web (QR) dùng poiId (chữ) để log, nhưng Mobile App dùng poiId (số - autoincrement SQLite)
+            // Giải pháp duy nhất đồng nhất giữa 2 nền tảng hiện tại là lấy Tên Quán (poiName).
+            let poiNames = [];
             for (let i = 0; i < shopIds.length; i += 10) {
                 const chunk = shopIds.slice(i, i + 10);
-                // Lấy tất cả log của các POI này. Không dùng orderBy ở đây để tránh lỗi composite index
+                const poiSnap = await db.collection('pois')
+                    .where(firebase.firestore.FieldPath.documentId(), 'in', chunk)
+                    .get();
+                poiSnap.docs.forEach(doc => {
+                    const name = doc.data().name;
+                    if (name) poiNames.push(name);
+                });
+            }
+
+            if (poiNames.length === 0) {
+                const tbody = document.getElementById('historyTableBody');
+                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="icon">📋</div><p>Không tìm thấy thông tin tên quán nên không thể tải lịch sử</p></div></td></tr>`;
+                return;
+            }
+
+            // BƯỚC 2: Tìm lịch sử (narrationLogs) theo Tên Quán (poiName)
+            // Chia lại poiNames thành từng mảng con tối đa 10 phần tử (do giới hạn của Firebase 'in' query)
+            for (let i = 0; i < poiNames.length; i += 10) {
+                const chunk = poiNames.slice(i, i + 10);
+                // Tìm bằng poiName để hốt trọn cả log của QR, Geofence và Thủ công
                 const snapshot = await db.collection('narrationLogs')
-                    .where('poiId', 'in', chunk)
+                    .where('poiName', 'in', chunk)
                     .get();
                 allHistoryDocs = allHistoryDocs.concat(snapshot.docs);
             }
