@@ -8,9 +8,13 @@ const sourceLabels = {
     'qr': '📱 QR Code'
 };
 
+let allHistoryDocs = [];
+let historyPoiMap = {};
+let historyPage = 1;
+
 async function loadHistory() {
     try {
-        let allDocs = [];
+        allHistoryDocs = [];
 
         if (window.currentUser && window.currentUser.role === 'owner') {
             const shopIds = window.currentUser.shopIds || [];
@@ -27,18 +31,18 @@ async function loadHistory() {
                 const snapshot = await db.collection('narrationLogs')
                     .where('poiId', 'in', chunk)
                     .get();
-                allDocs = allDocs.concat(snapshot.docs);
+                allHistoryDocs = allHistoryDocs.concat(snapshot.docs);
             }
 
             // Tự sắp xếp giảm dần ở Local (theo thời gian) 
-            allDocs.sort((a, b) => {
+            allHistoryDocs.sort((a, b) => {
                 const tA = a.data().playedAt ? a.data().playedAt.toMillis() : 0;
                 const tB = b.data().playedAt ? b.data().playedAt.toMillis() : 0;
                 return tB - tA;
             });
 
             // Lấy 100 dòng mới nhất
-            allDocs = allDocs.slice(0, 100);
+            allHistoryDocs = allHistoryDocs.slice(0, 100);
 
         } else {
             // Admin: Lấy toàn bộ không giới hạn
@@ -46,45 +50,58 @@ async function loadHistory() {
                 .orderBy('playedAt', 'desc')
                 .limit(100)
                 .get();
-            allDocs = snapshot.docs;
+            allHistoryDocs = snapshot.docs;
         }
 
-        const tbody = document.getElementById('historyTableBody');
-
-        if (allDocs.length === 0) {
+        if (allHistoryDocs.length === 0) {
+            const tbody = document.getElementById('historyTableBody');
             tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="icon">📋</div><p>Chưa có lịch sử thuyết minh</p></div></td></tr>`;
+            renderPagination('historyPagination', 1, 0, () => {});
             return;
         }
 
         // Get POI names for display (fallback nếu log cũ không có poiName)
         const poisSnap = await db.collection('pois').get();
-        const poiMap = {};
+        historyPoiMap = {};
         poisSnap.docs.forEach(doc => {
-            poiMap[doc.id] = doc.data().name;
+            historyPoiMap[doc.id] = doc.data().name;
         });
 
-        const langNames = { vi: '🇻🇳 Tiếng Việt', en: '🇺🇸 English', zh: '🇨🇳 中文', ko: '🇰🇷 한국어' };
-
-        tbody.innerHTML = allDocs.map(doc => {
-            const log = doc.data();
-            const poiName = log.poiName || poiMap[log.poiId] || `POI #${log.poiId}`;
-            const source = sourceLabels[log.source] || log.source || '—';
-            return `
-                <tr>
-                    <td style="color: var(--text-primary); font-weight: 500;">${poiName}</td>
-                    <td>${langNames[log.language] || log.language || '—'}</td>
-                    <td>${source}</td>
-                    <td>${formatDate(log.playedAt)}</td>
-                </tr>
-            `;
-        }).join('');
+        historyPage = 1;
+        renderHistoryTable();
 
         // Cập nhật thống kê nguồn
-        updateSourceStats(allDocs);
+        updateSourceStats(allHistoryDocs);
     } catch (error) {
         console.error('Error loading history:', error);
         showToast('Lỗi tải lịch sử', 'error');
     }
+}
+
+function renderHistoryTable() {
+    const tbody = document.getElementById('historyTableBody');
+    const langNames = { vi: '🇻🇳 Tiếng Việt', en: '🇺🇸 English', zh: '🇨🇳 中文', ko: '🇰🇷 한국어' };
+
+    const pageItems = getPageSlice(allHistoryDocs, historyPage);
+
+    tbody.innerHTML = pageItems.map(doc => {
+        const log = doc.data();
+        const poiName = log.poiName || historyPoiMap[log.poiId] || `POI #${log.poiId}`;
+        const source = sourceLabels[log.source] || log.source || '—';
+        return `
+            <tr>
+                <td style="color: var(--text-primary); font-weight: 500;">${poiName}</td>
+                <td>${langNames[log.language] || log.language || '—'}</td>
+                <td>${source}</td>
+                <td>${formatDate(log.playedAt)}</td>
+            </tr>
+        `;
+    }).join('');
+
+    renderPagination('historyPagination', historyPage, allHistoryDocs.length, (page) => {
+        historyPage = page;
+        renderHistoryTable();
+    });
 }
 
 function updateSourceStats(docs) {

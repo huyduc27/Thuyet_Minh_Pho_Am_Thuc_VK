@@ -3,6 +3,9 @@
 // Sử dụng thư viện qrcode.js (CDN) để render trực tiếp trên browser
 // ========================================
 
+let allQrPois = [];
+let qrPage = 1;
+
 // Base URL cho trang nghe — thay đổi khi deploy production
 const QR_BASE_URL = window.location.origin;
 
@@ -32,51 +35,13 @@ async function loadQrCodes() {
 
         if (snapshot.empty) {
             container.innerHTML = `<div class="empty-state"><div class="icon">📱</div><p>Chưa có POI nào để tạo QR</p></div>`;
+            renderPagination('qrPagination', 1, 0, () => {});
             return;
         }
 
-        container.innerHTML = '';
-
-        snapshot.docs.forEach(doc => {
-            const poi = doc.data();
-            const poiId = doc.id;
-            const listenUrl = `${QR_BASE_URL}/listen.html?id=${poiId}`;
-
-            // Tạo card chứa QR
-            const card = document.createElement('div');
-            card.className = 'qr-card';
-            card.innerHTML = `
-                <div class="qr-card-header">
-                    <span class="qr-poi-name">${poi.name || 'Không tên'}</span>
-                    <span class="qr-category-badge">${getCategoryIcon(poi.category)} ${poi.category || ''}</span>
-                </div>
-                <div class="qr-canvas-wrapper" id="qr-wrapper-${poiId}"></div>
-                <div class="qr-url-display">${listenUrl}</div>
-                <div class="qr-actions">
-                    <button class="btn btn-sm btn-primary" onclick="downloadQr('${poiId}', '${(poi.name || '').replace(/'/g, "\\'")}')">
-                        ⬇️ Tải PNG
-                    </button>
-                    <button class="btn btn-sm btn-secondary" onclick="copyQrUrl('${poiId}')">
-                        📋 Copy URL
-                    </button>
-                    <button class="btn btn-sm btn-secondary" onclick="printSingleQr('${poiId}', '${(poi.name || '').replace(/'/g, "\\'")}')">
-                        🖨️ In
-                    </button>
-                </div>
-            `;
-            container.appendChild(card);
-
-            // Render QR code vào wrapper
-            const wrapper = document.getElementById(`qr-wrapper-${poiId}`);
-            new QRCode(wrapper, {
-                text: listenUrl,
-                width: 200,
-                height: 200,
-                colorDark: '#1a1a2e',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H  // Cao nhất — in ấn tốt
-            });
-        });
+        allQrPois = snapshot.docs;
+        qrPage = 1;
+        renderQrPage();
 
         // Cập nhật counter
         document.getElementById('qrCount').textContent = snapshot.size;
@@ -85,6 +50,59 @@ async function loadQrCodes() {
         console.error('Error generating QR codes:', error);
         container.innerHTML = `<div class="empty-state"><p>Lỗi tạo QR: ${error.message}</p></div>`;
     }
+}
+
+function renderQrPage() {
+    const container = document.getElementById('qrCodeGrid');
+    container.innerHTML = '';
+
+    const pageItems = getPageSlice(allQrPois, qrPage);
+
+    pageItems.forEach(doc => {
+        const poi = doc.data();
+        const poiId = doc.id;
+        const listenUrl = `${QR_BASE_URL}/listen.html?id=${poiId}`;
+
+        // Tạo card chứa QR
+        const card = document.createElement('div');
+        card.className = 'qr-card';
+        card.innerHTML = `
+            <div class="qr-card-header">
+                <span class="qr-poi-name">${poi.name || 'Không tên'}</span>
+                <span class="qr-category-badge">${getCategoryIcon(poi.category)} ${poi.category || ''}</span>
+            </div>
+            <div class="qr-canvas-wrapper" id="qr-wrapper-${poiId}"></div>
+            <div class="qr-url-display">${listenUrl}</div>
+            <div class="qr-actions">
+                <button class="btn btn-sm btn-primary" onclick="downloadQr('${poiId}', '${(poi.name || '').replace(/'/g, "\\'")}')">
+                    ⬇️ Tải PNG
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="copyQrUrl('${poiId}')">
+                    📋 Copy URL
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="printSingleQr('${poiId}', '${(poi.name || '').replace(/'/g, "\\'")}')">
+                    🖨️ In
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
+
+        // Render QR code vào wrapper
+        const wrapper = document.getElementById(`qr-wrapper-${poiId}`);
+        new QRCode(wrapper, {
+            text: listenUrl,
+            width: 200,
+            height: 200,
+            colorDark: '#1a1a2e',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H  // Cao nhất — in ấn tốt
+        });
+    });
+
+    renderPagination('qrPagination', qrPage, allQrPois.length, (page) => {
+        qrPage = page;
+        renderQrPage();
+    });
 }
 
 /**

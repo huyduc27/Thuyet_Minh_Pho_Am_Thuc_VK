@@ -7,6 +7,7 @@
     <title>Vĩnh Khánh CMS — Quản trị</title>
     <meta name="description" content="Dashboard quản lý nội dung Phố Ẩm Thực Vĩnh Khánh">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>">
 </head>
@@ -79,27 +80,80 @@
                         <h1>📊 Tổng quan</h1>
                         <p class="description">Thống kê hệ thống quản lý nội dung</p>
                     </div>
+                    <button class="btn btn-secondary btn-sm btn-refresh" id="btnRefreshDashboard" onclick="refreshDashboard()">
+                        🔄 <span>Làm mới</span>
+                    </button>
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">📍</div>
-                        <div class="stat-value" id="statPoi">0</div>
-                        <div class="stat-label">Điểm POI</div>
+                    <div class="stat-card stat-card--poi">
+                        <div class="stat-card-inner">
+                            <div class="stat-left">
+                                <div class="stat-value" id="statPoi">0</div>
+                                <div class="stat-label">Điểm POI</div>
+                            </div>
+                            <div class="stat-icon-wrap">📍</div>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🎵</div>
-                        <div class="stat-value" id="statAudio">0</div>
-                        <div class="stat-label">File Audio</div>
+                    <div class="stat-card stat-card--audio">
+                        <div class="stat-card-inner">
+                            <div class="stat-left">
+                                <div class="stat-value" id="statAudio">0</div>
+                                <div class="stat-label">File Audio</div>
+                            </div>
+                            <div class="stat-icon-wrap">🎵</div>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🗺️</div>
-                        <div class="stat-value" id="statTour">0</div>
-                        <div class="stat-label">Tour</div>
+                    <div class="stat-card stat-card--tour">
+                        <div class="stat-card-inner">
+                            <div class="stat-left">
+                                <div class="stat-value" id="statTour">0</div>
+                                <div class="stat-label">Tour</div>
+                            </div>
+                            <div class="stat-icon-wrap">🗺️</div>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📋</div>
-                        <div class="stat-value" id="statHistory">0</div>
-                        <div class="stat-label">Lượt thuyết minh</div>
+                    <div class="stat-card stat-card--history">
+                        <div class="stat-card-inner">
+                            <div class="stat-left">
+                                <div class="stat-value" id="statHistory">0</div>
+                                <div class="stat-label">Lượt thuyết minh</div>
+                            </div>
+                            <div class="stat-icon-wrap">📋</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-card--pending">
+                        <div class="stat-card-inner">
+                            <div class="stat-left">
+                                <div class="stat-value" id="statPending">0</div>
+                                <div class="stat-label">Chờ duyệt</div>
+                            </div>
+                            <div class="stat-icon-wrap">🔔</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Heatmap Section -->
+                <div class="heatmap-container" id="heatmapContainer">
+                    <div class="heatmap-header">
+                        <div class="heatmap-title-group">
+                            <h3>🔥 Bản đồ nhiệt hoạt động</h3>
+                            <span class="heatmap-subtitle">Mật độ lượt nghe thuyết minh tại khu vực Vĩnh Khánh</span>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" id="btnToggleHeatmap" onclick="toggleHeatmap()">
+                            🗺️ Hiện bản đồ
+                        </button>
+                    </div>
+                    <div id="heatmap" style="display:none;"></div>
+                </div>
+
+                <!-- Top 5 Chart Section -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>🏆 Top 5 điểm được nghe nhiều nhất</h3>
+                        <span class="chart-subtitle">Xếp hạng theo số lượt phát thuyết minh</span>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="top5Chart"></canvas>
                     </div>
                 </div>
             </div>
@@ -133,6 +187,7 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="approvalsPagination"></div>
             </div>
 
             <!-- Modal từ chối -->
@@ -200,9 +255,8 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="poiPagination"></div>
             </div>
-
-            <!-- ===== TRANSLATION ===== -->
             <div class="section-panel" id="section-translation">
                 <div class="page-header">
                     <div>
@@ -271,6 +325,7 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="historyPagination"></div>
             </div>
 
             <!-- ===== TOUR MANAGEMENT ===== -->
@@ -307,8 +362,8 @@
                         <p>Nhấn "Tạo lại" hoặc chuyển vào tab này để tạo mã QR</p>
                     </div>
                 </div>
+                <div id="qrPagination"></div>
             </div>
-        </main>
     </div>
 
     <!-- Màn hình quản lý Owner (Admin only) -->
@@ -340,6 +395,7 @@
                 </tbody>
             </table>
         </div>
+        <div id="usersPagination"></div>
     </div>
 
     <!-- ============ POI MODAL ============ -->
@@ -521,6 +577,13 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
     <!-- Storage không cần nữa - dùng URL thay vì upload -->
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+    <!-- Leaflet Map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 
     <!-- App Scripts -->
     <script src="js/firebase-config.js"></script>

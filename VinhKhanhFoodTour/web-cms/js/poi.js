@@ -3,6 +3,7 @@
 // ========================================
 
 let allPois = [];
+let poiPage = 1;
 
 async function loadPois() {
     try {
@@ -26,6 +27,7 @@ async function loadPois() {
         }
 
         // 2. Chắp vá cái bảng danh sách hiện ra màn hình
+        poiPage = 1;
         renderPoiTable(allPois);
 
         // 3. "Phong ấn" các nút Tối Cao nếu là Chủ quán (Giấu nút Thêm, Xóa)
@@ -59,6 +61,7 @@ function renderPoiTable(pois) {
 
     if (pois.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">📍</div><p>Chưa có POI nào</p></div></td></tr>`;
+        renderPagination('poiPagination', 1, 0, () => {});
         return;
     }
 
@@ -67,7 +70,9 @@ function renderPoiTable(pois) {
         'Bò': '🥩', 'Cơm': '🍚', 'Ăn vặt': '🍢', 'Chè': '🍧', 'Tráng miệng': '🍨'
     };
 
-    tbody.innerHTML = pois.map(poi => `
+    const pageItems = getPageSlice(pois, poiPage);
+
+    tbody.innerHTML = pageItems.map(poi => `
         <tr>
             <td style="color: var(--text-primary); font-weight: 500;">${poi.name || ''}</td>
             <td><span class="category-badge">${categoryIcons[poi.category] || '🍽️'} ${poi.category || ''}</span></td>
@@ -82,6 +87,11 @@ function renderPoiTable(pois) {
             </td>
         </tr>
     `).join('');
+
+    renderPagination('poiPagination', poiPage, pois.length, (page) => {
+        poiPage = page;
+        renderPoiTable(pois);
+    });
 }
 
 function filterPois() {
@@ -95,6 +105,7 @@ function filterPois() {
         return matchSearch && matchCategory;
     });
 
+    poiPage = 1;
     renderPoiTable(filtered);
 }
 

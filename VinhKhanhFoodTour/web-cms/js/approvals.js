@@ -3,6 +3,7 @@
 // ========================================
 
 let allRequests = [];
+let approvalsPage = 1;
 
 async function loadApprovals() {
     const tbody = document.getElementById('approvalsTableBody');
@@ -22,6 +23,7 @@ async function loadApprovals() {
             const tB = b.createdAt ? b.createdAt.toMillis() : 0;
             return tB - tA;
         });
+        approvalsPage = 1;
         renderApprovalsTable(allRequests);
         
         // Also update the dashboard stat if it exists, or a badge
@@ -38,10 +40,13 @@ function renderApprovalsTable(requests) {
 
     if (requests.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">✅</div><p>Không có yêu cầu nào chờ duyệt</p></div></td></tr>`;
+        renderPagination('approvalsPagination', 1, 0, () => {});
         return;
     }
 
-    tbody.innerHTML = requests.map(req => {
+    const pageItems = getPageSlice(requests, approvalsPage);
+
+    tbody.innerHTML = pageItems.map(req => {
         const date = req.createdAt ? new Date(req.createdAt.toDate()).toLocaleString('vi-VN') : 'Mới';
         const typeLabel = req.type === 'ADD' ? '<span class="category-badge" style="background:#2ecc71;color:#fff;">Thêm Mới</span>' : '<span class="category-badge" style="background:#3498db;color:#fff;">Chỉnh Sửa</span>';
         const poiName = (req.requestedData && req.requestedData.name) ? escapeHtml(req.requestedData.name) : 'Không tên';
@@ -62,6 +67,11 @@ function renderApprovalsTable(requests) {
             </tr>
         `;
     }).join('');
+
+    renderPagination('approvalsPagination', approvalsPage, requests.length, (page) => {
+        approvalsPage = page;
+        renderApprovalsTable(allRequests);
+    });
 }
 
 async function approveRequest(reqId) {
