@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="VinhKhanhFoodTour.Views.AuthRequiredPopup"
+             BackgroundColor="#80000000"
+             Shell.NavBarIsVisible="False">
+
+    <!-- Click vung ngoai card = dong modal -->
+    <ContentPage.GestureRecognizers>
+        <TapGestureRecognizer Tapped="OnBackgroundTapped"/>
+    </ContentPage.GestureRecognizers>
+
+    <!-- Card chinh giua man hinh -->
+    <Grid VerticalOptions="Center" HorizontalOptions="Center"
+          Margin="32,0">
+        <Border BackgroundColor="White"
+                StrokeShape="RoundRectangle 24"
+                Stroke="Transparent"
+                Padding="28,24"
+                Shadow="{OnPlatform Android={Shadow Brush='#50000000', Offset='0,8', Radius=24}}">
+
+            <!-- Ngan su kien touch len background -->
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer/>
+            </Border.GestureRecognizers>
+
+            <VerticalStackLayout Spacing="0">
+
+                <!-- Icon -->
+                <Border BackgroundColor="#FFF0F3"
+                        StrokeShape="RoundRectangle 20"
+                        Stroke="Transparent"
+                        WidthRequest="72" HeightRequest="72"
+                        HorizontalOptions="Center"
+                        Margin="0,0,0,16">
+                    <Label Text="🔐"
+                           FontSize="36"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Border>
+
+                <!-- Title -->
+                <Label Text="Cần đăng nhập"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="#1a1a2e"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"
+                       Margin="0,0,0,10"/>
+
+                <!-- Body -->
+                <Label Text="Đăng nhập để xem chi tiết quán ăn và nghe thuyết minh tự động khi dạo phố."
+                       FontSize="14"
+                       TextColor="#888"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"
+                       LineHeight="1.5"
+                       Margin="0,0,0,24"/>
+
+                <!-- Buttons -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+
+                    <!-- Huy -->
+                    <Border Grid.Column="0"
+                            BackgroundColor="#F5F5F5"
+                            StrokeShape="RoundRectangle 14"
+                            Stroke="Transparent">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCancelTapped"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="Hủy"
+                               FontSize="15"
+                               TextColor="#888"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               Padding="0,14"/>
+                    </Border>
+
+                    <!-- Dang nhap -->
+                    <Border Grid.Column="1"
+                            BackgroundColor="#e94560"
+                            StrokeShape="RoundRectangle 14"
+                            Stroke="Transparent"
+                            Shadow="{OnPlatform Android={Shadow Brush='#60e94560', Offset='0,4', Radius=12}}">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLoginTapped"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="Đăng nhập"
+                               FontSize="15"
+                               TextColor="White"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               Padding="0,14"/>
+                    </Border>
+
+                </Grid>
+
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

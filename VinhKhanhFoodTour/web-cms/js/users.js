@@ -5,16 +5,33 @@
 let allUserDocs = [];
 let usersPage = 1;
 
+/**
+ * Tinh trang thai online dua tren lastSeen:
+ * - Neu status == 'disabled'           -> "disabled" (bi khoa boi admin)
+ * - Neu co lastSeen < 2 phut truoc     -> "active"   (heartbeat con song)
+ * - Neu co lastSeen >= 2 phut truoc    -> "offline"  (heartbeat da mat)
+ * - Neu KHONG co lastSeen (tai khoan cu) -> tin thang vao status field
+ */
+function computeOnlineStatus(user) {
+    if (user.status === 'disabled') return 'disabled';
+    if (user.lastSeen) {
+        const diffMs = Date.now() - user.lastSeen.toDate().getTime();
+        return diffMs < 2 * 60 * 1000 ? 'active' : 'offline'; // < 2 phut
+    }
+    // Khong co lastSeen (tai khoan cu chua cap nhat app) -> dung status field
+    return user.status || 'offline';
+}
+
 async function loadUsers() {
     try {
         const tbody = document.getElementById('usersTableBody');
         tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">⏳</div><p>Đang tải dữ liệu...</p></div></td></tr>`;
 
-        // Lấy tất cả user có role = 'owner'
-        const snapshot = await db.collection('users').where('role', '==', 'owner').get();
+        // Load ca owner va tourist
+        const snapshot = await db.collection('users').get();
         
         if (snapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">👥</div><p>Chưa có Chủ quán nào đăng ký</p></div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">👥</div><p>Chưa có người dùng nào</p></div></td></tr>`;
             renderPagination('usersPagination', 1, 0, () => {});
             return;
         }
@@ -36,38 +53,63 @@ function renderUsersTable() {
     let html = '';
     pageItems.forEach(doc => {
         const user = doc.data();
-        const shopCount = user.shopIds ? user.shopIds.length : 0;
-        const status = user.status || 'active';
+        const role = user.role || 'tourist';
+        const onlineStatus = computeOnlineStatus(user);
         
-        // Format ngày đăng ký
+        // Format ngay dang ky
         let createdAt = 'Không xác định';
         if (user.createdAt) {
             createdAt = user.createdAt.toDate().toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' });
         }
 
-        // Giao diện nhãn trạng thái
-        const statusBadge = status === 'active' 
-            ? `<span class="category-badge" style="background: rgba(46, 204, 113, 0.15); color: #2ecc71;">Hoạt động</span>`
-            : `<span class="category-badge" style="background: rgba(233, 69, 96, 0.15); color: #e94560;">Bị Khóa</span>`;
+        // Format lastSeen
+        let lastSeenText = 'Chưa có';
+        if (user.lastSeen) {
+            const diffMs = Date.now() - user.lastSeen.toDate().getTime();
+            const diffMin = Math.floor(diffMs / 60000);
+            if (diffMin < 1) lastSeenText = 'Vừa xong';
+            else if (diffMin < 60) lastSeenText = `${diffMin} phút trước`;
+            else lastSeenText = user.lastSeen.toDate().toLocaleTimeString('vi-VN');
+        }
 
-        // Nút Thao tác
-        const toggleActionName = status === 'active' ? 'Khóa' : 'Mở khóa';
-        const toggleActionColor = status === 'active' ? 'var(--accent)' : 'var(--success)';
-        
+        // Badge trang thai
+        let statusBadge;
+        if (onlineStatus === 'active') {
+            statusBadge = `<span class="category-badge" style="background:rgba(46,204,113,0.15);color:#2ecc71;">🟢 Online</span>`;
+        } else if (onlineStatus === 'disabled') {
+            statusBadge = `<span class="category-badge" style="background:rgba(233,69,96,0.15);color:#e94560;">🔒 Bị khóa</span>`;
+        } else {
+            statusBadge = `<span class="category-badge" style="background:rgba(128,128,128,0.15);color:#888;">⚫ Offline</span>`;
+        }
+
+        // Role badge
+        const roleBadge = role === 'owner'
+            ? `<span class="category-badge" style="background:rgba(155,89,182,0.15);color:#9b59b6;">👑 Owner</span>`
+            : `<span class="category-badge" style="background:rgba(52,152,219,0.15);color:#3498db;">🧳 Tourist</span>`;
+
+        // Action buttons (chi owner moi co nut khoa)
+        let actionBtns = '';
+        if (role === 'owner') {
+            const st = user.status || 'active';
+            const toggleName = st === 'active' ? 'Khóa' : 'Mở khóa';
+            const toggleColor = st === 'active' ? 'var(--accent)' : 'var(--success)';
+            actionBtns = `
+                <button onclick="toggleUserStatus('${doc.id}', '${st}', '${user.email}')" style="color:${toggleColor};border-color:${toggleColor};">
+                    ${st === 'active' ? '🔒' : '🔓'} ${toggleName}
+                </button>`;
+        }
+        actionBtns += `<button class="delete" onclick="deleteUser('${doc.id}', '${user.email}')">❌ Xóa</button>`;
+
         html += `
             <tr>
-                <td style="color: var(--text-primary); font-weight: 500;">${user.email || 'N/A'}</td>
-                <td>${statusBadge}</td>
-                <td><span style="color:var(--accent); font-weight: bold;">${shopCount}</span> quán</td>
-                <td>${createdAt}</td>
-                <td>
-                    <div class="action-btns">
-                        <button onclick="toggleUserStatus('${doc.id}', '${status}', '${user.email}')" style="color: ${toggleActionColor}; border-color: ${toggleActionColor};">
-                            ${status === 'active' ? '🔒' : '🔓'} ${toggleActionName}
-                        </button>
-                        <button class="delete" onclick="deleteUser('${doc.id}', '${user.email}')">❌ Xóa</button>
-                    </div>
+                <td style="color:var(--text-primary);font-weight:500;">
+                    ${user.displayName || user.email || 'N/A'}<br>
+                    <small style="color:#888;font-weight:400;">${user.email || ''}</small>
                 </td>
+                <td>${roleBadge}</td>
+                <td>${statusBadge}<br><small style="color:#888;">${lastSeenText}</small></td>
+                <td>${createdAt}</td>
+                <td><div class="action-btns">${actionBtns}</div></td>
             </tr>
         `;
     });

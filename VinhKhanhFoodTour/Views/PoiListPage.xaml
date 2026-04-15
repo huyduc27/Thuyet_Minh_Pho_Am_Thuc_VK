@@ -12,9 +12,10 @@
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
-        <!-- Search Bar -->
+        <!-- Search Bar: chi hien khi da dang nhap -->
         <Border Grid.Row="0" BackgroundColor="White" Padding="16,12,16,8"
-                StrokeShape="RoundRectangle 0" Stroke="Transparent">
+                StrokeShape="RoundRectangle 0" Stroke="Transparent"
+                IsVisible="{Binding IsLoggedIn}">
             <Border BackgroundColor="#F5F5F5" StrokeShape="RoundRectangle 12"
                     Stroke="#E0E0E0" StrokeThickness="1" Padding="0">
                 <SearchBar Text="{Binding SearchText}" 
@@ -32,12 +33,13 @@
             <ScrollView>
                 <VerticalStackLayout Spacing="0" Padding="0">
 
-                    <!-- Category Filter -->
+                    <!-- Category Filter: chi hien khi da dang nhap -->
                     <CollectionView ItemsSource="{Binding Categories}" 
                                     SelectionMode="Single" 
                                     SelectedItem="{Binding SelectedCategory}"
                                     ItemsLayout="HorizontalList"
-                                    HeightRequest="44" Margin="12,4,12,8">
+                                    HeightRequest="44" Margin="12,4,12,8"
+                                    IsVisible="{Binding IsLoggedIn}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="vm:CategoryViewModel">
                                 <Border Padding="16,6" 
@@ -51,6 +53,33 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+
+                    <!-- Banner dang nhap: chi hien khi chua dang nhap -->
+                    <Border IsVisible="{Binding IsLoggedIn, Converter={x:StaticResource InvertedBoolConverter}}"
+                            BackgroundColor="#FFF5F7"
+                            StrokeShape="RoundRectangle 12"
+                            Stroke="#FFCCCC" StrokeThickness="1"
+                            Padding="14,10" Margin="12,8,12,4">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Dang nhap de xem chi tiet &amp; nghe thuyet minh"
+                                       FontSize="13" FontAttributes="Bold"
+                                       TextColor="#c0392b"/>
+                                <Label Text="Danh sach quan an van luon hien thi mien phi."
+                                       FontSize="11" TextColor="#999"/>
+                            </VerticalStackLayout>
+                            <Button Grid.Column="1"
+                                    Text="Dang nhap"
+                                    Command="{Binding GoToLoginCommand}"
+                                    BackgroundColor="#e94560"
+                                    TextColor="White"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    CornerRadius="10"
+                                    HeightRequest="36"
+                                    Padding="12,0"/>
+                        </Grid>
+                    </Border>
 
                     <!-- Featured Section -->
                     <VerticalStackLayout Padding="16,8,0,12" Spacing="10">
@@ -213,5 +242,110 @@
         <!-- Loading -->
         <ActivityIndicator Grid.Row="1" IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
                            Color="#e94560" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+        <!-- ===== AUTH OVERLAY ===== -->
+        <!-- Hien khi chua dang nhap va user thu bam vao 1 quan an -->
+        <Grid Grid.RowSpan="2"
+              BackgroundColor="#88000000"
+              IsVisible="{Binding IsAuthOverlayVisible}">
+
+            <!-- Tap vung ngoai card = dong overlay -->
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding DismissAuthOverlayCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <!-- Card chinh -->
+            <Border BackgroundColor="White"
+                    StrokeShape="RoundRectangle 24"
+                    Stroke="Transparent"
+                    Padding="28,24"
+                    Margin="32,0"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Fill"
+                    Shadow="{OnPlatform Android={Shadow Brush='#50000000', Offset='0,8', Radius=24}}">
+
+                <!-- Ngan touch xuyen xuong background -->
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer/>
+                </Border.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="0">
+
+                    <!-- Icon -->
+                    <Border BackgroundColor="#FFF0F3"
+                            StrokeShape="RoundRectangle 20"
+                            Stroke="Transparent"
+                            WidthRequest="72" HeightRequest="72"
+                            HorizontalOptions="Center"
+                            Margin="0,0,0,16">
+                        <Label Text="🔐"
+                               FontSize="36"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                    </Border>
+
+                    <!-- Title -->
+                    <Label Text="Cần đăng nhập"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#1a1a2e"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           Margin="0,0,0,10"/>
+
+                    <!-- Body -->
+                    <Label Text="Đăng nhập để xem chi tiết quán ăn và nghe thuyết minh tự động."
+                           FontSize="14"
+                           TextColor="#888"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           LineHeight="1.5"
+                           Margin="0,0,0,24"/>
+
+                    <!-- Buttons -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+
+                        <!-- Huy -->
+                        <Border Grid.Column="0"
+                                BackgroundColor="#F5F5F5"
+                                StrokeShape="RoundRectangle 14"
+                                Stroke="Transparent">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding DismissAuthOverlayCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="Hủy"
+                                   FontSize="15"
+                                   TextColor="#888"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   Padding="0,14"/>
+                        </Border>
+
+                        <!-- Dang nhap -->
+                        <Border Grid.Column="1"
+                                BackgroundColor="#e94560"
+                                StrokeShape="RoundRectangle 14"
+                                Stroke="Transparent"
+                                Shadow="{OnPlatform Android={Shadow Brush='#60e94560', Offset='0,4', Radius=12}}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding GoToLoginCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="Đăng nhập"
+                                   FontSize="15"
+                                   TextColor="White"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   Padding="0,14"/>
+                        </Border>
+
+                    </Grid>
+
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
     </Grid>
 </ContentPage>
+

@@ -13,7 +13,8 @@
     Shell.ForegroundColor="#1a1a2e">
 
     <TabBar>
-        <ShellContent Title="{Binding [Tab_List], Source={x:Static services:LocalizationResourceManager.Instance}}"
+        <ShellContent Route="PoiListTab"
+                      Title="{Binding [Tab_List], Source={x:Static services:LocalizationResourceManager.Instance}}"
                       Icon="tab_list.svg"
                       ContentTemplate="{DataTemplate views:PoiListPage}"/>
         <ShellContent Title="{Binding [Tab_Map], Source={x:Static services:LocalizationResourceManager.Instance}}"

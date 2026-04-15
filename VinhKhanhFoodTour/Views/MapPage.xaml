@@ -117,5 +117,53 @@
         <ActivityIndicator Grid.Row="2" IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
                            Color="#e94560" VerticalOptions="Center" HorizontalOptions="Center"
                            WidthRequest="44" HeightRequest="44"/>
+
+        <!-- Auth Guard Overlay: hiện khi chưa đăng nhập -->
+        <Grid Grid.RowSpan="3"
+              BackgroundColor="#EEf8f9fa"
+              IsVisible="{Binding IsAuthRequired}">
+            <VerticalStackLayout VerticalOptions="Center"
+                                 HorizontalOptions="Center"
+                                 Spacing="16"
+                                 Padding="32">
+
+                <Label Text="🗺️"
+                       FontSize="64"
+                       HorizontalOptions="Center"/>
+
+                <Label Text="Đăng nhập để xem bản đồ"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="#1a1a2e"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"/>
+
+                <Label Text="Bạn cần tài khoản để xem bản đồ và nghe thuyết minh tự động khi di chuyển."
+                       FontSize="14"
+                       TextColor="#666"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"
+                       LineHeight="1.5"/>
+
+                <Button Text="🔑  Đăng nhập"
+                        Command="{Binding GoToLoginCommand}"
+                        BackgroundColor="#e94560"
+                        TextColor="White"
+                        FontSize="16"
+                        FontAttributes="Bold"
+                        CornerRadius="14"
+                        HeightRequest="52"
+                        Margin="0,8,0,0"/>
+
+                <Label Text="Danh sách quán ăn vẫn luôn có sẵn không cần đăng nhập."
+                       FontSize="12"
+                       TextColor="#999"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"/>
+
+            </VerticalStackLayout>
+        </Grid>
+
     </Grid>
 </ContentPage>
+

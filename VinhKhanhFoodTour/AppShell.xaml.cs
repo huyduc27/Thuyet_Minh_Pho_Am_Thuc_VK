@@ -9,11 +9,12 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
 
-        // Đăng ký navigation route cho chi tiết POI
+        // Đăng ký route cho chi tiết POI
         Routing.RegisterRoute(nameof(PoiDetailPage), typeof(PoiDetailPage));
 
-        // Firebase sync giờ được xử lý trong App.xaml.cs (đồng bộ trước → start geofence)
-        // Không cần sync ở đây nữa để tránh race condition.
+        // Đăng ký route cho màn hình Auth (không nằm trong TabBar)
+        Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
+        Routing.RegisterRoute(nameof(RegisterPage), typeof(RegisterPage));
     }
 }
 

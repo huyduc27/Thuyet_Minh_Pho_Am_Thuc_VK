@@ -29,18 +29,22 @@ public static class MauiProgram
         builder.Services.AddSingleton<SettingsService>();
         builder.Services.AddSingleton<GeofenceService>();
         builder.Services.AddSingleton<NarrationService>();
+        builder.Services.AddSingleton<AuthService>();
 
         // === ViewModels ===
         builder.Services.AddTransient<PoiListViewModel>();
         builder.Services.AddTransient<PoiDetailViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddTransient<MapViewModel>();
+        builder.Services.AddTransient<AuthViewModel>();
 
         // === Pages ===
         builder.Services.AddTransient<PoiListPage>();
         builder.Services.AddTransient<PoiDetailPage>();
         builder.Services.AddTransient<SettingsPage>();
         builder.Services.AddTransient<MapPage>();
+        builder.Services.AddTransient<LoginPage>();
+        builder.Services.AddTransient<RegisterPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

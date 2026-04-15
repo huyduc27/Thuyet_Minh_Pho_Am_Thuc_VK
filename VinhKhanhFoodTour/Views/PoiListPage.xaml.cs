@@ -25,3 +25,6 @@ public partial class PoiListPage : ContentPage
         }
     }
 }
+
+
+

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using VinhKhanhFoodTour.Models;
 using VinhKhanhFoodTour.Services;
+using VinhKhanhFoodTour.Views;
 
 namespace VinhKhanhFoodTour.ViewModels;
 
@@ -13,6 +14,14 @@ public partial class PoiListViewModel : ObservableObject
     private readonly NarrationService _narrationService;
     private readonly SettingsService _settingsService;
     private readonly FirebaseSyncService _syncService;
+    private readonly AuthService _authService;
+
+    [ObservableProperty]
+    private bool _isLoggedIn;
+
+    // Hien overlay "can dang nhap" khi user tap POI ma chua login
+    [ObservableProperty]
+    private bool _isAuthOverlayVisible;
 
     [ObservableProperty]
     private ObservableCollection<PoiItemViewModel> _pois = new();
@@ -51,15 +60,20 @@ public partial class PoiListViewModel : ObservableObject
 
     public PoiListViewModel(DatabaseService dbService, LocationService locService,
         NarrationService narService, SettingsService settingsService,
-        FirebaseSyncService syncService)
+        FirebaseSyncService syncService, AuthService authService)
     {
         _databaseService = dbService;
         _locationService = locService;
         _narrationService = narService;
         _settingsService = settingsService;
         _syncService = syncService;
-        
+        _authService = authService;
+
         _selectedCategory = Categories[0];
+
+        // Track auth state cho UI (PoiListPage an/hien search + filter)
+        IsLoggedIn = _authService.IsLoggedIn;
+        _authService.AuthStateChanged += (_, isLoggedIn) => { IsLoggedIn = isLoggedIn; };
     }
 
     [RelayCommand]
@@ -191,8 +205,28 @@ public partial class PoiListViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void DismissAuthOverlay()
+    {
+        IsAuthOverlayVisible = false;
+    }
+
+    [RelayCommand]
+    private async Task GoToLoginAsync()
+    {
+        IsAuthOverlayVisible = false;
+        await Shell.Current.GoToAsync(nameof(LoginPage));
+    }
+
+    [RelayCommand]
     private async Task NavigateToDetailAsync(PoiItemViewModel? item)
     {
+        // Chua dang nhap -> hien overlay trong page (khong dung modal/alert)
+        if (!_authService.IsLoggedIn)
+        {
+            IsAuthOverlayVisible = true;
+            return;
+        }
+
         try
         {
             if (item?.Poi != null)

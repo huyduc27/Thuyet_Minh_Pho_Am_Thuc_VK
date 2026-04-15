@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 using VinhKhanhFoodTour.Models;
 using VinhKhanhFoodTour.Services;
+using VinhKhanhFoodTour.Views;
 using Map = Microsoft.Maui.Controls.Maps.Map;
 
 namespace VinhKhanhFoodTour.ViewModels;
@@ -15,6 +16,7 @@ public partial class MapViewModel : ObservableObject
     private readonly SettingsService _settingsService;
     private readonly FirebaseSyncService _syncService;
     private readonly GeofenceService _geofenceService;
+    private readonly AuthService _authService;
 
     private Circle? _userDot;
     private Circle? _userHalo;
@@ -56,6 +58,10 @@ public partial class MapViewModel : ObservableObject
     [ObservableProperty]
     private string _playPauseIcon = "\u25B6";
 
+    // === Auth Guard ===
+    [ObservableProperty]
+    private bool _isAuthRequired;
+
     private readonly double[] _speedOptions = { 1, 2, 3, 5, 10 };
     private int _speedIndex = 0;
 
@@ -64,16 +70,28 @@ public partial class MapViewModel : ObservableObject
         LocationService locationService,
         SettingsService settingsService,
         FirebaseSyncService syncService,
-        GeofenceService geofenceService)
+        GeofenceService geofenceService,
+        AuthService authService)
     {
         _databaseService = databaseService;
         _locationService = locationService;
         _settingsService = settingsService;
         _syncService = syncService;
         _geofenceService = geofenceService;
+        _authService = authService;
 
         _locationService.RouteProgressChanged += OnRouteProgress;
         _locationService.RouteFinished += OnRouteFinished;
+
+        // Khi user đăng nhập → tự reload bản đồ
+        _authService.AuthStateChanged += async (_, isLoggedIn) =>
+        {
+            if (isLoggedIn)
+            {
+                IsAuthRequired = false;
+                await MainThread.InvokeOnMainThreadAsync(async () => await LoadMapAsync());
+            }
+        };
     }
 
     private void OnRouteProgress(object? sender, (Location Location, int Index, int Total) e)
@@ -102,6 +120,15 @@ public partial class MapViewModel : ObservableObject
     {
         if (MapControl == null) return;
 
+        // === Auth Guard: chưa đăng nhập → hiện overlay, không tải bản đồ ===
+        if (!_authService.IsLoggedIn)
+        {
+            IsAuthRequired = true;
+            IsLoading = false;
+            return;
+        }
+
+        IsAuthRequired = false;
         IsLoading = true;
         try
         {
@@ -308,6 +335,12 @@ public partial class MapViewModel : ObservableObject
         _locationService.SetSimulatedLocation(lat, lng);
         LocationStatus = $"MANUAL: {lat:F5}, {lng:F5}";
         MoveUserMarker(lat, lng);
+    }
+
+    [RelayCommand]
+    public async Task GoToLoginAsync()
+    {
+        await Shell.Current.GoToAsync(nameof(LoginPage));
     }
 
     private void StopAllSimulation()

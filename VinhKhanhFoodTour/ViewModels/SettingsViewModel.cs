@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VinhKhanhFoodTour.Models;
 using VinhKhanhFoodTour.Services;
+using VinhKhanhFoodTour.Views;
 
 namespace VinhKhanhFoodTour.ViewModels;
 
@@ -9,6 +10,7 @@ public partial class SettingsViewModel : ObservableObject
 {
     private readonly SettingsService _settingsService;
     private readonly DatabaseService _databaseService;
+    private readonly AuthService _authService;
 
     [ObservableProperty]
     private string _selectedLanguage = "vi";
@@ -47,19 +49,29 @@ public partial class SettingsViewModel : ObservableObject
 
     private readonly string[] _languageCodes = { "vi", "en", "zh", "ko" };
 
-    public SettingsViewModel(SettingsService settingsService, DatabaseService databaseService)
+    // === Auth Info ===
+    [ObservableProperty] private bool _isLoggedIn;
+    [ObservableProperty] private string _userDisplayName = "Khách";
+    [ObservableProperty] private string _userEmail = "";
+
+    public SettingsViewModel(SettingsService settingsService, DatabaseService databaseService, AuthService authService)
     {
         _settingsService = settingsService;
         _databaseService = databaseService;
+        _authService = authService;
 
-        try
-        {
-            LoadSettings();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Settings load error: {ex}");
-        }
+        try { LoadSettings(); }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Settings load error: {ex}"); }
+
+        RefreshUserInfo();
+        _authService.AuthStateChanged += (_, _) => RefreshUserInfo();
+    }
+
+    private void RefreshUserInfo()
+    {
+        IsLoggedIn = _authService.IsLoggedIn;
+        UserDisplayName = _authService.CurrentUser?.DisplayName ?? "Khách";
+        UserEmail = _authService.CurrentUser?.Email ?? "";
     }
 
     private void LoadSettings()
@@ -152,6 +164,24 @@ public partial class SettingsViewModel : ObservableObject
         {
             System.Diagnostics.Debug.WriteLine($"Clear history error: {ex}");
         }
+    }
+
+    [RelayCommand]
+    private async Task LogoutAsync()
+    {
+        bool confirm = await Shell.Current.CurrentPage!.DisplayAlertAsync(
+            "Đăng xuất", "Bạn có chắc muốn đăng xuất?", "Đăng xuất", "Hủy");
+        if (!confirm) return;
+
+        await _authService.LogoutAsync();
+        // Điều hướng đến LoginPage
+        await Shell.Current.GoToAsync(nameof(LoginPage));
+    }
+
+    [RelayCommand]
+    private async Task GoToLoginAsync()
+    {
+        await Shell.Current.GoToAsync(nameof(LoginPage));
     }
 
     [RelayCommand]

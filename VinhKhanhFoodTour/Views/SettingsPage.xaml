@@ -16,6 +16,71 @@
             <Label Text="{Binding [Settings_Title], Source={x:Static services:LocalizationResourceManager.Instance}}" FontSize="20" TextColor="#1a1a2e" FontAttributes="Bold" 
                    CharacterSpacing="1" Margin="4,0,0,4"/>
 
+            <!-- === Account Card === -->
+            <Border BackgroundColor="White" StrokeShape="RoundRectangle 14"
+                    Stroke="#EEEEEE" StrokeThickness="1" Padding="16"
+                    Shadow="{OnPlatform Android={Shadow Brush='#08000000', Offset='0,1', Radius=4}}">
+                <VerticalStackLayout Spacing="10">
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="👤" FontSize="18"/>
+                        <Label Text="Tài khoản" FontSize="16" TextColor="#1a1a2e" FontAttributes="Bold"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                    <BoxView HeightRequest="1" Color="#F0F0F0"/>
+
+                    <!-- Logged In State -->
+                    <VerticalStackLayout IsVisible="{Binding IsLoggedIn}" Spacing="10">
+                        <HorizontalStackLayout Spacing="12">
+                            <Border BackgroundColor="#e94560"
+                                    StrokeShape="RoundRectangle 22"
+                                    Stroke="Transparent"
+                                    WidthRequest="44" HeightRequest="44">
+                                <Label Text="{Binding UserDisplayName[0]}"
+                                       TextColor="White"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+                            </Border>
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="{Binding UserDisplayName}"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="#1a1a2e"/>
+                                <Label Text="{Binding UserEmail}"
+                                       FontSize="12"
+                                       TextColor="#999"/>
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+                        <Button Text="🚪  Đăng xuất"
+                                Command="{Binding LogoutCommand}"
+                                BackgroundColor="#FFF0F0"
+                                TextColor="#e94560"
+                                CornerRadius="12"
+                                BorderColor="#FFCCCC"
+                                BorderWidth="1"
+                                FontSize="14"
+                                HeightRequest="44"/>
+                    </VerticalStackLayout>
+
+                    <!-- Logged Out State -->
+                    <VerticalStackLayout IsVisible="{Binding IsLoggedIn, Converter={x:StaticResource InvertedBoolConverter}}" Spacing="10">
+                        <Label Text="Đăng nhập để sử dụng bản đồ và nghe thuyết minh tự động."
+                               FontSize="13"
+                               TextColor="#999"
+                               LineHeight="1.4"/>
+                        <Button Text="🔑  Đăng nhập / Đăng ký"
+                                Command="{Binding GoToLoginCommand}"
+                                BackgroundColor="#e94560"
+                                TextColor="White"
+                                CornerRadius="12"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                HeightRequest="44"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
             <!-- Language -->
             <Border BackgroundColor="White" StrokeShape="RoundRectangle 14"
                     Stroke="#EEEEEE" StrokeThickness="1" Padding="16"
