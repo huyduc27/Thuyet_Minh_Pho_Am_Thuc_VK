@@ -652,26 +652,85 @@
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
-                    <h4>📷 5. Quét mã QR nghe Audio (Web QR Flow)</h4>
-                    <p>Tiện ích Web ngoại truyện dành riêng cho Khách vãng lai, lấp đầy lỗ hổng của Use Case.</p>
+                    <h4>📷 5. Quét mã QR & Thanh toán Audio (QR Web Payment Flow)</h4>
+                    <p>Tiện ích Web cho phép Khách vãng lai quét mã nghe thuyết minh tích hợp chặn truy cập, yêu cầu thanh toán (VNPay/Momo) để kích hoạt Active Session.</p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 2rem;">
                 <div class="mermaid">
                     sequenceDiagram
                         actor User as Khách vãng lai (No App)
-                        participant OS as Phone Camera / Zalo QR
-                        participant Web as Mobile Web Browser
-                        participant Firebase as Web CMS API
-                        participant WebAudio as Web Speech API
+                        participant Web as Web Browser (listen.html)
+                        participant Pay as Cổng Thanh toán (VNPay/Momo)
+                        participant API as Firebase DB API
+                        participant Audio as Web Speech API
                         
-                        User->>OS: Soi thẳng Camera vào Biển QR của Quán
-                        OS->>Web: Deep-link trỏ vào Website<br/>listen.html?poi={id}&lang={lang}
-                        Web->>Firebase: Script yêu cầu Dữ liệu quán<br/>doc(db, "pois", poiId)
-                        Firebase-->>Web: Trả về Văn bản (Cực nhanh)
-                        Web->>WebAudio: Truyền lệnh Đọc Audio nền tảng Web<br/>window.speechSynthesis.speak()
-                        WebAudio-->>User: Phát Audio giới thiệu món ăn
-                        Web->>Firebase: Gọi module Update Server<br/>history.js (Ghi "QR" source log)
+                        User->>Web: Quét QR & Mở trang (listen.html?poi={id})
+                        Web->>Web: Kiểm tra LocalStorage (Tìm Session ID/Token cũ)
+                        Web->>API: Tải dữ liệu POI & Validate Token
+                        
+                        alt Token rỗng / Hết hạn (Bị khóa)
+                            API-->>Web: Trả về trạng thái "Chưa thanh toán" (Locked)
+                            Web-->>User: Hiển thị Paywall (Yêu cầu thanh toán)
+                            User->>Web: Bấm "Thanh toán ngay"
+                            Web->>Pay: Điều hướng sang cổng VNPay/Momo
+                            User->>Pay: Chuyển khoản với ứng dụng Ngân hàng
+                            Pay-->>API: Gửi Webhook báo cáo [Paid] thành công
+                            API->>API: Cập nhật CSDL: Cấp Session ID -> "Active"
+                            Pay-->>Web: Redirect User về trang Web ban đầu
+                            Web->>Web: Lưu lại VIP Token vào LocalStorage để bypass lần sau
+                        else Đã mua trước đó (Token Hợp lệ)
+                            API-->>Web: Xác thực Session Active (Bỏ qua Paywall)
+                            Web-->>User: Vào thẳng trang chi tiết món ăn (VIP)
+                        end
+                        
+                        Web->>Audio: Cấp quyền mở khóa Trình đọc<br/>window.speechSynthesis.speak()
+                        Audio-->>User: Phát Audio giới thiệu trực tiếp
+                        Web->>API: Đẩy lịch sử truy cập ẩn danh lên server<br/>history.js (Nguồn: QR)
+                </div>
+            </div>
+
+            <div class="card-grid" style="margin-bottom: 1rem;">
+                <div class="card">
+                    <h4>🚧 6. Luồng Giao thoa Vùng & Hàng chờ Audio (Collision & Queue Flow)</h4>
+                    <p>Giải quyết bài toán khi 1 người thay vì đứng 1 POI, mà đứng ở vị trí giao thoa 2-3 POI cùng lúc. Hệ thống sử dụng Queue nội bộ và Native OS để xử lý không giật lag.</p>
+                </div>
+            </div>
+            <div class="diagram-container" style="margin-bottom: 4rem;">
+                <div class="mermaid">
+                    sequenceDiagram
+                        actor User as Khách tham quan
+                        participant GPS as Location Service
+                        participant Geo as Geofence Service
+                        participant TTS as Narration Service (Queue)
+                        participant OS as Native Voice Engine
+                        participant Cloud as Web CMS (Firebase)
+
+                        note over User,Geo: YÊU CẦU 1: 1 NGƯỜI ĐỨNG GIỮA 2 QUÁN CÙNG LÚC
+                        User->>GPS: Di chuyển vào vùng giao thoa (Quán A & Quán B)
+                        GPS->>Geo: Cập nhật Toạ độ: OnLocationChanged(Lat, Lng)
+                        Geo->>Geo: Quét bán kính 30m phát hiện đụng độ
+                        Geo-->>TTS: Phát đi Mảng đồng thời: [Quán A, Quán B]
+                        
+                        note over TTS,OS: YÊU CẦU 2: HÀNG ĐỢI AUDIO (CHỐNG GIẬT / CHỒNG ÂM)
+                        TTS->>TTS: Lock Thread (Khoá an toàn mảng luồng)
+                        TTS->>TTS: Xếp Quán A vào Queue[0]
+                        TTS->>TTS: Xếp Quán B vào Queue[1]
+                        
+                        TTS->>OS: Đẩy Queue[0] -> Phát âm thanh Quán A
+                        OS-->>User: Đọc mượt mà: "Chào mừng đến Quán Ốc A..."
+                        note right of OS: ⚡ KHÔNG dùng mạng Internet<br/>(Bypass Server tuyệt đối để chống giật)
+                        
+                        OS-->>TTS: Trình đọc báo cáo Finished (Kết thúc)
+                        TTS->>TTS: Hệ thống Delay ngắt giọng (500ms)
+                        TTS->>OS: Trượt sang Queue[1] -> Đọc Quán B
+                        OS-->>User: Đọc tiếp nối: "Sát bên cạnh là Quán B..."
+                        
+                        note over User,Cloud: TRÊN WEB CMS HIỂN THỊ VISITOR KẸP GIỮA
+                        TTS->>Cloud: Đẩy Log: [Người dùng X nghe Quán A]
+                        TTS->>Cloud: Đẩy Log: [Người dùng X nghe Quán B]
+                        Cloud->>Cloud: CMS thống kê nhận luồng log cùng 1 mốc giây
+                        Cloud-->>Cloud: Cập nhật Web cho thấy Visitor đang kẹp giữa 2 POI
                 </div>
             </div>
                 </div>
@@ -822,6 +881,47 @@
                         end
                         UI->>UI: Khớp nối Local Date & Đếm Aggregate Chart<br/>updateSourceStats()
                         UI-->>User: In ra Biểu đồ và Grid Lịch sử cá nhân hóa
+                </div>
+            </div>
+
+            <div class="card-grid" style="margin-bottom: 1rem;">
+                <div class="card">
+                    <h4>🟢 6. Luồng Theo dõi Khách Trực Tuyến (Real-time Visitors Tracker)</h4>
+                    <p>Cơ chế Heartbeat (nhịp tim) và Snapshot Listener giúp Dashboard quản trị nhảy số thời gian thực (+1 người online) ngay khoảnh khoắc du khách vừa mở App hoặc vừa đưa camera quét QR.</p>
+                </div>
+            </div>
+            <div class="diagram-container" style="margin-bottom: 4rem;">
+                <div class="mermaid">
+                    sequenceDiagram
+                        actor Visitor as Khách truy cập
+                        actor Owner as CMS Admin / Owner
+                        participant App as App / Web (Client)
+                        participant FB as Firebase (Firestore DB)
+                        participant CMS as CMS Dashboard
+
+                        note over Owner,CMS: BƯỚC 1: Lắng nghe Dữ liệu Real-time
+                        Owner->>CMS: Mở trang Quản trị theo dõi khách
+                        CMS->>FB: Đăng ký Listener 24/7<br/>onSnapshot(where "status" == "active")
+                        FB-->>CMS: Trả về Array Active Users ban đầu
+
+                        note over Visitor,App: BƯỚC 2: Khách tham quan trực tuyến
+                        Visitor->>App: Mở App (OnResume) / Quẹt QR
+                        App->>FB: Gửi xung nhịp mạng (Heartbeat)<br/>update({ status: "active", lastActive: Now })
+                        
+                        note over FB,CMS: Firebase tự động Push Data ngay lập tức
+                        FB-->>CMS: Trigger Callback onSnapshot thay đổi
+
+                        CMS->>CMS: UI Re-render<br/>Cộng bộ đếm Online (+1)
+                        CMS-->>Owner: Thấy số lượng khách tăng lên
+
+                        note over Visitor,App: BƯỚC 3: Khách thoát ra
+                        Visitor->>App: Đóng App / Tắt trình duyệt
+                        App->>App: Áp dụng OS Lifecycle<br/>(App: OnSleep / Web: beforeunload)
+                        App->>FB: Cập nhật lần cuối trước khi ngắt<br/>update({ status: "offline" })
+                        
+                        FB-->>CMS: Trigger Callback onSnapshot đổi trạng thái
+                        CMS->>CMS: UI Re-render<br/>Từ Đỏ -> Xám, Trừ bộ đếm (-1)
+                        CMS-->>Owner: Thấy số lượng bị trừ đi 1 người
                 </div>
             </div>
         </section>
