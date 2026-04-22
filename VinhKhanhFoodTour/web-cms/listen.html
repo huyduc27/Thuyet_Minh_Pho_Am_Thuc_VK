@@ -617,6 +617,14 @@
                 return;
             }
 
+            // === Security Check: Yêu cầu thanh toán ===
+            const isPaidLocal = localStorage.getItem(`vk_paid_${poiId}`);
+            if (isPaidLocal !== 'true') {
+                // Khách chưa thanh toán hoặc mất cache -> Đẩy về trang thanh toán/khôi phục
+                window.location.href = `checkout.html?id=${poiId}`;
+                return;
+            }
+
             try {
                 // Load POI data
                 const poiDoc = await db.collection('pois').doc(poiId).get();

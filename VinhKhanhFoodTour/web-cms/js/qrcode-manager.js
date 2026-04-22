@@ -61,7 +61,7 @@ function renderQrPage() {
     pageItems.forEach(doc => {
         const poi = doc.data();
         const poiId = doc.id;
-        const listenUrl = `${QR_BASE_URL}/listen.html?id=${poiId}`;
+        const listenUrl = `${QR_BASE_URL}/checkout.html?id=${poiId}`;
 
         // Tạo card chứa QR
         const card = document.createElement('div');

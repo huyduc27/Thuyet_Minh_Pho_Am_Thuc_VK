@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Thanh Toán — Phố Ẩm Thực Vĩnh Khánh</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --primary: #e94560; --bg-dark: #0f0f23; --bg-card: #1a1a2e; --text-primary: #f0f0f0; --text-secondary: #a0a0b0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        body::before {
+            content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(233, 69, 96, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(30, 60, 120, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .container { width: 100%; max-width: 440px; margin: 20px 0; }
+
+        .welcome-section { text-align: center; margin-bottom: 25px; }
+        .welcome-section .logo { font-size: 50px; margin-bottom: 15px; display: block; }
+        .welcome-section h1 { font-size: 20px; font-weight: 800; margin-bottom: 8px; color: var(--text-primary); }
+        .welcome-section p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Steps Section */
+        .steps-container { margin-bottom: 25px; }
+        .step { display: flex; gap: 15px; margin-bottom: 18px; position: relative; }
+        .step:not(:last-child)::after {
+            content: ''; position: absolute; left: 15px; top: 35px; bottom: -10px; width: 2px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .step-num {
+            width: 32px; height: 32px; background: var(--bg-dark); border: 2px solid var(--primary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 14px; color: var(--primary); flex-shrink: 0;
+        }
+
+        .step-content h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: #fff; }
+        .step-content p { font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+
+        .poi-badge {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 12px;
+            margin: 15px 0;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .poi-name { font-size: 18px; font-weight: 700; color: #2ecc71; }
+
+        /* Form */
+        .form-control {
+            width: 100%; padding: 16px; background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;
+            color: white; font-family: inherit; font-size: 16px; margin-top: 8px;
+            outline: none; transition: 0.3s;
+        }
+        .form-control:focus { border-color: var(--primary); background: rgba(255, 255, 255, 0.05); }
+
+        /* VietQR Mockup */
+        .vietqr-card {
+            background: #fff; border-radius: 18px; padding: 20px; margin-top: 15px;
+            text-align: center; color: #333; display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .vietqr-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .vietqr-logo { font-weight: 900; color: #005baa; font-size: 20px; }
+        .qr-img-wrapper { width: 180px; height: 180px; margin: 0 auto 10px; border: 1px solid #f0f0f0; padding: 5px; }
+        .qr-img-wrapper img { width: 100%; height: 100%; }
+        .qr-price { font-size: 16px; font-weight: 800; color: var(--primary); }
+
+        .btn {
+            width: 100%; padding: 18px; border-radius: 16px; border: none;
+            font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s;
+            margin-top: 20px; font-family: inherit;
+        }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 25px rgba(233, 69, 96, 0.4); }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:disabled { opacity: 0.5; }
+
+        #loadingOverlay { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .loader { width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: var(--primary); border-radius: 50%; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }
+
+    </style>
+</head>
+
+<body>
+    <div id="loadingOverlay"><span class="loader"></span></div>
+
+    <div class="container">
+        <div class="welcome-section">
+            <span class="logo">🎙️</span>
+            <h1>HỆ THỐNG THUYẾT MINH TỰ ĐỘNG</h1>
+            <p>Chào mừng bạn đến với Phố ẩm thực Vĩnh Khánh. Để bắt đầu nghe câu chuyện về quán ăn này, vui lòng hoàn tất các bước hướng dẫn bên dưới.</p>
+        </div>
+
+        <div class="card">
+            <div class="poi-badge">
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Đang quét tại:</p>
+                <div class="poi-name" id="poiName">...</div>
+            </div>
+
+            <div class="steps-container">
+                <!-- Bước 1 -->
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h3>Định danh người dùng</h3>
+                        <p>Nhập SĐT hoặc Email. Hệ thống sẽ tự động mở khóa nếu bạn đã từng thanh toán trước đó cho quán này.</p>
+                        <input type="text" id="identifier" class="form-control" placeholder="Nhập SĐT hoặc Email...">
+                    </div>
+                </div>
+
+                <!-- Bước 2 & 3 -->
+                <div id="paymentSteps" style="display: none;">
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <h3>Thanh toán phí duy trì (5.000đ)</h3>
+                            <p>Sử dụng App Ngân hàng bất kỳ quét mã VietQR bên dưới để thanh toán.</p>
+                            <div class="vietqr-card" id="qrCard" style="display: block;">
+                                <div class="vietqr-header">
+                                    <div class="vietqr-logo">Viet<span style="color:#e94560">QR</span></div>
+                                    <span style="font-size: 10px; font-weight: bold; border: 1px solid #ccc; padding: 2px 5px; border-radius: 4px;">NAPAS247</span>
+                                </div>
+                                <div class="qr-img-wrapper">
+                                    <img src="" id="mockQrImg" alt="VietQR">
+                                </div>
+                                <div class="qr-price">Số tiền: 5.000 VND</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <h3>Xác nhận và Nghe</h3>
+                            <p>Nhấn nút bên dưới sau khi đã chuyển khoản thành công.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="btnMain" onclick="handleMainAction()">Tiếp tục bước 2</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEnL_IT-9OY5mfrRV2TJgPW7ctfDffK4I",
+            authDomain: "vinhkhanhfoodtour.firebaseapp.com",
+            projectId: "vinhkhanhfoodtour",
+            storageBucket: "vinhkhanhfoodtour.firebasestorage.app",
+            messagingSenderId: "755585686441",
+            appId: "1:755585686441:web:374fe76a54a572ab2902b8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let poiId = null;
+
+        (async function init() {
+            const params = new URLSearchParams(window.location.search);
+            poiId = params.get('id');
+            if (!poiId) { alert('Mã QR không hợp lệ!'); return; }
+
+            if (localStorage.getItem(`vk_paid_${poiId}`) === 'true') {
+                window.location.href = `listen.html?id=${poiId}`;
+                return;
+            }
+
+            try {
+                const doc = await db.collection('pois').doc(poiId).get();
+                if (doc.exists) {
+                    document.getElementById('poiName').textContent = doc.data().name;
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }
+            } catch (e) { console.error(e); alert('Lỗi kết nối!'); }
+        })();
+
+        async function handleMainAction() {
+            const identifier = document.getElementById('identifier').value.trim().toLowerCase();
+            if (!identifier) { alert('Vui lòng nhập Email hoặc SĐT để thực hiện bước 1!'); return; }
+
+            const btn = document.getElementById('btnMain');
+            const paymentSteps = document.getElementById('paymentSteps');
+
+            if (btn.textContent === 'Tiếp tục bước 2') {
+                btn.disabled = true;
+                btn.textContent = 'Đang kiểm tra quyền truy cập...';
+
+                try {
+                    const accessId = `${identifier}_${poiId}`;
+                    const doc = await db.collection('accessRights').doc(accessId).get();
+
+                    if (doc.exists && doc.data().status === 'paid') {
+                        alert('Nhận diện khách cũ! Bạn đã thanh toán quán này. Đang chuyển hướng...');
+                        localStorage.setItem(`vk_paid_${poiId}`, 'true');
+                        window.location.href = `listen.html?id=${poiId}`;
+                    } else {
+                        // Hiện bước 2 và 3
+                        paymentSteps.style.display = 'block';
+                        document.getElementById('mockQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=VIETQR_VINHKHANH_${identifier}`;
+                        btn.disabled = false;
+                        btn.textContent = 'Tôi đã thanh toán (Bước 3)';
+                        // Cuộn xuống để thấy mã QR
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert('Lỗi hệ thống!');
+                    btn.disabled = false;
+                    btn.textContent = 'Tiếp tục bước 2';
+                }
+                return;
+            }
+
+            // Xử lý bước 3
+            btn.disabled = true;
+            btn.textContent = 'Đang xác thực (2s)...';
+            
+            setTimeout(async () => {
+                try {
+                    const accessId = `${identifier}_${poiId}`;
+                    await db.collection('accessRights').doc(accessId).set({
+                        poiId: poiId, identifier: identifier, status: 'paid',
+                        purchasedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    localStorage.setItem(`vk_paid_${poiId}`, 'true');
+                    window.location.href = `listen.html?id=${poiId}`;
+                } catch (e) { alert('Lỗi!'); btn.disabled = false; btn.textContent = 'Tôi đã thanh toán (Bước 3)'; }
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
