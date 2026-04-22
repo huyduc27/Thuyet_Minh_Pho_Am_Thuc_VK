@@ -124,54 +124,80 @@ async function loadDashboardStats() {
 
 // === Theo dõi Người dùng Trực tuyến ===
 let onlineUsersUnsubscribe = null;
+let onlineGuestsUnsubscribe = null;
 
 function initOnlineUsersListener() {
     if (onlineUsersUnsubscribe) onlineUsersUnsubscribe();
+    if (onlineGuestsUnsubscribe) onlineGuestsUnsubscribe();
     
     onlineUsersUnsubscribe = db.collection('users')
         .where('status', '==', 'active')
         .onSnapshot(snapshot => {
             window._lastActiveUsersDocs = snapshot.docs; 
-            updateOnlineUsersCount(snapshot.docs);
+            updateOnlineUsersCount();
         }, err => {
             console.error('Lỗi khi lắng nghe user online:', err);
+        });
+
+    onlineGuestsUnsubscribe = db.collection('onlineGuests')
+        .onSnapshot(snapshot => {
+            window._lastActiveGuestsDocs = snapshot.docs;
+            updateOnlineUsersCount();
+        }, err => {
+            console.error('Lỗi khi lắng nghe guest online:', err);
         });
 
     // Cập nhật lại số đếm mỗi 30s để tự động lọc những người đã thoái trào (quá thời gian ngưỡng)
     if (!window._onlineInterval) {
         window._onlineInterval = setInterval(() => {
-            if (window._lastActiveUsersDocs) {
-                updateOnlineUsersCount(window._lastActiveUsersDocs);
-            }
+            updateOnlineUsersCount();
         }, 30000);
     }
 }
 
-function updateOnlineUsersCount(docs) {
-    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000); // Ngưỡng 2 phút
-    let onlineCount = 0;
+function updateOnlineUsersCount() {
+    const seventySecondsAgo = new Date(Date.now() - 70 * 1000); // Ngưỡng 70s theo yêu cầu demo
+    let appOnlineCount = 0;
+    let webOnlineCount = 0;
     
-    docs.forEach(doc => {
-        const user = doc.data();
-        if (user.lastSeen) {
-            // lastSeen có thể là Timestamp của Firestore hoặc chuỗi ISO 
-            const lastSeenDate = user.lastSeen.toDate ? user.lastSeen.toDate() : new Date(user.lastSeen);
-            if (lastSeenDate >= twoMinutesAgo) {
-                onlineCount++;
+    if (window._lastActiveUsersDocs) {
+        window._lastActiveUsersDocs.forEach(doc => {
+            const user = doc.data();
+            if (user.lastSeen) {
+                const lastSeenDate = user.lastSeen.toDate ? user.lastSeen.toDate() : new Date(user.lastSeen);
+                if (lastSeenDate >= seventySecondsAgo) {
+                    appOnlineCount++;
+                }
             }
-        }
-    });
+        });
+    }
+
+    if (window._lastActiveGuestsDocs) {
+        window._lastActiveGuestsDocs.forEach(doc => {
+            const guest = doc.data();
+            if (guest.lastSeen) {
+                const lastSeenDate = guest.lastSeen.toDate ? guest.lastSeen.toDate() : new Date(guest.lastSeen);
+                if (lastSeenDate >= seventySecondsAgo) {
+                    webOnlineCount++;
+                }
+            }
+        });
+    }
+
+    const totalOnlineCount = appOnlineCount + webOnlineCount;
 
     const statOnline = document.getElementById('statOnline');
+    const statOnlineApp = document.getElementById('statOnlineApp');
+    const statOnlineWeb = document.getElementById('statOnlineWeb');
+
     if (statOnline) {
-        // Có thể thêm một hiệu ứng nhấp nháy (blink) nhẹ khi có thay đổi
-        if (statOnline.textContent !== onlineCount.toString()) {
-            statOnline.textContent = onlineCount;
+        if (statOnline.textContent !== totalOnlineCount.toString()) {
             statOnline.style.transform = 'scale(1.2)';
             setTimeout(() => statOnline.style.transform = 'scale(1)', 200);
-        } else {
-            statOnline.textContent = onlineCount;
         }
+        statOnline.textContent = totalOnlineCount;
+        if (statOnlineApp) statOnlineApp.textContent = appOnlineCount;
+        if (statOnlineWeb) statOnlineWeb.textContent = webOnlineCount;
     }
 }
 

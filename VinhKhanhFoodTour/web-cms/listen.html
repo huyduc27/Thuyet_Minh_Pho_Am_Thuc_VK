@@ -637,6 +637,9 @@
                 renderPoi();
                 hideLoading();
 
+                // Start Guest Heartbeat
+                initGuestHeartbeat();
+
                 // Log visit (analytics)
                 try {
                     await db.collection('qrScans').add({
@@ -727,6 +730,9 @@
                 // Fallback: dùng TTS
                 speakTTS();
             }
+
+            // Gửi nhịp tim ngay lập tức để Dashboard cập nhật tức thì
+            updateHeartbeat();
 
             // Ghi log lượt nghe vào narrationLogs (source = 'qr')
             logNarrationPlay();
@@ -892,7 +898,42 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        // === Helpers ===
+        // === Guest Heartbeat ===
+        let heartbeatTimer = null;
+        function updateHeartbeat() {
+            if (document.visibilityState !== 'visible' || !poiData) return;
+
+            const GUEST_KEY = 'vk_guest_id';
+            let guestId = localStorage.getItem(GUEST_KEY);
+            if (!guestId) {
+                guestId = 'guest_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                localStorage.setItem(GUEST_KEY, guestId);
+            }
+
+            db.collection('onlineGuests').doc(guestId).set({
+                lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                poiId: poiData.id,
+                poiName: poiData.name || '',
+                userAgent: navigator.userAgent
+            }, { merge: true }).catch(e => console.error("Heartbeat error:", e));
+        }
+
+        function initGuestHeartbeat() {
+            // Gửi ngay lập tức khi load
+            updateHeartbeat();
+            
+            // Gửi định kỳ 30s
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+            heartbeatTimer = setInterval(updateHeartbeat, 30000);
+
+            // Gửi ngay lập tức khi người dùng quay lại Tab (Visibility Change)
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    updateHeartbeat();
+                }
+            });
+        }
+
         function formatTime(seconds) {
             const m = Math.floor(seconds / 60);
             const s = Math.floor(seconds % 60);
