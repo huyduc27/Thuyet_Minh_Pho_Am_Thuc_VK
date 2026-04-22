@@ -18,6 +18,7 @@ public class AuthService
     private AuthUser? _currentUser;
     private string _idToken = ""; // Luu in-memory de cap nhat Firestore
     private System.Threading.Timer? _heartbeatTimer; // Gui lastSeen dinh ky
+    private string _guestId = ""; // Dinh danh an danh cho thiet bi
 
     public bool IsLoggedIn => _currentUser != null;
     public AuthUser? CurrentUser => _currentUser;
@@ -49,17 +50,46 @@ public class AuthService
                 };
                 System.Diagnostics.Debug.WriteLine($"[Auth] ✅ Restored session: {email}");
                 AuthStateChanged?.Invoke(this, true);
-                // Cap nhat active + bat heartbeat khi khoi dong lai
-                StartHeartbeat();
             }
             else
             {
                 System.Diagnostics.Debug.WriteLine("[Auth] ℹ️ No saved session found.");
             }
+            
+            // Bat dau heartbeat (se tu dong chon mode Authenticated hoac Anonymous)
+            StartHeartbeat();
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[Auth] InitializeAsync error: {ex.Message}");
+        }
+    }
+
+    private async Task EnsureGuestIdAsync()
+    {
+        if (string.IsNullOrEmpty(_guestId))
+        {
+            _guestId = await SecureStorage.GetAsync("auth_guest_id") ?? "";
+            if (string.IsNullOrEmpty(_guestId))
+            {
+                _guestId = "app_" + Guid.NewGuid().ToString("N");
+                await SecureStorage.SetAsync("auth_guest_id", _guestId);
+            }
+        }
+    }
+
+    private async Task ClearAnonymousHeartbeatAsync()
+    {
+        try
+        {
+            await EnsureGuestIdAsync();
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"{FirestoreBase}/onlineGuests/{_guestId}");
+            await _http.SendAsync(request);
+            System.Diagnostics.Debug.WriteLine("[Auth] Cleared anonymous heartbeat.");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Auth] Clear anon error: {ex.Message}");
         }
     }
 
@@ -92,6 +122,8 @@ public class AuthService
             _currentUser = new AuthUser { Uid = uid, Email = email, DisplayName = displayName };
             System.Diagnostics.Debug.WriteLine($"[Auth] ✅ Registered: {email}");
             AuthStateChanged?.Invoke(this, true);
+            
+            await ClearAnonymousHeartbeatAsync();
             StartHeartbeat();
 
             return new AuthResult { Success = true, Uid = uid, IdToken = idToken };
@@ -129,6 +161,8 @@ public class AuthService
             _currentUser = new AuthUser { Uid = uid, Email = email, DisplayName = name };
             System.Diagnostics.Debug.WriteLine($"[Auth] ✅ Logged in: {email}");
             AuthStateChanged?.Invoke(this, true);
+            
+            await ClearAnonymousHeartbeatAsync();
             StartHeartbeat();
 
             return new AuthResult { Success = true, Uid = uid, IdToken = idToken };
@@ -156,6 +190,9 @@ public class AuthService
         SecureStorage.Remove("auth_refresh_token");
         System.Diagnostics.Debug.WriteLine("[Auth] Logged out.");
         AuthStateChanged?.Invoke(this, false);
+        
+        // Bat lai heartbeat an danh
+        StartHeartbeat();
     }
 
     // ===== Helpers =====
@@ -167,16 +204,14 @@ public class AuthService
     public void StartHeartbeat()
     {
         StopHeartbeat();
-        // Chay ngay lap tuc + lap lai moi 30 giay
         _heartbeatTimer = new System.Threading.Timer(
-            async _ => await UpdateUserStatusAsync("active"),
+            async _ => await SendHeartbeatLogicAsync(),
             null,
             TimeSpan.Zero,
             TimeSpan.FromSeconds(30));
         System.Diagnostics.Debug.WriteLine("[Auth] Heartbeat started.");
     }
 
-    /// <summary>Dung heartbeat (khi sleep/logout).</summary>
     public void StopHeartbeat()
     {
         _heartbeatTimer?.Dispose();
@@ -184,16 +219,51 @@ public class AuthService
         System.Diagnostics.Debug.WriteLine("[Auth] Heartbeat stopped.");
     }
 
-    /// <summary>
-    /// Cap nhat truong status trong Firestore (active / offline).
-    /// Fire-and-forget OK — best effort, khong block UI.
-    /// </summary>
+    private async Task SendHeartbeatLogicAsync()
+    {
+        if (IsLoggedIn)
+        {
+            await UpdateUserStatusAsync("active");
+        }
+        else
+        {
+            await UpdateAnonymousHeartbeatAsync();
+        }
+    }
+
+    private async Task UpdateAnonymousHeartbeatAsync()
+    {
+        try
+        {
+            await EnsureGuestIdAsync();
+            var body = new
+            {
+                fields = new Dictionary<string, object>
+                {
+                    ["lastSeen"] = new { timestampValue = DateTime.UtcNow.ToString("o") },
+                    ["platform"] = new { stringValue = "mobile" },
+                    ["isAnonymous"] = new { booleanValue = true }
+                }
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(body);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var url = $"{FirestoreBase}/onlineGuests/{_guestId}?updateMask.fieldPaths=lastSeen&updateMask.fieldPaths=platform&updateMask.fieldPaths=isAnonymous";
+            var request = new HttpRequestMessage(HttpMethod.Patch, url);
+            request.Content = content;
+            await _http.SendAsync(request);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Auth] Anon Heartbeat error: {ex.Message}");
+        }
+    }
+
     public async Task UpdateUserStatusAsync(string status)
     {
         if (_currentUser == null || string.IsNullOrEmpty(_idToken)) return;
         try
         {
-            // Ghi ca status lan lastSeen de CMS co the tinh offline theo thoi gian
             var body = new
             {
                 fields = new Dictionary<string, object>
@@ -205,15 +275,12 @@ public class AuthService
             var json = System.Text.Json.JsonSerializer.Serialize(body);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            // Chi update 2 truong, khong ghi de document
-            var url = $"{FirestoreBase}/users/{_currentUser.Uid}" +
-                      "?updateMask.fieldPaths=status&updateMask.fieldPaths=lastSeen";
+            var url = $"{FirestoreBase}/users/{_currentUser.Uid}?updateMask.fieldPaths=status&updateMask.fieldPaths=lastSeen";
             var request = new HttpRequestMessage(HttpMethod.Patch, url);
             request.Content = content;
             request.Headers.Add("Authorization", $"Bearer {_idToken}");
 
             var resp = await _http.SendAsync(request);
-            System.Diagnostics.Debug.WriteLine($"[Auth] Status -> {status}: {resp.StatusCode}");
         }
         catch (Exception ex)
         {

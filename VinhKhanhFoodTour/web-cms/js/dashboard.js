@@ -178,7 +178,12 @@ function updateOnlineUsersCount() {
             if (guest.lastSeen) {
                 const lastSeenDate = guest.lastSeen.toDate ? guest.lastSeen.toDate() : new Date(guest.lastSeen);
                 if (lastSeenDate >= seventySecondsAgo) {
-                    webOnlineCount++;
+                    if (guest.platform === 'mobile') {
+                        appOnlineCount++;
+                    } else {
+                        // Mặc định là web (hoặc web cũ chưa có trường platform)
+                        webOnlineCount++;
+                    }
                 }
             }
         });

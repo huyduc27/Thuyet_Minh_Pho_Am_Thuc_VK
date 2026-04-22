@@ -922,7 +922,8 @@
                 lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
                 poiId: poiData.id,
                 poiName: poiData.name || '',
-                userAgent: navigator.userAgent
+                userAgent: navigator.userAgent,
+                platform: 'web'
             }, { merge: true }).catch(e => console.error("Heartbeat error:", e));
         }
 
