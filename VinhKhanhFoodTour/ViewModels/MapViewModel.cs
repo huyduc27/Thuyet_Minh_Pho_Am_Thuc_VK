@@ -120,14 +120,6 @@ public partial class MapViewModel : ObservableObject
     {
         if (MapControl == null) return;
 
-        // === Auth Guard: chưa đăng nhập → hiện overlay, không tải bản đồ ===
-        if (!_authService.IsLoggedIn)
-        {
-            IsAuthRequired = true;
-            IsLoading = false;
-            return;
-        }
-
         IsAuthRequired = false;
         IsLoading = true;
         try

@@ -50,15 +50,8 @@ public partial class App : Application
                 // Bước 1: Khôi phục session (nếu đã đăng nhập trước đó)
                 await _authService.InitializeAsync();
 
-                // Bước 2: Nếu đã đăng nhập → khởi động sync + geofence
-                if (_authService.IsLoggedIn)
-                {
-                    await StartServicesAsync();
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("[App] Chưa đăng nhập — bỏ qua sync + geofence.");
-                }
+                // Bước 2: Khởi động sync + geofence cho TẤT CẢ user (kể cả chưa đăng nhập)
+                await StartServicesAsync();
             }
             catch (Exception ex)
             {
@@ -70,19 +63,23 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Khi user đăng nhập thành công → khởi động sync + geofence + narration
+    /// Khi user đăng nhập thành công → bắt đầu sync log lên Firestore
     /// </summary>
     private async void OnAuthStateChanged(object? sender, bool isLoggedIn)
     {
-        if (isLoggedIn && !_servicesStarted)
+        if (isLoggedIn)
         {
-            await StartServicesAsync();
+            // Sync logs lên Firestore khi đăng nhập
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+            {
+                _ = _syncService.SyncLogsToFirestoreAsync();
+            }
         }
     }
 
     /// <summary>
     /// Khởi động Firebase sync, Geofence, và GPS tracking.
-    /// Chỉ gọi khi user đã đăng nhập.
+    /// Gọi cho tất cả user (kể cả chưa đăng nhập).
     /// </summary>
     private async Task StartServicesAsync()
     {
@@ -100,7 +97,11 @@ public partial class App : Application
                     ? "[App] ✅ Đồng bộ Firebase xong!"
                     : "[App] ⚠️ Đồng bộ thất bại, dùng dữ liệu cũ.");
 
-                _ = _syncService.SyncLogsToFirestoreAsync();
+                // Chỉ sync log khi đã đăng nhập (cần user identity)
+                if (_authService.IsLoggedIn)
+                {
+                    _ = _syncService.SyncLogsToFirestoreAsync();
+                }
             }
 
             // Start Geofence + GPS

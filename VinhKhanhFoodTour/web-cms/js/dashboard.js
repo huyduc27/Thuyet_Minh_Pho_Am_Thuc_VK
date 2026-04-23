@@ -65,7 +65,7 @@ function switchSection(section) {
     // Load data for section
     switch (section) {
         case 'dashboard': loadDashboardStats(); break;
-        case 'approvals': if(typeof loadApprovals === 'function') loadApprovals(); break;
+        case 'approvals': if (typeof loadApprovals === 'function') loadApprovals(); break;
         case 'poi': loadPois(); break;
         case 'translation': loadTranslations(); break;
         case 'audio': loadAudioPoiFilter(); break;
@@ -129,11 +129,11 @@ let onlineGuestsUnsubscribe = null;
 function initOnlineUsersListener() {
     if (onlineUsersUnsubscribe) onlineUsersUnsubscribe();
     if (onlineGuestsUnsubscribe) onlineGuestsUnsubscribe();
-    
+
     onlineUsersUnsubscribe = db.collection('users')
         .where('status', '==', 'active')
         .onSnapshot(snapshot => {
-            window._lastActiveUsersDocs = snapshot.docs; 
+            window._lastActiveUsersDocs = snapshot.docs;
             updateOnlineUsersCount();
         }, err => {
             console.error('Lỗi khi lắng nghe user online:', err);
@@ -159,7 +159,7 @@ function updateOnlineUsersCount() {
     const seventySecondsAgo = new Date(Date.now() - 70 * 1000); // Ngưỡng 70s theo yêu cầu demo
     let appOnlineCount = 0;
     let webOnlineCount = 0;
-    
+
     if (window._lastActiveUsersDocs) {
         window._lastActiveUsersDocs.forEach(doc => {
             const user = doc.data();
@@ -230,7 +230,7 @@ function loadTop5Chart(poisSnap, historySnap) {
 
     // 3. Sắp xếp và lấy top 5
     const sorted = Object.entries(logCountMap)
-        .map(([id, count]) => ({ name: poiNameMap[id] || `POI #${id.slice(0,6)}`, count }))
+        .map(([id, count]) => ({ name: poiNameMap[id] || `POI #${id.slice(0, 6)}`, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
 
@@ -431,8 +431,8 @@ function loadHeatmap(poisSnap, historySnap) {
             <div class="heatmap-popup-label">lượt nghe thuyết minh</div>
         `, { closeButton: false });
 
-        circle.on('mouseover', function() { this.openPopup(); });
-        circle.on('mouseout', function() { this.closePopup(); });
+        circle.on('mouseover', function () { this.openPopup(); });
+        circle.on('mouseout', function () { this.closePopup(); });
 
         markerLayer.addLayer(circle);
     });

@@ -733,6 +733,50 @@
                         Cloud-->>Cloud: Cập nhật Web cho thấy Visitor đang kẹp giữa 2 POI
                 </div>
             </div>
+
+            <div class="card-grid" style="margin-bottom: 1rem;">
+                <div class="card">
+                    <h4>🔄 7. Luồng Đồng bộ "Local-First" (Offline Sync Flow)</h4>
+                    <p>Khẳng định kiến trúc Local-First. Quá trình tự động kéo POIs về máy (SQLite) và đẩy lịch sử sử dụng offline ngược lên máy chủ khi có mạng lại.</p>
+                </div>
+            </div>
+            <div class="diagram-container" style="margin-bottom: 4rem;">
+                <div class="mermaid">
+                    sequenceDiagram
+                        actor System as App Lifecycle
+                        participant UI as SplashScreen / Background
+                        participant Network as Connectivity API
+                        participant DB as DatabaseService (SQLite)
+                        participant FB as FirebaseSyncService
+                        
+                        System->>UI: Mở Ứng Dụng (OnStart)
+                        UI->>Network: Tình trạng kết nối Internet?
+                        
+                        alt Có Internet (WIFI/4G)
+                            Network-->>UI: Online State
+                            
+                            Note over UI,FB: 1. PULL: CẬP NHẬT TRẠM POI MỚI VỀ MÁY
+                            UI->>FB: Kích hoạt FetchLatestPois()
+                            FB->>FB: Tải JSON POIs mới từ Firestore
+                            FB->>DB: Upsert (Chèn/Ghép) vào SQLite Local
+                            DB-->>UI: Cập nhật CSDL offline hoàn tất
+                            
+                            Note over UI,FB: 2. PUSH: ĐẨY LOGS NGHE OFFLINE LÊN TRỜI
+                            UI->>DB: Truy vấn Lịch sử: GetUnsyncedLogs()
+                            DB-->>UI: listLogs (IsSynced == false)
+                            alt listLogs.Count > 0
+                                UI->>FB: Push Firebase Bulk (Batch Request)
+                                FB-->>UI: Trả về trạng thái ghi mây thành công
+                                UI->>DB: Đánh dấu Update (IsSynced = true)
+                            end
+                        else Mất Internet
+                            Network-->>UI: Offline State
+                            UI->>UI: Bỏ qua Sync Cloud
+                        end
+                        
+                        UI-->>System: Hoàn tất Boot -> Chuyển vào MainPage dùng Local SQLite
+                </div>
+            </div>
                 </div>
             </div>
         </section>
@@ -922,6 +966,44 @@
                         FB-->>CMS: Trigger Callback onSnapshot đổi trạng thái
                         CMS->>CMS: UI Re-render<br/>Từ Đỏ -> Xám, Trừ bộ đếm (-1)
                         CMS-->>Owner: Thấy số lượng bị trừ đi 1 người
+                </div>
+            </div>
+
+            <div class="card-grid" style="margin-bottom: 1rem;">
+                <div class="card">
+                    <h4>🤖 7. Luồng Tự động Dịch Đa ngôn ngữ (AI LLM Translation Flow)</h4>
+                    <p>Ứng dụng GenAI (Gemini) để sinh tự động nội dung dịch thuật chuyên ngành ẩm thực theo ngữ cảnh thay vì dịch tĩnh thô cứng truyền thống.</p>
+                </div>
+            </div>
+            <div class="diagram-container" style="margin-bottom: 4rem;">
+                <div class="mermaid">
+                    sequenceDiagram
+                        actor Owner as Chủ Quán
+                        participant UI as Form CMS (poi.js)
+                        participant TS as Translate Module (gemini-translate.js)
+                        participant AI as Google Gemini API (LLM)
+                        participant DB as Firestore DB
+                        
+                        Owner->>UI: Nhập mô tả món ăn (Tiếng Việt)
+                        Owner->>UI: Bấm nút "Dịch Động bằng AI"
+                        UI->>UI: Hiện Loading Spinner
+                        UI->>TS: Yêu cầu xử lý đoạn Text
+                        
+                        TS->>TS: Gói Prompt Hệ thống:<br/>"Là một chuyên gia văn hóa ẩm thực VN..."
+                        TS->>AI: Gửi Payload (Prompt + Tiếng Việt) qua JSON REST
+                        
+                        Note over TS,AI: AI xử lý và phân tích ngữ nghĩa 
+                        AI-->>TS: Trả về Kết quả (en, zh)
+                        
+                        TS->>TS: Parse cấu trúc JSON (Bắt lỗi rỗng/đứt đoạn)
+                        TS-->>UI: Callbacks text bản dịch
+                        
+                        UI->>UI: Tự động điền dữ liệu vào ô Input (En, Zh)
+                        UI-->>Owner: Tắt Loading, Cho phép Owner xem xét
+                        
+                        Owner->>Owner: Rà soát & Sửa thủ công (Nếu cần)
+                        Owner->>UI: Nhấn "Lưu Toàn Bộ"
+                        UI->>DB: Push gộp JSON (vi, en, zh) xuống CSDL
                 </div>
             </div>
         </section>

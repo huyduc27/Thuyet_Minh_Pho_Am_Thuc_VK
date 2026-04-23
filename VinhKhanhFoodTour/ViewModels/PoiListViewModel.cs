@@ -220,13 +220,6 @@ public partial class PoiListViewModel : ObservableObject
     [RelayCommand]
     private async Task NavigateToDetailAsync(PoiItemViewModel? item)
     {
-        // Chua dang nhap -> hien overlay trong page (khong dung modal/alert)
-        if (!_authService.IsLoggedIn)
-        {
-            IsAuthOverlayVisible = true;
-            return;
-        }
-
         try
         {
             if (item?.Poi != null)
