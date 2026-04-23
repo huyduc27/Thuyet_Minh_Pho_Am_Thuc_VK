@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Phố Ẩm Thực Vĩnh Khánh — Chọn quán</title>
+    <meta name="description" content="Quét QR chung để khám phá và nghe thuyết minh các quán ăn trên phố ẩm thực Vĩnh Khánh, Quận 4, TP.HCM">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary: #e94560;
+            --primary-dark: #c0392b;
+            --bg-dark: #0f0f23;
+            --bg-card: #1a1a2e;
+            --bg-surface: #16213e;
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0b0;
+            --accent-glow: rgba(233, 69, 96, 0.3);
+            --success: #2ecc71;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* === Animated Background === */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(233, 69, 96, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(30, 60, 120, 0.1) 0%, transparent 50%);
+            animation: bgShift 15s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes bgShift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-5%, -3%); }
+        }
+
+        /* === Loading Screen === */
+        .loading-screen {
+            position: fixed; inset: 0;
+            background: var(--bg-dark);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 100;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .loading-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .loading-logo { font-size: 48px; animation: pulse 1.5s ease-in-out infinite; }
+        .loading-text { margin-top: 16px; font-size: 14px; color: var(--text-secondary); letter-spacing: 2px; }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* === Main Container === */
+        .menu-container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+        }
+
+        /* === Brand Header === */
+        .brand-header {
+            text-align: center;
+            padding: 24px 0 20px;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .brand-header .brand-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+
+        .brand-header h1 {
+            font-size: 20px; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), #ff6b81);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-header p {
+            font-size: 13px; color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        /* === Search & Filter === */
+        .filter-section {
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 0.15s forwards;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus { border-color: var(--primary); }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-wrapper::before {
+            content: '🔍';
+            position: absolute;
+            left: 16px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+        }
+
+        .category-filters {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 12px 0 4px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .category-filters::-webkit-scrollbar { display: none; }
+
+        .cat-btn {
+            flex-shrink: 0;
+            padding: 8px 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s;
+            white-space: nowrap;
+        }
+
+        .cat-btn:hover { border-color: var(--primary); color: var(--text-primary); }
+
+        .cat-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* === POI Cards === */
+        .poi-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 0.3s forwards;
+        }
+
+        .poi-card {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .poi-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(233,69,96,0.04));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .poi-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(233,69,96,0.3);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 20px var(--accent-glow);
+        }
+
+        .poi-card:hover::before { opacity: 1; }
+
+        .poi-card:active { transform: scale(0.98); }
+
+        .poi-card-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .poi-icon {
+            width: 52px; height: 52px;
+            background: var(--bg-surface);
+            border-radius: 14px;
+            display: flex;
+            align-items: center; justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .poi-info { flex: 1; min-width: 0; }
+
+        .poi-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .poi-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .poi-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 8px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .poi-badge.rating { color: #FFD700; }
+
+        .poi-desc {
+            margin-top: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .poi-card-action {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .poi-address {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .poi-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .poi-cta:hover { box-shadow: 0 4px 15px var(--accent-glow); }
+
+        /* === Empty / No Result === */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state p { font-size: 15px; }
+
+        /* === Counter Badge === */
+        .result-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            padding-left: 2px;
+        }
+
+        /* === Footer === */
+        .menu-footer {
+            text-align: center;
+            padding: 30px 0 16px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        /* === Animations === */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card stagger animation */
+        .poi-card { opacity: 0; animation: fadeInUp 0.4s ease forwards; }
+        .poi-card:nth-child(1) { animation-delay: 0.05s; }
+        .poi-card:nth-child(2) { animation-delay: 0.1s; }
+        .poi-card:nth-child(3) { animation-delay: 0.15s; }
+        .poi-card:nth-child(4) { animation-delay: 0.2s; }
+        .poi-card:nth-child(5) { animation-delay: 0.25s; }
+        .poi-card:nth-child(6) { animation-delay: 0.3s; }
+        .poi-card:nth-child(7) { animation-delay: 0.35s; }
+        .poi-card:nth-child(8) { animation-delay: 0.4s; }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <span class="loading-logo">🍜</span>
+        <div class="loading-text">ĐANG TẢI DANH SÁCH...</div>
+    </div>
+
+    <div class="menu-container" id="menuContainer" style="display:none;">
+        <!-- Brand Header -->
+        <div class="brand-header">
+            <span class="brand-icon">🍜</span>
+            <h1>Phố Ẩm Thực Vĩnh Khánh</h1>
+            <p>Chọn quán bạn muốn nghe thuyết minh</p>
+        </div>
+
+        <!-- Search & Filter -->
+        <div class="filter-section">
+            <div class="search-wrapper">
+                <input type="text" class="search-box" id="searchInput" placeholder="Tìm kiếm quán ăn..." oninput="filterPois()">
+            </div>
+            <div class="category-filters" id="categoryFilters">
+                <button class="cat-btn active" data-cat="" onclick="selectCategory(this)">Tất cả</button>
+                <button class="cat-btn" data-cat="Ốc" onclick="selectCategory(this)">🐚 Ốc</button>
+                <button class="cat-btn" data-cat="Lẩu" onclick="selectCategory(this)">🍲 Lẩu</button>
+                <button class="cat-btn" data-cat="Nướng" onclick="selectCategory(this)">🔥 Nướng</button>
+                <button class="cat-btn" data-cat="Hải sản" onclick="selectCategory(this)">🦀 Hải sản</button>
+                <button class="cat-btn" data-cat="Bò" onclick="selectCategory(this)">🥩 Bò</button>
+                <button class="cat-btn" data-cat="Cơm" onclick="selectCategory(this)">🍚 Cơm</button>
+                <button class="cat-btn" data-cat="Ăn vặt" onclick="selectCategory(this)">🍢 Ăn vặt</button>
+                <button class="cat-btn" data-cat="Chè" onclick="selectCategory(this)">🍧 Chè</button>
+            </div>
+        </div>
+
+        <!-- Result Count -->
+        <div class="result-count" id="resultCount"></div>
+
+        <!-- POI List -->
+        <div class="poi-list" id="poiList"></div>
+
+        <!-- Footer -->
+        <div class="menu-footer">
+            🍜 Phố Ẩm Thực Vĩnh Khánh — Quét QR • Chọn • Nghe
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // === Firebase Config ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEnL_IT-9OY5mfrRV2TJgPW7ctfDffK4I",
+            authDomain: "vinhkhanhfoodtour.firebaseapp.com",
+            projectId: "vinhkhanhfoodtour",
+            storageBucket: "vinhkhanhfoodtour.firebasestorage.app",
+            messagingSenderId: "755585686441",
+            appId: "1:755585686441:web:374fe76a54a572ab2902b8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // === State ===
+        let allPois = [];
+        let selectedCategory = '';
+
+        const categoryIcons = {
+            'Ốc': '🐚', 'Lẩu': '🍲', 'Nướng': '🔥', 'Hải sản': '🦀',
+            'Bò': '🥩', 'Cơm': '🍚', 'Ăn vặt': '🍢', 'Chè': '🍧', 'Tráng miệng': '🍨'
+        };
+
+        // === Init: Load all POIs ===
+        (async function init() {
+            try {
+                const snapshot = await db.collection('pois').orderBy('name').get();
+
+                allPois = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                renderPois(allPois);
+                hideLoading();
+
+                // Start Guest Heartbeat
+                initGuestHeartbeat();
+
+            } catch (error) {
+                console.error('Error loading POIs:', error);
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('menuContainer').style.display = 'block';
+                document.getElementById('poiList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">😢</div>
+                        <p>Không thể tải danh sách quán ăn.<br>Vui lòng thử lại sau.</p>
+                    </div>
+                `;
+            }
+        })();
+
+        // === Render POI Cards ===
+        function renderPois(pois) {
+            const list = document.getElementById('poiList');
+            const countEl = document.getElementById('resultCount');
+
+            if (pois.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🔍</div>
+                        <p>Không tìm thấy quán ăn nào phù hợp</p>
+                    </div>
+                `;
+                countEl.textContent = '';
+                return;
+            }
+
+            countEl.textContent = `Hiển thị ${pois.length} quán ăn`;
+
+            list.innerHTML = pois.map((poi, index) => {
+                const icon = categoryIcons[poi.category] || '🍽️';
+                const rating = (poi.rating || 0).toFixed(1);
+                const desc = poi.descriptionVi || 'Chưa có mô tả.';
+                const address = poi.address || '';
+
+                return `
+                    <div class="poi-card" onclick="selectPoi('${poi.id}')" style="animation-delay: ${Math.min(index * 0.05, 0.4)}s">
+                        <div class="poi-card-top">
+                            <div class="poi-icon">${icon}</div>
+                            <div class="poi-info">
+                                <div class="poi-name">${poi.name || 'Không tên'}</div>
+                                <div class="poi-meta-row">
+                                    <span class="poi-badge">${icon} ${poi.category || ''}</span>
+                                    <span class="poi-badge rating">⭐ ${rating}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="poi-desc">${desc}</div>
+                        <div class="poi-card-action">
+                            <span class="poi-address">📍 ${address}</span>
+                            <button class="poi-cta">Chọn quán ▸</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // === Select POI → Go to Checkout ===
+        function selectPoi(poiId) {
+            // Nếu đã thanh toán trước đó → vào thẳng listen
+            if (localStorage.getItem(`vk_paid_${poiId}`) === 'true') {
+                window.location.href = `listen.html?id=${poiId}`;
+                return;
+            }
+            // Chưa thanh toán → vào trang checkout
+            window.location.href = `checkout.html?id=${poiId}`;
+        }
+
+        // === Category Filter ===
+        function selectCategory(btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedCategory = btn.dataset.cat;
+            filterPois();
+        }
+
+        // === Search + Category Filter ===
+        function filterPois() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            let filtered = allPois;
+
+            // Filter by category
+            if (selectedCategory) {
+                filtered = filtered.filter(p => p.category === selectedCategory);
+            }
+
+            // Filter by search text
+            if (query) {
+                filtered = filtered.filter(p => {
+                    const name = (p.name || '').toLowerCase();
+                    const desc = (p.descriptionVi || '').toLowerCase();
+                    const addr = (p.address || '').toLowerCase();
+                    return name.includes(query) || desc.includes(query) || addr.includes(query);
+                });
+            }
+
+            renderPois(filtered);
+        }
+
+        // === Guest Heartbeat (đếm online trên Dashboard CMS) ===
+        let heartbeatTimer = null;
+
+        function updateHeartbeat() {
+            if (document.visibilityState !== 'visible') return;
+
+            const GUEST_KEY = 'vk_guest_id';
+            let guestId = localStorage.getItem(GUEST_KEY);
+            if (!guestId) {
+                guestId = 'guest_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                localStorage.setItem(GUEST_KEY, guestId);
+            }
+
+            db.collection('onlineGuests').doc(guestId).set({
+                lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                poiId: 'menu',
+                poiName: 'Trang Menu Chung',
+                userAgent: navigator.userAgent,
+                platform: 'web'
+            }, { merge: true }).catch(e => console.error("Heartbeat error:", e));
+        }
+
+        function initGuestHeartbeat() {
+            updateHeartbeat();
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+            heartbeatTimer = setInterval(updateHeartbeat, 30000);
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    updateHeartbeat();
+                }
+            });
+        }
+
+        // === Helpers ===
+        function hideLoading() {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('menuContainer').style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

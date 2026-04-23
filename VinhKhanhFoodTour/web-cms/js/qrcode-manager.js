@@ -6,8 +6,10 @@
 let allQrPois = [];
 let qrPage = 1;
 
-// Base URL cho trang nghe — thay đổi khi deploy production
-const QR_BASE_URL = window.location.origin;
+// Base URL cho trang nghe — tự nhận diện cả local (file://) lẫn hosted (http://)
+const QR_BASE_URL = window.location.origin !== 'null'
+    ? window.location.origin
+    : window.location.href.substring(0, window.location.href.lastIndexOf('/'));
 
 /**
  * Load danh sách POI và tạo QR code cho từng quán
@@ -314,4 +316,159 @@ function printAllQrCodes() {
         </html>
     `);
     printWindow.document.close();
+}
+
+// ========================================
+// MÃ QR TỔNG (CHUNG) — Trỏ về trang menu.html
+// ========================================
+
+/**
+ * Mở modal hiển thị mã QR Tổng (chung cho cả phố)
+ */
+function generateMasterQr() {
+    const masterUrl = `${QR_BASE_URL}/menu.html`;
+
+    // Tạo modal overlay
+    let modal = document.getElementById('masterQrModal');
+    if (modal) modal.remove(); // Xoá modal cũ nếu có
+
+    modal = document.createElement('div');
+    modal.id = 'masterQrModal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal" style="max-width: 420px; text-align: center;">
+            <h2 style="margin-bottom: 6px; justify-content: center;">🔲 Mã QR Tổng — Phố Vĩnh Khánh</h2>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 18px;">
+                Khách quét mã này sẽ thấy <strong>danh sách toàn bộ quán ăn</strong>, tự chọn quán → thanh toán → nghe audio.
+            </p>
+            <div id="masterQrWrapper" style="
+                background: #fff; border-radius: 16px; padding: 20px;
+                display: inline-block; margin-bottom: 14px;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            "></div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px; word-break: break-all;">
+                ${masterUrl}
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-primary btn-sm" onclick="downloadMasterQr()">⬇️ Tải PNG</button>
+                <button class="btn btn-secondary btn-sm" onclick="printMasterQr()">🖨️ In</button>
+                <button class="btn btn-secondary btn-sm" onclick="copyMasterQrUrl()">📋 Copy URL</button>
+                <button class="btn btn-secondary btn-sm" onclick="closeMasterQrModal()">❌ Đóng</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Trigger CSS transition: thêm class 'show' sau 1 frame để animation chạy mượt
+    requestAnimationFrame(() => {
+        modal.classList.add('show');
+    });
+
+    // Render QR vào wrapper
+    const wrapper = document.getElementById('masterQrWrapper');
+    new QRCode(wrapper, {
+        text: masterUrl,
+        width: 240,
+        height: 240,
+        colorDark: '#1a1a2e',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
+}
+
+function closeMasterQrModal() {
+    const modal = document.getElementById('masterQrModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 250);
+    }
+}
+
+function downloadMasterQr() {
+    const wrapper = document.getElementById('masterQrWrapper');
+    if (!wrapper) return;
+    const canvas = wrapper.querySelector('canvas');
+    if (!canvas) { showToast('Không tìm thấy QR', 'error'); return; }
+
+    // Tạo canvas xuất có label
+    const exportCanvas = document.createElement('canvas');
+    const padding = 24;
+    const labelHeight = 50;
+    exportCanvas.width = canvas.width + padding * 2;
+    exportCanvas.height = canvas.height + padding * 2 + labelHeight;
+
+    const ctx = exportCanvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    ctx.drawImage(canvas, padding, padding);
+
+    ctx.fillStyle = '#1a1a2e';
+    ctx.font = 'bold 16px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🍜 Phố Ẩm Thực Vĩnh Khánh', exportCanvas.width / 2, canvas.height + padding + 22);
+    ctx.font = '11px Arial, sans-serif';
+    ctx.fillStyle = '#888';
+    ctx.fillText('Quét để xem danh sách quán ăn', exportCanvas.width / 2, canvas.height + padding + 40);
+
+    const link = document.createElement('a');
+    link.download = 'QR_TONG_Pho_Vinh_Khanh.png';
+    link.href = exportCanvas.toDataURL('image/png');
+    link.click();
+
+    showToast('Đã tải QR Tổng!');
+}
+
+function printMasterQr() {
+    const wrapper = document.getElementById('masterQrWrapper');
+    if (!wrapper) return;
+    const canvas = wrapper.querySelector('canvas');
+    if (!canvas) return;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>QR Tổng - Phố Ẩm Thực Vĩnh Khánh</title>
+            <style>
+                body {
+                    display: flex; flex-direction: column; align-items: center;
+                    justify-content: center; min-height: 100vh; margin: 0;
+                    font-family: Arial, sans-serif;
+                }
+                .qr-print { text-align: center; }
+                .qr-print img { width: 300px; height: 300px; }
+                .qr-print h2 { margin: 16px 0 6px; font-size: 22px; color: #1a1a2e; }
+                .qr-print p { margin: 0; font-size: 13px; color: #888; }
+                .qr-print .brand { margin-top: 10px; font-size: 15px; color: #e94560; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <div class="qr-print">
+                <img src="${canvas.toDataURL('image/png')}" alt="QR Tổng">
+                <h2>Phố Ẩm Thực Vĩnh Khánh</h2>
+                <p>Quét mã QR để xem danh sách quán ăn & nghe thuyết minh</p>
+                <div class="brand">🍜 Quận 4, TP. Hồ Chí Minh</div>
+            </div>
+            <script>window.onload = () => { window.print(); window.close(); }<\/script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+function copyMasterQrUrl() {
+    const url = `${QR_BASE_URL}/menu.html`;
+    navigator.clipboard.writeText(url).then(() => {
+        showToast('Đã copy URL menu!');
+    }).catch(() => {
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        showToast('Đã copy URL menu!');
+    });
 }

@@ -318,9 +318,9 @@
             <div class="diagram-container">
                 <div class="mermaid">
                     graph TD
-                    A[Điện thoại Du khách<br>.NET MAUI App] <--> |Real-time Sync| B(Firebase Backend<br>Cloud Firestore)
-                    B <--> |Quản lý, Cập nhật| C[Quản trị Hệ thống<br>Web CMS HTML/JS]
-                    A --> |Local Storage| D[(SQLite Database)]
+                    A["Điện thoại Du khách<br>.NET MAUI App"] <-->|"Real-time Sync"| B("Firebase Backend<br>Cloud Firestore")
+                    B <-->|"Quản lý, Cập nhật"| C["Quản trị Hệ thống<br>Web CMS HTML/JS"]
+                    A -->|"Local Storage"| D[("SQLite Database")]
                 </div>
             </div>
         </section>
@@ -941,31 +941,35 @@
                         actor Owner as CMS Admin / Owner
                         participant App as App / Web (Client)
                         participant FB as Firebase (Firestore DB)
-                        participant CMS as CMS Dashboard
+                        participant CMS as CMS Dashboard (dashboard.js)
 
                         note over Owner,CMS: BƯỚC 1: Lắng nghe Dữ liệu Real-time
                         Owner->>CMS: Mở trang Quản trị theo dõi khách
-                        CMS->>FB: Đăng ký Listener 24/7<br/>onSnapshot(where "status" == "active")
+                        CMS->>CMS: Kích hoạt hàm Listener<br/>initOnlineUsersListener()
+                        CMS->>FB: Listener 1: Người dùng đã đăng nhập<br/>db.collection("users").where("status","==","active").onSnapshot()
+                        CMS->>FB: Listener 2: Khách ẩn danh (App/Web)<br/>db.collection("onlineGuests").onSnapshot()
                         FB-->>CMS: Trả về Array Active Users ban đầu
 
                         note over Visitor,App: BƯỚC 2: Khách tham quan trực tuyến
                         Visitor->>App: Mở App (OnResume) / Quẹt QR
-                        App->>FB: Gửi xung nhịp mạng (Heartbeat)<br/>update({ status: "active", lastActive: Now })
+                        App->>App: Khởi chạy nhịp tim định kỳ 30s<br/>StartHeartbeat()
+                        App->>FB: Gửi xung nhịp mạng (Heartbeat)<br/>UpdateUserStatusAsync("active") → PATCH { status, lastSeen }
                         
                         note over FB,CMS: Firebase tự động Push Data ngay lập tức
                         FB-->>CMS: Trigger Callback onSnapshot thay đổi
 
-                        CMS->>CMS: UI Re-render<br/>Cộng bộ đếm Online (+1)
-                        CMS-->>Owner: Thấy số lượng khách tăng lên
+                        CMS->>CMS: Đếm lại số lượng trực tuyến<br/>updateOnlineUsersCount()
+                        CMS-->>Owner: Thấy số lượng khách tăng lên (+1)
 
                         note over Visitor,App: BƯỚC 3: Khách thoát ra
                         Visitor->>App: Đóng App / Tắt trình duyệt
                         App->>App: Áp dụng OS Lifecycle<br/>(App: OnSleep / Web: beforeunload)
-                        App->>FB: Cập nhật lần cuối trước khi ngắt<br/>update({ status: "offline" })
+                        App->>App: Dừng nhịp tim<br/>StopHeartbeat()
+                        App->>FB: Cập nhật lần cuối trước khi ngắt<br/>UpdateUserStatusAsync("offline") → PATCH { status, lastSeen }
                         
                         FB-->>CMS: Trigger Callback onSnapshot đổi trạng thái
-                        CMS->>CMS: UI Re-render<br/>Từ Đỏ -> Xám, Trừ bộ đếm (-1)
-                        CMS-->>Owner: Thấy số lượng bị trừ đi 1 người
+                        CMS->>CMS: Đếm lại và Re-render<br/>updateOnlineUsersCount()
+                        CMS-->>Owner: Thấy số lượng bị trừ đi 1 người (-1)
                 </div>
             </div>
 
