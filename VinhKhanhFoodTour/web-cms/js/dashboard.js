@@ -18,8 +18,8 @@ requireAuth().then(user => {
     // 2. CHECK ROLE: Nếu là Chủ cửa hàng (owner) thì ẨN một số thứ đi
     // 2. CHECK ROLE: Nếu là Chủ cửa hàng (owner) thì ẨN một số thứ đi
     if (user.role === 'owner') {
-        // Ẩn Dashboard, Tour và Approvals, còn lại (POI, Bản dịch, Audio, History, QR) vẫn hiển thị
-        const restrictedMenus = ['dashboard', 'tour', 'approvals', 'owners', 'tourists'];
+        // Ẩn Dashboard, Tour, QR và các mục quản lý cấp cao khác
+        const restrictedMenus = ['dashboard', 'tour', 'approvals', 'owners', 'tourists', 'qrcode'];
 
         restrictedMenus.forEach(menu => {
             const menuElement = document.querySelector(`.nav-item[data-section="${menu}"]`);
