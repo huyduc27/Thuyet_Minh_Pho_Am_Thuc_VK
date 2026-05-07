@@ -702,35 +702,41 @@
                         actor User as Khách tham quan
                         participant GPS as Location Service
                         participant Geo as Geofence Service
+                        participant DB as SQLite DB
                         participant TTS as Narration Service (Queue)
                         participant OS as Native Voice Engine
-                        participant Cloud as Web CMS (Firebase)
 
-                        note over User,Geo: YÊU CẦU 1: 1 NGƯỜI ĐỨNG GIỮA 2 QUÁN CÙNG LÚC
+                        note over User,Geo: BƯỚC 1: PHÁT HIỆN ĐỨNG GIỮA 2 QUÁN CÙNG LÚC
                         User->>GPS: Di chuyển vào vùng giao thoa (Quán A & Quán B)
-                        GPS->>Geo: Cập nhật Toạ độ: OnLocationChanged(Lat, Lng)
-                        Geo->>Geo: Quét bán kính 30m phát hiện đụng độ
-                        Geo-->>TTS: Phát đi Mảng đồng thời: [Quán A, Quán B]
-                        
-                        note over TTS,OS: YÊU CẦU 2: HÀNG ĐỢI AUDIO (CHỐNG GIẬT / CHỒNG ÂM)
-                        TTS->>TTS: Lock Thread (Khoá an toàn mảng luồng)
-                        TTS->>TTS: Xếp Quán A vào Queue[0]
-                        TTS->>TTS: Xếp Quán B vào Queue[1]
-                        
-                        TTS->>OS: Đẩy Queue[0] -> Phát âm thanh Quán A
-                        OS-->>User: Đọc mượt mà: "Chào mừng đến Quán Ốc A..."
-                        note right of OS: ⚡ KHÔNG dùng mạng Internet<br/>(Bypass Server tuyệt đối để chống giật)
-                        
-                        OS-->>TTS: Trình đọc báo cáo Finished (Kết thúc)
-                        TTS->>TTS: Hệ thống Delay ngắt giọng (500ms)
-                        TTS->>OS: Trượt sang Queue[1] -> Đọc Quán B
+                        GPS->>Geo: Cập nhật Toạ độ<br/>OnLocationChanged(Location)
+                        Geo->>Geo: Quét từng POI: tính khoảng cách<br/>CalculateDistance(user, poi) <= RadiusMeters
+                        Geo->>Geo: Phát hiện đụng độ: 2 POI trong bán kính
+
+                        note over Geo,TTS: BƯỚC 2: SẮP XẾP ƯU TIÊN (PRIORITY SORT)
+                        Geo->>Geo: Thuật toán sắp xếp 2 tiêu chí:<br/>OrderByDescending(Priority).ThenBy(Distance)
+                        note right of Geo: VD: Quán A (Priority=2, 15m)<br/>Quán B (Priority=1, 10m)<br/>→ Kết quả: [A, B] (A ưu tiên cao hơn)
+                        Geo-->>TTS: Phát đi Mảng đã sắp xếp<br/>PoisInRange → EnqueueAndNarrateAsync([A, B])
+
+                        note over TTS,OS: BƯỚC 3: HÀNG ĐỢI AUDIO (CHỐNG GIẬT / CHỒNG ÂM)
+                        loop Duyệt từng POI trong mảng đã sắp
+                            TTS->>TTS: Kiểm tra: đang đọc POI này? (skip)
+                            TTS->>TTS: Kiểm tra: đã có trong Queue? (skip)
+                            TTS->>DB: Kiểm tra Cooldown chống Spam<br/>HasPlayedRecentlyAsync(poi.Id)
+                            DB-->>TTS: OK / Bị Cooldown
+                            TTS->>TTS: Lock(_queueLock) → _queue.Add(poi)
+                        end
+
+                        TTS->>TTS: Bắt đầu xử lý hàng chờ<br/>ProcessQueueAsync()
+                        TTS->>OS: Lấy Queue[0] → Phát Quán A<br/>SpeakSingleAsync(poiA)
+                        OS-->>User: Đọc mượt mà: "Chào mừng đến Quán A..."
+                        note right of OS: ⚡ KHÔNG dùng mạng Internet<br/>(Native OS TTS — chống giật tuyệt đối)
+                        TTS->>DB: Ghi log phát xong<br/>LogNarrationAsync(poiA)
+
+                        OS-->>TTS: Trình đọc báo cáo Finished
+                        TTS->>TTS: Delay ngắt giọng (500ms)
+                        TTS->>OS: Trượt sang Queue[1] → Đọc Quán B<br/>SpeakSingleAsync(poiB)
                         OS-->>User: Đọc tiếp nối: "Sát bên cạnh là Quán B..."
-                        
-                        note over User,Cloud: TRÊN WEB CMS HIỂN THỊ VISITOR KẸP GIỮA
-                        TTS->>Cloud: Đẩy Log: [Người dùng X nghe Quán A]
-                        TTS->>Cloud: Đẩy Log: [Người dùng X nghe Quán B]
-                        Cloud->>Cloud: CMS thống kê nhận luồng log cùng 1 mốc giây
-                        Cloud-->>Cloud: Cập nhật Web cho thấy Visitor đang kẹp giữa 2 POI
+                        TTS->>DB: Ghi log phát xong<br/>LogNarrationAsync(poiB)
                 </div>
             </div>
 
