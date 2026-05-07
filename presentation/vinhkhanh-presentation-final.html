@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vinh Khanh Food Tour - Tech Presentation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ 
-            startOnLoad: true, 
+        mermaid.initialize({
+            startOnLoad: true,
             theme: 'base',
             themeVariables: {
                 primaryColor: '#fff3e0',
@@ -22,9 +24,11 @@
     </script>
     <style>
         :root {
-            --primary: #e65100;       /* Orange */
+            --primary: #e65100;
+            /* Orange */
             --primary-light: #ffb74d;
-            --secondary: #00838f;     /* Cyan */
+            --secondary: #00838f;
+            /* Cyan */
             --secondary-light: #4dd0e1;
             --bg-color: #f8fafc;
             --sidebar-bg: #ffffff;
@@ -60,7 +64,7 @@
             padding: 2rem 0;
             overflow-y: auto;
             z-index: 1000;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
         }
 
         .brand {
@@ -123,7 +127,8 @@
 
         section {
             margin-bottom: 5rem;
-            padding-top: 2rem; /* Buffer for scroll positioning */
+            padding-top: 2rem;
+            /* Buffer for scroll positioning */
         }
 
         h2.section-title {
@@ -134,7 +139,7 @@
             border-bottom: 2px solid var(--border-color);
             font-weight: 700;
         }
-        
+
         h3 {
             font-size: 1.3rem;
             color: var(--text-main);
@@ -162,11 +167,30 @@
             letter-spacing: 0.5px;
         }
 
-        .badge-maui { background-color: #512bd4; color: white; }
-        .badge-firebase { background-color: #f57c00; color: white; }
-        .badge-sqlite { background-color: #04414d; color: white; }
-        .badge-tts { background-color: #00838f; color: white; }
-        .badge-js { background-color: #f7df1e; color: #000; }
+        .badge-maui {
+            background-color: #512bd4;
+            color: white;
+        }
+
+        .badge-firebase {
+            background-color: #f57c00;
+            color: white;
+        }
+
+        .badge-sqlite {
+            background-color: #04414d;
+            color: white;
+        }
+
+        .badge-tts {
+            background-color: #00838f;
+            color: white;
+        }
+
+        .badge-js {
+            background-color: #f7df1e;
+            color: #000;
+        }
 
         /* Card Layout */
         .card-grid {
@@ -211,7 +235,8 @@
             box-shadow: var(--card-shadow);
         }
 
-        .comparison-table th, .comparison-table td {
+        .comparison-table th,
+        .comparison-table td {
             text-align: left;
             padding: 1rem;
             border-bottom: 1px solid var(--border-color);
@@ -247,28 +272,34 @@
             body {
                 padding-left: 250px;
             }
+
             #sidebar {
                 width: 250px;
             }
+
             #content {
                 padding: 2rem;
             }
         }
+
         @media (max-width: 768px) {
             body {
                 padding-left: 0;
                 display: flex;
                 flex-direction: column;
             }
+
             #sidebar {
                 width: 100%;
                 height: auto;
                 position: relative;
                 padding: 1rem 0;
             }
+
             #content {
                 padding: 1.5rem;
             }
+
             .nav-link {
                 display: inline-block;
                 padding: 0.5rem 1rem;
@@ -276,6 +307,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <nav id="sidebar">
@@ -306,21 +338,23 @@
                 <span class="badge badge-sqlite">SQLite</span>
             </div>
             <p>
-                Dự án <strong>Vinh Khanh Food Tour</strong> là một giải pháp theo mô hình "Mobile-first" nhằm đem lại 
-                trải nghiệm thám hiểm và thưởng thức văn hoá ẩm thực đường phố tại Quận 4, TP.HCM một cách trực quan 
+                Dự án <strong>Vinh Khanh Food Tour</strong> là một giải pháp theo mô hình "Mobile-first" nhằm đem lại
+                trải nghiệm thám hiểm và thưởng thức văn hoá ẩm thực đường phố tại Quận 4, TP.HCM một cách trực quan
                 và hoàn toàn rảnh tay.
             </p>
             <p>
-                Kiến trúc hệ thống bao gồm một Mobile App được phát triển bằng <strong>.NET MAUI (C# MVVM)</strong> 
-                và Backend sử dụng <strong>Firebase Services</strong> (Firestore, Auth, Storage) thay vì một server API truyền thống.
+                Kiến trúc hệ thống bao gồm một Mobile App được phát triển bằng <strong>.NET MAUI (C# MVVM)</strong>
+                và Backend sử dụng <strong>Firebase Services</strong> (Firestore, Auth, Storage) thay vì một server API
+                truyền thống.
             </p>
-            
+
             <div class="diagram-container">
                 <div class="mermaid">
                     graph TD
-                    A["Điện thoại Du khách<br>.NET MAUI App"] <-->|"Real-time Sync"| B("Firebase Backend<br>Cloud Firestore")
-                    B <-->|"Quản lý, Cập nhật"| C["Quản trị Hệ thống<br>Web CMS HTML/JS"]
-                    A -->|"Local Storage"| D[("SQLite Database")]
+                    A["Điện thoại Du khách<br>.NET MAUI App"] <-->|"Real-time Sync"| B("Firebase Backend<br>Cloud
+                        Firestore")
+                        B <-->|"Quản lý, Cập nhật"| C["Quản trị Hệ thống<br>Web CMS HTML/JS"]
+                            A -->|"Local Storage"| D[("SQLite Database")]
                 </div>
             </div>
         </section>
@@ -329,20 +363,24 @@
         <section id="chapter-2">
             <h2 class="section-title">Chương 2: Mobile App & Trải nghiệm người dùng</h2>
             <p>
-                Giao diện ứng dụng di động được thiết kế chuyên biệt cho những người dùng vừa đi bộ (như tourists) vừa tìm kiếm trải nghiệm quán ăn, nơi mà tương tác tay nên hạn chế.
+                Giao diện ứng dụng di động được thiết kế chuyên biệt cho những người dùng vừa đi bộ (như tourists) vừa
+                tìm kiếm trải nghiệm quán ăn, nơi mà tương tác tay nên hạn chế.
             </p>
             <div class="card-grid">
                 <div class="card">
                     <h4>🗺️ Bản đồ tương tác (MapPage)</h4>
-                    <p>Được thiết kế full-screen. Hiển thị real-time vị trí người dùng (Real GPS/Teleport). Tuỳ biến icon Điểm yêu thích (POI) theo danh mục.</p>
+                    <p>Được thiết kế full-screen. Hiển thị real-time vị trí người dùng (Real GPS/Teleport). Tuỳ biến
+                        icon Điểm yêu thích (POI) theo danh mục.</p>
                 </div>
                 <div class="card">
                     <h4>🍔 Danh sách POI (PoiListPage)</h4>
-                    <p>Cho phép lướt chọn nhanh bằng các Card View trực quan. Tích hợp thanh tìm kiếm thông minh và lọc danh mục nhà hàng, quán nước, v.v.</p>
+                    <p>Cho phép lướt chọn nhanh bằng các Card View trực quan. Tích hợp thanh tìm kiếm thông minh và lọc
+                        danh mục nhà hàng, quán nước, v.v.</p>
                 </div>
                 <div class="card">
                     <h4>📱 Chế độ rảnh tay</h4>
-                    <p>Ứng dụng tối đa hoá không gian màn hình, UX/UI được thiết kế mượt mà bảo đảm du khách nhìn bao quát vị trí mà không phải thao tác nhiều.</p>
+                    <p>Ứng dụng tối đa hoá không gian màn hình, UX/UI được thiết kế mượt mà bảo đảm du khách nhìn bao
+                        quát vị trí mà không phải thao tác nhiều.</p>
                 </div>
             </div>
         </section>
@@ -350,8 +388,9 @@
         <!-- Chapter 3 -->
         <section id="chapter-3">
             <h2 class="section-title">Chương 3: Hệ thống Audio & Text-to-Speech (TTS)</h2>
-            <p>Xương sống của dự án là khả năng thuyết minh tự động biến chuyến đi thành một "Tour Guide" ảo. Chúng tôi áp dụng dịch vụ Text-To-Speech (TTS) đọc giới thiệu quán ăn sinh động.</p>
-            
+            <p>Xương sống của dự án là khả năng thuyết minh tự động biến chuyến đi thành một "Tour Guide" ảo. Chúng tôi
+                áp dụng dịch vụ Text-To-Speech (TTS) đọc giới thiệu quán ăn sinh động.</p>
+
             <table class="comparison-table">
                 <thead>
                     <tr>
@@ -362,11 +401,13 @@
                 <tbody>
                     <tr>
                         <td><strong>Engine TTS Phát Âm</strong></td>
-                        <td>Gọi hàm OS level: Native TTS của iOS và Android thông qua MAUI Media. Đảm bảo âm thanh chuẩn, tốc độ đáp ứng cao tự nhiên mà không cần kéo Audio file từ Cloud.</td>
+                        <td>Gọi hàm OS level: Native TTS của iOS và Android thông qua MAUI Media. Đảm bảo âm thanh
+                            chuẩn, tốc độ đáp ứng cao tự nhiên mà không cần kéo Audio file từ Cloud.</td>
                     </tr>
                     <tr>
                         <td><strong>Playback Control</strong></td>
-                        <td>Bao gồm các chế độ Play, Pause, Resume và Ngắt giọng khi cần thiết hoặc khi ra khỏi vùng nhận diện quán.</td>
+                        <td>Bao gồm các chế độ Play, Pause, Resume và Ngắt giọng khi cần thiết hoặc khi ra khỏi vùng
+                            nhận diện quán.</td>
                     </tr>
                     <tr>
                         <td><strong>Log lại lịch sử</strong></td>
@@ -378,18 +419,18 @@
             <div class="diagram-container">
                 <div class="mermaid">
                     sequenceDiagram
-                        participant User as Du khách
-                        participant App as Mobile App (UI)
-                        participant i18n as System Localization
-                        participant TTS as NarrationService
-                        participant DB as DatabaseService (SQLite)
+                    participant User as Du khách
+                    participant App as Mobile App (UI)
+                    participant i18n as System Localization
+                    participant TTS as NarrationService
+                    participant DB as DatabaseService (SQLite)
 
-                        User->>App: Người dùng chạm "Phát Audio"
-                        App->>i18n: Yêu cầu văn bản ngôn ngữ<br/>poi.GetLocalizedDescription(lang)
-                        i18n-->>App: Trả về nội dung (Text)
-                        App->>TTS: Lệnh khởi chạy Audio<br/>SpeakSingleAsync(poi)
-                        TTS-->>User: Phát âm thanh mượt mà<br/>(OS Text-To-Speech)
-                        TTS->>DB: Ghi nhớ lịch sử vào đĩa<br/>LogNarrationAsync(...)
+                    User->>App: Người dùng chạm "Phát Audio"
+                    App->>i18n: Yêu cầu văn bản ngôn ngữ<br />poi.GetLocalizedDescription(lang)
+                    i18n-->>App: Trả về nội dung (Text)
+                    App->>TTS: Lệnh khởi chạy Audio<br />SpeakSingleAsync(poi)
+                    TTS-->>User: Phát âm thanh mượt mà<br />(OS Text-To-Speech)
+                    TTS->>DB: Ghi nhớ lịch sử vào đĩa<br />LogNarrationAsync(...)
                 </div>
             </div>
         </section>
@@ -401,41 +442,46 @@
                 <span class="badge badge-js">GeofenceService</span>
             </div>
             <p>
-                Hệ thống xác định vị trí của khách và phát động cơ chế <strong>Geofencing</strong>. Khi khách hàng bước vào bán kính hoạt động của một điểm thu hút (POI), hệ thống tự động nhận diện và tính toán phát thuyết minh.
+                Hệ thống xác định vị trí của khách và phát động cơ chế <strong>Geofencing</strong>. Khi khách hàng bước
+                vào bán kính hoạt động của một điểm thu hút (POI), hệ thống tự động nhận diện và tính toán phát thuyết
+                minh.
             </p>
-            
+
             <div class="card-grid" style="margin-bottom: 2rem;">
                 <div class="card">
                     <h4>🎯 Bán kính Geofence</h4>
-                    <p>Thuật toán cài đặt tham số chuẩn là <strong>30 mét</strong>. Nếu khoảng cách giữa du khách và toạ độ quán <= 30m, sự kiện OnEnter sẽ được trigger để chuyển vào hàng đợi phát âm thanh.</p>
+                    <p>Thuật toán cài đặt tham số chuẩn là <strong>30 mét</strong>. Nếu khoảng cách giữa du khách và toạ
+                        độ quán <= 30m, sự kiện OnEnter sẽ được trigger để chuyển vào hàng đợi phát âm thanh.</p>
                 </div>
                 <div class="card">
                     <h4>⏳ Audio Cooldown</h4>
-                    <p>Tránh tình trạng dội âm lượng hoặc spam khi người dùng di chuyển ra vào liên tục vùng giới hạn. Thuật toán `HasPlayedRecentlyAsync` quy định mỗi quán chỉ được thuyết minh lại sau một số phút Cooldown nhất định (vd: 15-30 phút).</p>
+                    <p>Tránh tình trạng dội âm lượng hoặc spam khi người dùng di chuyển ra vào liên tục vùng giới hạn.
+                        Thuật toán `HasPlayedRecentlyAsync` quy định mỗi quán chỉ được thuyết minh lại sau một số phút
+                        Cooldown nhất định (vd: 15-30 phút).</p>
                 </div>
             </div>
 
             <div class="diagram-container">
                 <div class="mermaid">
                     sequenceDiagram
-                        participant User as Người dùng
-                        participant GPS as LocationService
-                        participant Geo as GeofenceService
-                        participant DB as SQLite DB
-                        participant TTS as NarrationService
+                    participant User as Người dùng
+                    participant GPS as LocationService
+                    participant Geo as GeofenceService
+                    participant DB as SQLite DB
+                    participant TTS as NarrationService
 
-                        User->>GPS: Thay đổi vị trí thực (Walk/Drive)
-                        GPS->>Geo: Gọi event kiểm tra Toạ độ<br/>OnLocationChanged(Location)
-                        alt Khoảng cách <= Bán kính (Trong Geofence)
-                            Geo->>DB: Kiểm tra Cooldown chống Spam<br/>HasPlayedRecentlyAsync(...)
-                            alt Đã hết hạn Cooldown (Check OK)
-                                DB-->>Geo: Cấp quyền cho phép phát
-                                Geo->>TTS: Ra lệnh đưa vào hàng đợi đọc<br/>EnqueueAndNarrateAsync(pois)
-                                TTS-->>User: Phát Audio giới thiệu<br/>(Native OS TTS)
-                                TTS->>DB: Ghi log Cập nhật mốc mới<br/>LogNarrationAsync(...)
-                            else Đang bị Cooldown
-                                DB-->>Geo: Từ chối phát (Spam protection)
-                            end
+                    User->>GPS: Thay đổi vị trí thực (Walk/Drive)
+                    GPS->>Geo: Gọi event kiểm tra Toạ độ<br />OnLocationChanged(Location)
+                    alt Khoảng cách <= Bán kính (Trong Geofence) Geo->>DB: Kiểm tra Cooldown chống
+                        Spam<br />HasPlayedRecentlyAsync(...)
+                        alt Đã hết hạn Cooldown (Check OK)
+                        DB-->>Geo: Cấp quyền cho phép phát
+                        Geo->>TTS: Ra lệnh đưa vào hàng đợi đọc<br />EnqueueAndNarrateAsync(pois)
+                        TTS-->>User: Phát Audio giới thiệu<br />(Native OS TTS)
+                        TTS->>DB: Ghi log Cập nhật mốc mới<br />LogNarrationAsync(...)
+                        else Đang bị Cooldown
+                        DB-->>Geo: Từ chối phát (Spam protection)
+                        end
                         end
                 </div>
             </div>
@@ -445,15 +491,19 @@
         <section id="chapter-5">
             <h2 class="section-title">Chương 5: Quản trị hệ thống (Web CMS)</h2>
             <p>
-                Giao diện quản lý <strong>(CMS - Content Management System)</strong> được đặt tại ứng dụng Web cung cấp cho Quản trị viên (Admin) và Chủ quán (Owner) sự kiểm soát toàn diện.
+                Giao diện quản lý <strong>(CMS - Content Management System)</strong> được đặt tại ứng dụng Web cung cấp
+                cho Quản trị viên (Admin) và Chủ quán (Owner) sự kiểm soát toàn diện.
             </p>
             <p>
-                Kỹ thuật sử dụng JavaScript ES6 tĩnh tương tác hoàn toàn với API Firebase Database thông qua `dashboard.js` và `poi.js` mà không cần dựng lên Hosted Server.
+                Kỹ thuật sử dụng JavaScript ES6 tĩnh tương tác hoàn toàn với API Firebase Database thông qua
+                `dashboard.js` và `poi.js` mà không cần dựng lên Hosted Server.
             </p>
             <ul>
                 <li><strong>Quản lý Địa điểm:</strong> Chỉnh sửa Vĩ độ, Kinh độ, Tên quán, Menu, Category.</li>
-                <li><strong>Giao diện Dashboard:</strong> Hiển thị biểu đồ lượng nghe thống kê qua các log được người dùng đẩy lên (`history.js`).</li>
-                <li><strong>QR Code Generation:</strong> Tích hợp `qrcode-manager.js` cho phép tạo mã in ấn dán tại quán.</li>
+                <li><strong>Giao diện Dashboard:</strong> Hiển thị biểu đồ lượng nghe thống kê qua các log được người
+                    dùng đẩy lên (`history.js`).</li>
+                <li><strong>QR Code Generation:</strong> Tích hợp `qrcode-manager.js` cho phép tạo mã in ấn dán tại
+                    quán.</li>
             </ul>
         </section>
 
@@ -464,16 +514,21 @@
                 <span class="badge badge-firebase">Firebase Authentication</span>
                 <span class="badge badge-sqlite">JWT Token</span>
             </div>
-            <p>Bảo mật được thiết lập ở cả hạ tầng Web CMS và Mobile, xoay quanh hạt nhân <strong>Firebase Authentication</strong>.</p>
-            
+            <p>Bảo mật được thiết lập ở cả hạ tầng Web CMS và Mobile, xoay quanh hạt nhân <strong>Firebase
+                    Authentication</strong>.</p>
+
             <div class="card-grid">
                 <div class="card">
                     <h4>🔐 Role-based Access Control</h4>
-                    <p>Tách biệt quyền hạn thông qua collection `users`. Phân tách cấp độ: <strong>Admin</strong> (Kiểm soát mọi thứ), <strong>Owner</strong> (Chỉ kiểm soát quán mình sơ hữu) và <strong>Tourist/Khách</strong> (Chỉ đọc).</p>
+                    <p>Tách biệt quyền hạn thông qua collection `users`. Phân tách cấp độ: <strong>Admin</strong> (Kiểm
+                        soát mọi thứ), <strong>Owner</strong> (Chỉ kiểm soát quán mình sơ hữu) và
+                        <strong>Tourist/Khách</strong> (Chỉ đọc).
+                    </p>
                 </div>
                 <div class="card">
                     <h4>🛠 AuthService.cs (MAUI)</h4>
-                    <p>Mỗi session đăng nhập trả về JSON Token nội bộ. Dữ liệu này cấp quyền gửi log xem (`NarrationLog`) lên hệ thống một cách an toàn mà hệ thống ẩn danh không chạm tới được.</p>
+                    <p>Mỗi session đăng nhập trả về JSON Token nội bộ. Dữ liệu này cấp quyền gửi log xem
+                        (`NarrationLog`) lên hệ thống một cách an toàn mà hệ thống ẩn danh không chạm tới được.</p>
                 </div>
             </div>
         </section>
@@ -481,13 +536,17 @@
         <!-- Chapter 7 -->
         <section id="chapter-7">
             <h2 class="section-title">Chương 7: Đa ngôn ngữ (i18n)</h2>
-            <p>Phục vụ đặc thù phố ẩm thực du lịch có nhiều du khách ngoại quốc (Anh, Trung, Hàn, v.v.), ứng dụng thực thi đa ngôn ngữ ở quy mô sâu.</p>
-            
+            <p>Phục vụ đặc thù phố ẩm thực du lịch có nhiều du khách ngoại quốc (Anh, Trung, Hàn, v.v.), ứng dụng thực
+                thi đa ngôn ngữ ở quy mô sâu.</p>
+
             <p>
-                <strong>Dịch động với AI:</strong> Trong module Quản trị, `gemini-translate.js` gọi API dịch thuật bằng LLM giúp tự động sinh các văn bản tiếng Anh, Tiếng Trung chính xác theo ngữ cảnh ẩm thực đường phố thay vì dịch thô từ công cụ truyền thống.
+                <strong>Dịch động với AI:</strong> Trong module Quản trị, `gemini-translate.js` gọi API dịch thuật bằng
+                LLM giúp tự động sinh các văn bản tiếng Anh, Tiếng Trung chính xác theo ngữ cảnh ẩm thực đường phố thay
+                vì dịch thô từ công cụ truyền thống.
             </p>
             <p>
-                <strong>Quản lý Localisation App:</strong> Trên Mobile app, `LocalizationResourceManager` theo dõi System UI Language để load tự động file Resource dịch nhãn UI và thông tin tương ứng.
+                <strong>Quản lý Localisation App:</strong> Trên Mobile app, `LocalizationResourceManager` theo dõi
+                System UI Language để load tự động file Resource dịch nhãn UI và thông tin tương ứng.
             </p>
         </section>
 
@@ -498,101 +557,117 @@
                 <span class="badge badge-sqlite">SQLite Database</span>
             </div>
             <p>
-                Đường truyền mạng ở các hẻm tại Phố Vĩnh Khánh có thể không ổn định. Kiến trúc <strong>"Local-First"</strong> được thiết kế xuất sắc để vượt qua trở ngại này.
+                Đường truyền mạng ở các hẻm tại Phố Vĩnh Khánh có thể không ổn định. Kiến trúc
+                <strong>"Local-First"</strong> được thiết kế xuất sắc để vượt qua trở ngại này.
             </p>
             <div class="card-grid">
                 <div class="card">
                     <h4>🔗 Quá trình Đồng bộ 1 chiều ban đầu</h4>
-                    <p>Sử dụng `FirebaseSyncService` lấy danh sách POIs (Quán ăn, hình ảnh cơ sở) chèn sạch vào trong <strong>SQLite</strong> (`vinhkhanh_foodtour.db3`) dưới máy tại màn hình App Loading.</p>
+                    <p>Sử dụng `FirebaseSyncService` lấy danh sách POIs (Quán ăn, hình ảnh cơ sở) chèn sạch vào trong
+                        <strong>SQLite</strong> (`vinhkhanh_foodtour.db3`) dưới máy tại màn hình App Loading.
+                    </p>
                 </div>
                 <div class="card">
                     <h4>🚀 Trải nghiệm Không mạng (Offline)</h4>
-                    <p>Khi du khách cuốc bộ, `GeofenceService` tham chiếu độc lập toạ độ với bộ nhớ Offline của SQLite. Audio TTS đọc nội dung Local. Mọi hoạt động được ghi lại dưới dạng <code>IsSynced = false</code>.</p>
+                    <p>Khi du khách cuốc bộ, `GeofenceService` tham chiếu độc lập toạ độ với bộ nhớ Offline của SQLite.
+                        Audio TTS đọc nội dung Local. Mọi hoạt động được ghi lại dưới dạng
+                        <code>IsSynced = false</code>.
+                    </p>
                 </div>
                 <div class="card">
                     <h4>🔄 Đồng bộ Ngược lên Cloud</h4>
-                    <p>Lúc thiết bị phát hiện có kết nối Wifi/4G mạnh, nền tảng ngầm tải dữ liệu log `NarrationLog` lên Dashboard cho Owner theo dõi. Dữ liệu trôi chảy và nguyên vẹn.</p>
+                    <p>Lúc thiết bị phát hiện có kết nối Wifi/4G mạnh, nền tảng ngầm tải dữ liệu log `NarrationLog` lên
+                        Dashboard cho Owner theo dõi. Dữ liệu trôi chảy và nguyên vẹn.</p>
                 </div>
             </div>
         </section>
-        
+
         <!-- Chapter 9 -->
         <section id="chapter-9">
             <h2 class="section-title">Chương 9: Sơ đồ Use Case Hệ thống</h2>
-            <p>Sơ đồ tổng quan mô tả quyền hạn và sự tương tác trực tiếp của người dùng với hai khối kiến trúc chính: Mobile App và Web CMS.</p>
-            
+            <p>Sơ đồ tổng quan mô tả quyền hạn và sự tương tác trực tiếp của người dùng với hai khối kiến trúc chính:
+                Mobile App và Web CMS.</p>
+
             <div style="display: flex; flex-direction: column; gap: 2.5rem; margin-top: 2rem;">
                 <div class="card" style="text-align: center; border-color: var(--primary);">
                     <h4 style="justify-content: center; font-size: 1.4rem;">📱 Sơ đồ Use Case - Mobile App</h4>
-                    <p style="font-size: 1.05rem; color: var(--text-muted); margin-bottom: 1.5rem;">Mô tả các hành vi của Khách du lịch đối với ứng dụng di động.</p>
-                    
-                    <img src="./UCD_app_final.jpg" alt="Sơ đồ App Use Case" style="width: 100%; max-width: 900px; height: auto; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);">
+                    <p style="font-size: 1.05rem; color: var(--text-muted); margin-bottom: 1.5rem;">Mô tả các hành vi
+                        của Khách du lịch đối với ứng dụng di động.</p>
+
+                    <img src="./UCD_app_final.jpg" alt="Sơ đồ App Use Case"
+                        style="width: 100%; max-width: 900px; height: auto; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);">
                 </div>
-                
+
                 <div class="card" style="text-align: center; border-color: var(--secondary);">
                     <h4 style="justify-content: center; font-size: 1.4rem;">💻 Sơ đồ Use Case - Web CMS</h4>
-                    <p style="font-size: 1.05rem; color: var(--text-muted); margin-bottom: 1.5rem;">Mô tả thiết kế phân chia quyền hạn của Admin và Chủ quán.</p>
-                    
-                    <img src="./UCD_cms_final.jpg" alt="Sơ đồ CMS Use Case" style="width: 100%; max-width: 900px; height: auto; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);">
+                    <p style="font-size: 1.05rem; color: var(--text-muted); margin-bottom: 1.5rem;">Mô tả thiết kế phân
+                        chia quyền hạn của Admin và Chủ quán.</p>
+
+                    <img src="./UCD_cms_final.jpg" alt="Sơ đồ CMS Use Case"
+                        style="width: 100%; max-width: 900px; height: auto; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);">
                 </div>
             </div>
-                </div>
+            </div>
             </div>
         </section>
 
         <!-- Chapter 10 -->
         <section id="chapter-10">
             <h2 class="section-title">Chương 10: Sơ đồ Tuần tự của App (Sequence Diagrams)</h2>
-            <p>Phân rã chi tiết luồng điều khiển và vòng đời xử lý kỹ thuật cốt lõi (Technical Workflows) tương ứng với từng chức năng trong Use Case Diagram của Mobile App.</p>
+            <p>Phân rã chi tiết luồng điều khiển và vòng đời xử lý kỹ thuật cốt lõi (Technical Workflows) tương ứng với
+                từng chức năng trong Use Case Diagram của Mobile App.</p>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>🔐 1. Đăng nhập & Xác thực (Auth Flow)</h4>
-                    <p>Luồng nhận dạng người dùng qua Firebase REST API và quản lý phiên đăng nhập liên tục bằng <code>SecureStorage</code>.</p>
+                    <p>Luồng nhận dạng người dùng qua Firebase REST API và quản lý phiên đăng nhập liên tục bằng
+                        <code>SecureStorage</code>.
+                    </p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor User as Người dùng
-                        participant UI as AuthViewModel
-                        participant Auth as AuthService
-                        participant Storage as SecureStorage
-                        participant API as Firebase REST API
-                        
-                        User->>UI: Điền Form & Chạm "Đăng nhập"
-                        UI->>Auth: Yêu cầu chứng thực<br/>LoginAsync(email, password)
-                        Auth->>API: Gọi Auth Endpoint<br/>POST /v1/accounts:signInWithPassword
-                        API-->>Auth: Trả về Token sinh sẵn (idToken, uid)
-                        Auth->>Storage: Cất vào vùng nhớ an toàn OS<br/>PersistSessionAsync(uid, email, token)
-                        Storage-->>Auth: [Storage Cached]
-                        Auth->>API: Cập nhật biến Heartbeat<br/>UpdateUserStatusAsync("active")
-                        Auth-->>UI: Xác thực = Thành công
-                        UI-->>User: Điều hướng tự động (Route //MainPage)
+                    actor User as Người dùng
+                    participant UI as AuthViewModel
+                    participant Auth as AuthService
+                    participant Storage as SecureStorage
+                    participant API as Firebase REST API
+
+                    User->>UI: Điền Form & Chạm "Đăng nhập"
+                    UI->>Auth: Yêu cầu chứng thực<br />LoginAsync(email, password)
+                    Auth->>API: Gọi Auth Endpoint<br />POST /v1/accounts:signInWithPassword
+                    API-->>Auth: Trả về Token sinh sẵn (idToken, uid)
+                    Auth->>Storage: Cất vào vùng nhớ an toàn OS<br />PersistSessionAsync(uid, email, token)
+                    Storage-->>Auth: [Storage Cached]
+                    Auth->>API: Cập nhật biến Heartbeat<br />UpdateUserStatusAsync("active")
+                    Auth-->>UI: Xác thực = Thành công
+                    UI-->>User: Điều hướng tự động (Route //MainPage)
                 </div>
             </div>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>🌐 2. Thay đổi Ngôn ngữ (i18n Flow)</h4>
-                    <p>Cơ chế Event-binding ưu việt cho phép toàn hệ thống UI thay văn bản lập tức khi Locale được Switch.</p>
+                    <p>Cơ chế Event-binding ưu việt cho phép toàn hệ thống UI thay văn bản lập tức khi Locale được
+                        Switch.</p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor User as Người dùng
-                        participant UI as SettingsViewModel
-                        participant Loc as LocalizationResourceManager
-                        participant Res as AppResources (.resx)
-                        participant UI_Bind as XAML Views
-                        
-                        User->>UI: Chọn cờ Ngôn ngữ (VD: English)
-                        UI->>Loc: Ra lệnh đổi Locale hệ thống<br/>SetCulture(culture)
-                        Loc->>Res: Load chuỗi tương ứng CultureInfo
-                        Res-->>Loc: Trả về Object tài nguyên ngôn ngữ
-                        Loc->>UI_Bind: Fire Event Trigger<br/>PropertyChanged("Item[]")
-                        UI_Bind-->>User: Tự động render lại toàn bộ Label tức thì
+                    actor User as Người dùng
+                    participant UI as SettingsViewModel
+                    participant Loc as LocalizationResourceManager
+                    participant Res as AppResources (.resx)
+                    participant UI_Bind as XAML Views
+
+                    User->>UI: Chọn cờ Ngôn ngữ (VD: English)
+                    UI->>Loc: Ra lệnh đổi Locale hệ thống<br />SetCulture(culture)
+                    Loc->>Res: Load chuỗi tương ứng CultureInfo
+                    Res-->>Loc: Trả về Object tài nguyên ngôn ngữ
+                    Loc->>UI_Bind: Fire Event Trigger<br />PropertyChanged("Item[]")
+                    UI_Bind-->>User: Tự động render lại toàn bộ Label tức thì
                 </div>
             </div>
 
@@ -605,22 +680,22 @@
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor User as Khách du lịch
-                        participant UI as PoiListViewModel
-                        participant DB as DatabaseService
-                        participant SQLite as SQLite Local DB
-                        
-                        User->>UI: Vào Tab "Danh sách" / Nhập SearchBar
-                        UI->>DB: Trích xuất Data gốc<br/>GetAllPoisAsync()
-                        DB->>SQLite: Query B-Tree<br/>TableMapping[Poi]
-                        SQLite-->>DB: Array Danh sách quán án
-                        DB-->>UI: Bind Array lên ObservableCollection
-                        alt Có từ khoá tìm kiếm Search
-                            UI->>UI: Lọc nhanh In-Memory Regex<br/>poi.Name.Contains(keyword)
-                        end
-                        UI-->>User: Hiển thị giao diện Card (PoiList)
-                        User->>UI: Chạm tay xem 1 quán cụ thể
-                        UI-->>User: Điều hướng sang PoiDetailPage
+                    actor User as Khách du lịch
+                    participant UI as PoiListViewModel
+                    participant DB as DatabaseService
+                    participant SQLite as SQLite Local DB
+
+                    User->>UI: Vào Tab "Danh sách" / Nhập SearchBar
+                    UI->>DB: Trích xuất Data gốc<br />GetAllPoisAsync()
+                    DB->>SQLite: Query B-Tree<br />TableMapping[Poi]
+                    SQLite-->>DB: Array Danh sách quán án
+                    DB-->>UI: Bind Array lên ObservableCollection
+                    alt Có từ khoá tìm kiếm Search
+                    UI->>UI: Lọc nhanh In-Memory Regex<br />poi.Name.Contains(keyword)
+                    end
+                    UI-->>User: Hiển thị giao diện Card (PoiList)
+                    User->>UI: Chạm tay xem 1 quán cụ thể
+                    UI-->>User: Điều hướng sang PoiDetailPage
                 </div>
             </div>
 
@@ -633,387 +708,410 @@
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor User as Khách du lịch
-                        participant MapUI as MapViewModel
-                        participant GPS as LocationService
-                        participant DB as DatabaseService
-                        participant Native as Map Controls (MAUI)
-                        
-                        User->>MapUI: Mở tab Bản đồ (MapPage)
-                        MapUI->>GPS: Yêu cầu Toạ độ thời gian thực<br/>GetLocationAsync()
-                        GPS-->>MapUI: Location (Lat, Long, Accuracy)
-                        MapUI->>DB: Data quán (để ghim Pin)<br/>GetAllPoisAsync()
-                        DB-->>MapUI: Dữ liệu POI (Tên, Toạ độ Map)
-                        MapUI->>Native: Draw Objects<br/>Sinh MapElements (Custom Pins)
-                        MapUI->>Native: Zoom Focus Camera<br/>Map.MoveToRegion(Location)
-                        Native-->>User: Render lớp bản đồ với Live Ping Tracker
+                    actor User as Khách du lịch
+                    participant MapUI as MapViewModel
+                    participant GPS as LocationService
+                    participant DB as DatabaseService
+                    participant Native as Map Controls (MAUI)
+
+                    User->>MapUI: Mở tab Bản đồ (MapPage)
+                    MapUI->>GPS: Yêu cầu Toạ độ thời gian thực<br />GetLocationAsync()
+                    GPS-->>MapUI: Location (Lat, Long, Accuracy)
+                    MapUI->>DB: Data quán (để ghim Pin)<br />GetAllPoisAsync()
+                    DB-->>MapUI: Dữ liệu POI (Tên, Toạ độ Map)
+                    MapUI->>Native: Draw Objects<br />Sinh MapElements (Custom Pins)
+                    MapUI->>Native: Zoom Focus Camera<br />Map.MoveToRegion(Location)
+                    Native-->>User: Render lớp bản đồ với Live Ping Tracker
                 </div>
             </div>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>📷 5. Quét mã QR & Thanh toán Audio (QR Web Payment Flow)</h4>
-                    <p>Tiện ích Web cho phép Khách vãng lai quét mã nghe thuyết minh tích hợp chặn truy cập, yêu cầu thanh toán (VNPay/Momo) để kích hoạt Active Session.</p>
+                    <p>Tiện ích Web cho phép Khách vãng lai quét mã nghe thuyết minh tích hợp chặn truy cập, yêu cầu
+                        thanh toán (VNPay/Momo) để kích hoạt Active Session.</p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 2rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor User as Khách vãng lai (No App)
-                        participant Web as Web Browser (listen.html)
-                        participant Pay as Cổng Thanh toán (VNPay/Momo)
-                        participant API as Firebase DB API
-                        participant Audio as Web Speech API
-                        
-                        User->>Web: Quét QR & Mở trang (listen.html?poi={id})
-                        Web->>Web: Kiểm tra LocalStorage (Tìm Session ID/Token cũ)
-                        Web->>API: Tải dữ liệu POI & Validate Token
-                        
-                        alt Token rỗng / Hết hạn (Bị khóa)
-                            API-->>Web: Trả về trạng thái "Chưa thanh toán" (Locked)
-                            Web-->>User: Hiển thị Paywall (Yêu cầu thanh toán)
-                            User->>Web: Bấm "Thanh toán ngay"
-                            Web->>Pay: Điều hướng sang cổng VNPay/Momo
-                            User->>Pay: Chuyển khoản với ứng dụng Ngân hàng
-                            Pay-->>API: Gửi Webhook báo cáo [Paid] thành công
-                            API->>API: Cập nhật CSDL: Cấp Session ID -> "Active"
-                            Pay-->>Web: Redirect User về trang Web ban đầu
-                            Web->>Web: Lưu lại VIP Token vào LocalStorage để bypass lần sau
-                        else Đã mua trước đó (Token Hợp lệ)
-                            API-->>Web: Xác thực Session Active (Bỏ qua Paywall)
-                            Web-->>User: Vào thẳng trang chi tiết món ăn (VIP)
-                        end
-                        
-                        Web->>Audio: Cấp quyền mở khóa Trình đọc<br/>window.speechSynthesis.speak()
-                        Audio-->>User: Phát Audio giới thiệu trực tiếp
-                        Web->>API: Đẩy lịch sử truy cập ẩn danh lên server<br/>history.js (Nguồn: QR)
+                    actor User as Khách vãng lai (No App)
+                    participant Menu as Web: menu.html
+                    participant Checkout as Web: checkout.html
+                    participant Pay as Cổng Thanh toán (VNPay/Momo)
+                    participant API as Firebase DB API
+                    participant Listen as Web: listen.html (Audio)
+
+                    User->>Menu: Quét QR Tổng & Mở trang Menu
+                    Menu->>API: Tải danh sách các POI
+                    API-->>Menu: Hiển thị danh sách quán ăn
+                    User->>Menu: Chọn 1 quán muốn nghe (POI)
+                    Menu-->>User: Chuyển hướng sang checkout.html?poi={id}
+
+                    Checkout->>Checkout: Kiểm tra LocalStorage (Session ID)
+                    Checkout->>API: Validate Session Token
+
+                    alt Chưa có Session / Bị khóa
+                    API-->>Checkout: Trạng thái "Chưa thanh toán" (Locked)
+                    Checkout-->>User: Hiện Paywall yêu cầu mua vé
+                    User->>Checkout: Bấm "Thanh toán"
+                    Checkout->>Pay: Gọi API Thanh toán (VNPay/Momo)
+                    User->>Pay: Hoàn tất chuyển khoản
+                    Pay-->>API: Webhook: Thanh toán thành công
+                    API->>API: Lưu Session ID -> "Active"
+                    Pay-->>Checkout: Redirect về lại trang Web
+                    Checkout->>Checkout: Lưu VIP Token vào LocalStorage
+                    Checkout-->>User: Tự động chuyển tiếp sang listen.html
+                    else Đã thanh toán trước đó (Token Hợp lệ)
+                    API-->>Checkout: Phiên hợp lệ
+                    Checkout-->>User: Tự động chuyển tiếp sang listen.html
+                    end
+
+                    Listen->>Listen: Tải thông tin POI & Nội dung Audio
+                    Listen-->>User: Mở khóa trình đọc Text-To-Speech
+
                 </div>
             </div>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>🚧 6. Luồng Giao thoa Vùng & Hàng chờ Audio (Collision & Queue Flow)</h4>
-                    <p>Giải quyết bài toán khi 1 người thay vì đứng 1 POI, mà đứng ở vị trí giao thoa 2-3 POI cùng lúc. Hệ thống sử dụng Queue nội bộ và Native OS để xử lý không giật lag.</p>
+                    <p>Giải quyết bài toán khi 1 người thay vì đứng 1 POI, mà đứng ở vị trí giao thoa 2-3 POI cùng lúc.
+                        Hệ thống sử dụng Queue nội bộ và Native OS để xử lý không giật lag.</p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor User as Khách tham quan
-                        participant GPS as Location Service
-                        participant Geo as Geofence Service
-                        participant DB as SQLite DB
-                        participant TTS as Narration Service (Queue)
-                        participant OS as Native Voice Engine
+                    actor User as Khách tham quan
+                    participant GPS as Location Service
+                    participant Geo as Geofence Service
+                    participant DB as SQLite DB
+                    participant TTS as Narration Service (Queue)
+                    participant OS as Native Voice Engine
 
-                        note over User,Geo: BƯỚC 1: PHÁT HIỆN ĐỨNG GIỮA 2 QUÁN CÙNG LÚC
-                        User->>GPS: Di chuyển vào vùng giao thoa (Quán A & Quán B)
-                        GPS->>Geo: Cập nhật Toạ độ<br/>OnLocationChanged(Location)
-                        Geo->>Geo: Quét từng POI: tính khoảng cách<br/>CalculateDistance(user, poi) <= RadiusMeters
-                        Geo->>Geo: Phát hiện đụng độ: 2 POI trong bán kính
+                    note over User,Geo: BƯỚC 1: PHÁT HIỆN ĐỨNG GIỮA 2 QUÁN CÙNG LÚC
+                    User->>GPS: Di chuyển vào vùng giao thoa (Quán A & Quán B)
+                    GPS->>Geo: Cập nhật Toạ độ<br />OnLocationChanged(Location)
+                    Geo->>Geo: Quét từng POI: tính khoảng cách<br />CalculateDistance(user, poi) <= RadiusMeters Geo->
+                        >Geo: Phát hiện đụng độ: 2 POI trong bán kính
 
                         note over Geo,TTS: BƯỚC 2: SẮP XẾP ƯU TIÊN (PRIORITY SORT)
-                        Geo->>Geo: Thuật toán sắp xếp 2 tiêu chí:<br/>OrderByDescending(Priority).ThenBy(Distance)
-                        note right of Geo: VD: Quán A (Priority=2, 15m)<br/>Quán B (Priority=1, 10m)<br/>→ Kết quả: [A, B] (A ưu tiên cao hơn)
-                        Geo-->>TTS: Phát đi Mảng đã sắp xếp<br/>PoisInRange → EnqueueAndNarrateAsync([A, B])
+                        Geo->>Geo: Thuật toán sắp xếp 2 tiêu chí:<br />OrderByDescending(Priority).ThenBy(Distance)
+                        note right of Geo: VD: Quán A (Priority=2, 15m)<br />Quán B (Priority=1, 10m)<br />→ Kết quả:
+                        [A, B] (A ưu tiên cao hơn)
+                        Geo-->>TTS: Phát đi Mảng đã sắp xếp<br />PoisInRange → EnqueueAndNarrateAsync([A, B])
 
                         note over TTS,OS: BƯỚC 3: HÀNG ĐỢI AUDIO (CHỐNG GIẬT / CHỒNG ÂM)
                         loop Duyệt từng POI trong mảng đã sắp
-                            TTS->>TTS: Kiểm tra: đang đọc POI này? (skip)
-                            TTS->>TTS: Kiểm tra: đã có trong Queue? (skip)
-                            TTS->>DB: Kiểm tra Cooldown chống Spam<br/>HasPlayedRecentlyAsync(poi.Id)
-                            DB-->>TTS: OK / Bị Cooldown
-                            TTS->>TTS: Lock(_queueLock) → _queue.Add(poi)
+                        TTS->>TTS: Kiểm tra: đang đọc POI này? (skip)
+                        TTS->>TTS: Kiểm tra: đã có trong Queue? (skip)
+                        TTS->>DB: Kiểm tra Cooldown chống Spam<br />HasPlayedRecentlyAsync(poi.Id)
+                        DB-->>TTS: OK / Bị Cooldown
+                        TTS->>TTS: Lock(_queueLock) → _queue.Add(poi)
                         end
 
-                        TTS->>TTS: Bắt đầu xử lý hàng chờ<br/>ProcessQueueAsync()
-                        TTS->>OS: Lấy Queue[0] → Phát Quán A<br/>SpeakSingleAsync(poiA)
+                        TTS->>TTS: Bắt đầu xử lý hàng chờ<br />ProcessQueueAsync()
+                        TTS->>OS: Lấy Queue[0] → Phát Quán A<br />SpeakSingleAsync(poiA)
                         OS-->>User: Đọc mượt mà: "Chào mừng đến Quán A..."
-                        note right of OS: ⚡ KHÔNG dùng mạng Internet<br/>(Native OS TTS — chống giật tuyệt đối)
-                        TTS->>DB: Ghi log phát xong<br/>LogNarrationAsync(poiA)
+                        note right of OS: ⚡ KHÔNG dùng mạng Internet<br />(Native OS TTS — chống giật tuyệt đối)
+                        TTS->>DB: Ghi log phát xong<br />LogNarrationAsync(poiA)
 
                         OS-->>TTS: Trình đọc báo cáo Finished
                         TTS->>TTS: Delay ngắt giọng (500ms)
-                        TTS->>OS: Trượt sang Queue[1] → Đọc Quán B<br/>SpeakSingleAsync(poiB)
+                        TTS->>OS: Trượt sang Queue[1] → Đọc Quán B<br />SpeakSingleAsync(poiB)
                         OS-->>User: Đọc tiếp nối: "Sát bên cạnh là Quán B..."
-                        TTS->>DB: Ghi log phát xong<br/>LogNarrationAsync(poiB)
+                        TTS->>DB: Ghi log phát xong<br />LogNarrationAsync(poiB)
                 </div>
             </div>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>🔄 7. Luồng Đồng bộ "Local-First" (Offline Sync Flow)</h4>
-                    <p>Khẳng định kiến trúc Local-First. Quá trình tự động kéo POIs về máy (SQLite) và đẩy lịch sử sử dụng offline ngược lên máy chủ khi có mạng lại.</p>
+                    <p>Khẳng định kiến trúc Local-First. Quá trình tự động kéo POIs về máy (SQLite) và đẩy lịch sử sử
+                        dụng offline ngược lên máy chủ khi có mạng lại.</p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor System as App Lifecycle
-                        participant UI as SplashScreen / Background
-                        participant Network as Connectivity API
-                        participant DB as DatabaseService (SQLite)
-                        participant FB as FirebaseSyncService
-                        
-                        System->>UI: Mở Ứng Dụng (OnStart)
-                        UI->>Network: Tình trạng kết nối Internet?
-                        
-                        alt Có Internet (WIFI/4G)
-                            Network-->>UI: Online State
-                            
-                            Note over UI,FB: 1. PULL: CẬP NHẬT TRẠM POI MỚI VỀ MÁY
-                            UI->>FB: Kích hoạt FetchLatestPois()
-                            FB->>FB: Tải JSON POIs mới từ Firestore
-                            FB->>DB: Upsert (Chèn/Ghép) vào SQLite Local
-                            DB-->>UI: Cập nhật CSDL offline hoàn tất
-                            
-                            Note over UI,FB: 2. PUSH: ĐẨY LOGS NGHE OFFLINE LÊN TRỜI
-                            UI->>DB: Truy vấn Lịch sử: GetUnsyncedLogs()
-                            DB-->>UI: listLogs (IsSynced == false)
-                            alt listLogs.Count > 0
-                                UI->>FB: Push Firebase Bulk (Batch Request)
-                                FB-->>UI: Trả về trạng thái ghi mây thành công
-                                UI->>DB: Đánh dấu Update (IsSynced = true)
-                            end
-                        else Mất Internet
-                            Network-->>UI: Offline State
-                            UI->>UI: Bỏ qua Sync Cloud
-                        end
-                        
-                        UI-->>System: Hoàn tất Boot -> Chuyển vào MainPage dùng Local SQLite
+                    actor System as App Lifecycle
+                    participant UI as SplashScreen / Background
+                    participant Network as Connectivity API
+                    participant DB as DatabaseService (SQLite)
+                    participant FB as FirebaseSyncService
+
+                    System->>UI: Mở Ứng Dụng (OnStart)
+                    UI->>Network: Tình trạng kết nối Internet?
+
+                    alt Có Internet (WIFI/4G)
+                    Network-->>UI: Online State
+
+                    Note over UI,FB: 1. PULL: CẬP NHẬT TRẠM POI MỚI VỀ MÁY
+                    UI->>FB: Kích hoạt FetchLatestPois()
+                    FB->>FB: Tải JSON POIs mới từ Firestore
+                    FB->>DB: Upsert (Chèn/Ghép) vào SQLite Local
+                    DB-->>UI: Cập nhật CSDL offline hoàn tất
+
+                    Note over UI,FB: 2. PUSH: ĐẨY LOGS NGHE OFFLINE LÊN TRỜI
+                    UI->>DB: Truy vấn Lịch sử: GetUnsyncedLogs()
+                    DB-->>UI: listLogs (IsSynced == false)
+                    alt listLogs.Count > 0
+                    UI->>FB: Push Firebase Bulk (Batch Request)
+                    FB-->>UI: Trả về trạng thái ghi mây thành công
+                    UI->>DB: Đánh dấu Update (IsSynced = true)
+                    end
+                    else Mất Internet
+                    Network-->>UI: Offline State
+                    UI->>UI: Bỏ qua Sync Cloud
+                    end
+
+                    UI-->>System: Hoàn tất Boot -> Chuyển vào MainPage dùng Local SQLite
                 </div>
             </div>
-                </div>
+            </div>
             </div>
         </section>
 
         <!-- Chapter 11 -->
         <section id="chapter-11">
             <h2 class="section-title">Chương 11: Sơ đồ Tuần tự của Web CMS (Sequence Diagrams)</h2>
-            <p>Mô hình hóa chuỗi tương tác (Workflows) trên trang Web CMS. Thể hiện sự phân bổ quyền hành cực kỳ chặt chẽ giữa Admin và Chủ quán (Owner) thông qua Firebase Authentication và Firestore Role-based logic.</p>
+            <p>Mô hình hóa chuỗi tương tác (Workflows) trên trang Web CMS. Thể hiện sự phân bổ quyền hành cực kỳ chặt
+                chẽ giữa Admin và Chủ quán (Owner) thông qua Firebase Authentication và Firestore Role-based logic.</p>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>👑 1. Luồng Xác thực Phân quyền (Role-based Auth Flow)</h4>
-                    <p>Mô tả cơ chế Login chặn quyền UI dựa trên định dạng Role (Owner vs Admin) từ Collection <code>users</code>.</p>
+                    <p>Mô tả cơ chế Login chặn quyền UI dựa trên định dạng Role (Owner vs Admin) từ Collection
+                        <code>users</code>.
+                    </p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor User as Admin / Chủ quán
-                        participant UI as Auth Form (auth.js)
-                        participant FB as Firebase Auth
-                        participant DB as Firestore [users]
-                        
-                        User->>UI: Điền Email/Pass & Nhấn Đăng nhập
-                        UI->>FB: Yêu cầu chứng thực<br/>signInWithEmailAndPassword()
-                        FB-->>UI: Trả về Object userCredential (uid)
-                        UI->>DB: Truy vấn lấy Role<br/>doc(db, "users", uid)
-                        DB-->>UI: Dữ liệu Document (role: "admin" / "owner")
-                        alt Role == "admin"
-                            UI->>UI: Cấp quyền Tối cao<br/>Bật toàn bộ CRUD, Quản lý User
-                        else Role == "owner"
-                            UI->>UI: Cấp quyền Cơ sở<br/>Khóa module User, giới hạn sửa xóa POI
-                        end
-                        UI-->>User: Điều hướng tự động (Route dashboard.html)
+                    actor User as Admin / Chủ quán
+                    participant UI as Auth Form (auth.js)
+                    participant FB as Firebase Auth
+                    participant DB as Firestore [users]
+
+                    User->>UI: Điền Email/Pass & Nhấn Đăng nhập
+                    UI->>FB: Yêu cầu chứng thực<br />signInWithEmailAndPassword()
+                    FB-->>UI: Trả về Object userCredential (uid)
+                    UI->>DB: Truy vấn lấy Role<br />doc(db, "users", uid)
+                    DB-->>UI: Dữ liệu Document (role: "admin" / "owner")
+                    alt Role == "admin"
+                    UI->>UI: Cấp quyền Tối cao<br />Bật toàn bộ CRUD, Quản lý User
+                    else Role == "owner"
+                    UI->>UI: Cấp quyền Cơ sở<br />Khóa module User, giới hạn sửa xóa POI
+                    end
+                    UI-->>User: Điều hướng tự động (Route dashboard.html)
                 </div>
             </div>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>🛡️ 2. Luồng Quản lý Người dùng (Admin User Management)</h4>
-                    <p>Sự can thiệp của Quản trị viên Tối cao (Admin) để thiết lập trạng thái tài khoản truy cập vào CMS của Chủ quán.</p>
+                    <p>Sự can thiệp của Quản trị viên Tối cao (Admin) để thiết lập trạng thái tài khoản truy cập vào CMS
+                        của Chủ quán.</p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor Admin as Admin (Tối cao)
-                        participant UI as Users Dashboard (users.js)
-                        participant DB as Firestore [users]
-                        
-                        Admin->>UI: Xem danh sách Chủ quán
-                        UI->>DB: Tải ds có Role = Owner<br/>where("role", "==", "owner")
-                        DB-->>UI: Mảng dữ liệu User Docs
-                        Admin->>UI: Click nút [Khóa Tài Khoản] của 1 Owner
-                        UI->>UI: Xác nhận Dialog hành động nguy hiểm
-                        UI->>DB: Đẩy lệnh thay thế trạng thái<br/>update({ status: "disabled" })
-                        DB-->>UI: Xác nhận Update thành công
-                        UI->>UI: Gọi Hàm Tải lại lưới Grid<br/>loadOwners()
-                        UI-->>Admin: Hiển thị lại bằng Badge "Bị khóa" (Màu Đỏ)
+                    actor Admin as Admin (Tối cao)
+                    participant UI as Users Dashboard (users.js)
+                    participant DB as Firestore [users]
+
+                    Admin->>UI: Xem danh sách Chủ quán
+                    UI->>DB: Tải ds có Role = Owner<br />where("role", "==", "owner")
+                    DB-->>UI: Mảng dữ liệu User Docs
+                    Admin->>UI: Click nút [Khóa Tài Khoản] của 1 Owner
+                    UI->>UI: Xác nhận Dialog hành động nguy hiểm
+                    UI->>DB: Đẩy lệnh thay thế trạng thái<br />update({ status: "disabled" })
+                    DB-->>UI: Xác nhận Update thành công
+                    UI->>UI: Gọi Hàm Tải lại lưới Grid<br />loadOwners()
+                    UI-->>Admin: Hiển thị lại bằng Badge "Bị khóa" (Màu Đỏ)
                 </div>
             </div>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>📝 3. Luồng Quản trị Điểm ẩm thực & Phê duyệt (POI Approval Flow)</h4>
-                    <p>Cơ chế phòng ngự dữ liệu nhiều lớp. Thay vì Insert thẳng, Chủ quán phải nén dữ liệu vào Queue để Admin xem xét.</p>
+                    <p>Cơ chế phòng ngự dữ liệu nhiều lớp. Thay vì Insert thẳng, Chủ quán phải nén dữ liệu vào Queue để
+                        Admin xem xét.</p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor Owner as Chủ quán
-                        participant UI as POI Modal (poi.js)
-                        participant Queue as Firestore [poiRequests]
-                        participant Admin as Admin
-                        participant DB as Firestore [pois]
-                        
-                        Owner->>UI: Nhập thông tin quán & Nhấn Lưu
-                        UI->>UI: Validate form (Chống bỏ rỗng)<br/>savePoi()
-                        UI->>Queue: Không ghi đè thẳng, Đẩy sang Hàng Phê duyệt<br/>add({ targetPoiId, status: "PENDING" })
-                        Queue-->>UI: Tạo Request Thành công
-                        UI-->>Owner: Bắn Toast "Đã gửi yêu cầu cho Admin"
-                        Note right of Queue: --- BƯỚC DUYỆT CỦA ADMIN ---
-                        Admin->>Queue: Truy cập Tab Phê Duyệt<br/>loadApprovals()
-                        Admin->>Queue: Xem xét kĩ thông tin & Bấm "Duyệt Yêu Cầu"
-                        Queue->>DB: Trích xuất Data từ Queue đẩy sang Bảng Gốc<br/>db.collection("pois").doc(id).set()
-                        Queue->>Queue: Đóng Ticket Update<br/>update({ status: "APPROVED" })
+                    actor Owner as Chủ quán
+                    participant UI as POI Modal (poi.js)
+                    participant Queue as Firestore [poiRequests]
+                    participant Admin as Admin
+                    participant DB as Firestore [pois]
+
+                    Owner->>UI: Nhập thông tin quán & Nhấn Lưu
+                    UI->>UI: Validate form (Chống bỏ rỗng)<br />savePoi()
+                    UI->>Queue: Không ghi đè thẳng, Đẩy sang Hàng Phê duyệt<br />add({ targetPoiId, status: "PENDING" })
+                    Queue-->>UI: Tạo Request Thành công
+                    UI-->>Owner: Bắn Toast "Đã gửi yêu cầu cho Admin"
+                    Note right of Queue: --- BƯỚC DUYỆT CỦA ADMIN ---
+                    Admin->>Queue: Truy cập Tab Phê Duyệt<br />loadApprovals()
+                    Admin->>Queue: Xem xét kĩ thông tin & Bấm "Duyệt Yêu Cầu"
+                    Queue->>DB: Trích xuất Data từ Queue đẩy sang Bảng Gốc<br />db.collection("pois").doc(id).set()
+                    Queue->>Queue: Đóng Ticket Update<br />update({ status: "APPROVED" })
                 </div>
             </div>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>🖨️ 4. Luồng Xuất mã QR Code (QR Generation Flow)</h4>
-                    <p>Khâu vận hành cốt lõi: Nối liền CSDL điện toán đám mây vào vật phẩm Vật lý (Biển quét QR nằm trên bàn ăn của thực khách).</p>
+                    <p>Khâu vận hành cốt lõi: Nối liền CSDL điện toán đám mây vào vật phẩm Vật lý (Biển quét QR nằm trên
+                        bàn ăn của thực khách).</p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor User as Admin / Chủ quán
-                        participant UI as QR Manager (qrcode-manager.js)
-                        participant DB as Firestore [pois]
-                        participant Lib as Thư viện qrcode.js
-                        participant OS as Trình duyệt OS
-                        
-                        User->>UI: Click Mở Tab Danh sách QR
-                        UI->>DB: Trích xuất List Điểm ăn<br/>Lọc mảng theo phân quyền
-                        DB-->>UI: Danh sách POI kèm ID Document
-                        loop Generation Array Loop
-                            UI->>UI: Sinh Deep-link Payload<br/>listen.html?id={poiId}
-                            UI->>Lib: Áp thuật toán QR Matrix Draw<br/>new QRCode({ text: URL, correctLevel: H })
-                            Lib-->>UI: Hoàn trả DOM Element [canvas] đồ họa HTML5
-                        end
-                        UI-->>User: Render Grid thẻ QR đồng loạt
-                        User->>UI: Chọn Menu [Tải Cứng PNG]
-                        UI->>UI: Gắn đè Caption (Tên quán) lên Canvas Image<br/>downloadQr()
-                        UI->>OS: Giải mã Base64 & Ép tải luồng Stream<br/>link.click()
-                        OS-->>User: Nhận tệp .PNG phân giải cao để In ấn
+                    actor User as Admin / Chủ quán
+                    participant UI as QR Manager (qrcode-manager.js)
+                    participant DB as Firestore [pois]
+                    participant Lib as Thư viện qrcode.js
+                    participant OS as Trình duyệt OS
+
+                    User->>UI: Click Mở Tab Danh sách QR
+                    UI->>DB: Trích xuất List Điểm ăn<br />Lọc mảng theo phân quyền
+                    DB-->>UI: Danh sách POI kèm ID Document
+                    loop Generation Array Loop
+                    UI->>UI: Sinh Deep-link Payload<br />listen.html?id={poiId}
+                    UI->>Lib: Áp thuật toán QR Matrix Draw<br />new QRCode({ text: URL, correctLevel: H })
+                    Lib-->>UI: Hoàn trả DOM Element [canvas] đồ họa HTML5
+                    end
+                    UI-->>User: Render Grid thẻ QR đồng loạt
+                    User->>UI: Chọn Menu [Tải Cứng PNG]
+                    UI->>UI: Gắn đè Caption (Tên quán) lên Canvas Image<br />downloadQr()
+                    UI->>OS: Giải mã Base64 & Ép tải luồng Stream<br />link.click()
+                    OS-->>User: Nhận tệp .PNG phân giải cao để In ấn
                 </div>
             </div>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>📊 5. Luồng Truy xuất Lịch sử Khép kín (Owner / Admin History Flow)</h4>
-                    <p>Minh họa thuật toán truy vấn vượt quyền tinh ranh bằng cơ chế Cấy ghép Dữ liệu chéo (Cross-Query) trong NoSQL Firebase.</p>
+                    <p>Minh họa thuật toán truy vấn vượt quyền tinh ranh bằng cơ chế Cấy ghép Dữ liệu chéo (Cross-Query)
+                        trong NoSQL Firebase.</p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 2rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor User as Người truy cập CMS
-                        participant UI as History Tracker (history.js)
-                        participant DB1 as Firestore [pois]
-                        participant DB2 as Firestore [narrationLogs]
-                        
-                        User->>UI: Bật module Thống kê Lịch sử (Logs)
-                        UI->>UI: Định hướng thuật toán<br/>loadHistory()
-                        alt User là System Admin
-                            UI->>DB2: Truy vấn Vô điều kiện diện rộng<br/>orderBy("playedAt").limit(100)
-                            DB2-->>UI: Trả về Array 100 Logs hỗn hợp hệ thống
-                        else User là Owner
-                            UI->>DB1: Lọc Ngầm B1: Tra Tên Quán từ ID Sở hữu<br/>where(documentId, "in", shopIds)
-                            DB1-->>UI: Trả về Array [Tên Quán do người này làm chủ]
-                            UI->>DB2: Khớp Lệnh B2: Mồi mảng Tên vào bảng Logs<br/>where("poiName", "in", poiNames)
-                            DB2-->>UI: Trả về 100 Logs Lọc kín chỉ thuộc về Owner
-                        end
-                        UI->>UI: Khớp nối Local Date & Đếm Aggregate Chart<br/>updateSourceStats()
-                        UI-->>User: In ra Biểu đồ và Grid Lịch sử cá nhân hóa
+                    actor User as Người truy cập CMS
+                    participant UI as History Tracker (history.js)
+                    participant DB1 as Firestore [pois]
+                    participant DB2 as Firestore [narrationLogs]
+
+                    User->>UI: Bật module Thống kê Lịch sử (Logs)
+                    UI->>UI: Định hướng thuật toán<br />loadHistory()
+                    alt User là System Admin
+                    UI->>DB2: Truy vấn Vô điều kiện diện rộng<br />orderBy("playedAt").limit(100)
+                    DB2-->>UI: Trả về Array 100 Logs hỗn hợp hệ thống
+                    else User là Owner
+                    UI->>DB1: Lọc Ngầm B1: Tra Tên Quán từ ID Sở hữu<br />where(documentId, "in", shopIds)
+                    DB1-->>UI: Trả về Array [Tên Quán do người này làm chủ]
+                    UI->>DB2: Khớp Lệnh B2: Mồi mảng Tên vào bảng Logs<br />where("poiName", "in", poiNames)
+                    DB2-->>UI: Trả về 100 Logs Lọc kín chỉ thuộc về Owner
+                    end
+                    UI->>UI: Khớp nối Local Date & Đếm Aggregate Chart<br />updateSourceStats()
+                    UI-->>User: In ra Biểu đồ và Grid Lịch sử cá nhân hóa
                 </div>
             </div>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>🟢 6. Luồng Theo dõi Khách Trực Tuyến (Real-time Visitors Tracker)</h4>
-                    <p>Cơ chế Heartbeat (nhịp tim) và Snapshot Listener giúp Dashboard quản trị nhảy số thời gian thực (+1 người online) ngay khoảnh khoắc du khách vừa mở App hoặc vừa đưa camera quét QR.</p>
+                    <p>Cơ chế Heartbeat (nhịp tim) và Snapshot Listener giúp Dashboard quản trị nhảy số thời gian thực
+                        (+1 người online) ngay khoảnh khoắc du khách vừa mở App hoặc vừa đưa camera quét QR.</p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor Visitor as Khách truy cập
-                        actor Owner as CMS Admin / Owner
-                        participant App as App / Web (Client)
-                        participant FB as Firebase (Firestore DB)
-                        participant CMS as CMS Dashboard (dashboard.js)
+                    actor Visitor as Khách truy cập
+                    actor Owner as CMS Admin / Owner
+                    participant App as App / Web (Client)
+                    participant FB as Firebase (Firestore DB)
+                    participant CMS as CMS Dashboard (dashboard.js)
 
-                        note over Owner,CMS: BƯỚC 1: Lắng nghe Dữ liệu Real-time
-                        Owner->>CMS: Mở trang Quản trị theo dõi khách
-                        CMS->>CMS: Kích hoạt hàm Listener<br/>initOnlineUsersListener()
-                        CMS->>FB: Listener 1: Người dùng đã đăng nhập<br/>db.collection("users").where("status","==","active").onSnapshot()
-                        CMS->>FB: Listener 2: Khách ẩn danh (App/Web)<br/>db.collection("onlineGuests").onSnapshot()
-                        FB-->>CMS: Trả về Array Active Users ban đầu
+                    note over Owner,CMS: BƯỚC 1: Lắng nghe Dữ liệu Real-time
+                    Owner->>CMS: Mở trang Quản trị theo dõi khách
+                    CMS->>CMS: Kích hoạt hàm Listener<br />initOnlineUsersListener()
+                    CMS->>FB: Listener 1: Người dùng đã đăng
+                    nhập<br />db.collection("users").where("status","==","active").onSnapshot()
+                    CMS->>FB: Listener 2: Khách ẩn danh (App/Web)<br />db.collection("onlineGuests").onSnapshot()
+                    FB-->>CMS: Trả về Array Active Users ban đầu
 
-                        note over Visitor,App: BƯỚC 2: Khách tham quan trực tuyến
-                        Visitor->>App: Mở App (OnResume) / Quẹt QR
-                        App->>App: Khởi chạy nhịp tim định kỳ 30s<br/>StartHeartbeat()
-                        App->>FB: Gửi xung nhịp mạng (Heartbeat)<br/>UpdateUserStatusAsync("active") → PATCH { status, lastSeen }
-                        
-                        note over FB,CMS: Firebase tự động Push Data ngay lập tức
-                        FB-->>CMS: Trigger Callback onSnapshot thay đổi
+                    note over Visitor,App: BƯỚC 2: Khách tham quan trực tuyến
+                    Visitor->>App: Mở App (OnResume) / Quẹt QR
+                    App->>App: Khởi chạy nhịp tim định kỳ 30s<br />StartHeartbeat()
+                    App->>FB: Gửi xung nhịp mạng (Heartbeat)<br />UpdateUserStatusAsync("active") → PATCH { status,
+                    lastSeen }
 
-                        CMS->>CMS: Đếm lại số lượng trực tuyến<br/>updateOnlineUsersCount()
-                        CMS-->>Owner: Thấy số lượng khách tăng lên (+1)
+                    note over FB,CMS: Firebase tự động Push Data ngay lập tức
+                    FB-->>CMS: Trigger Callback onSnapshot thay đổi
 
-                        note over Visitor,App: BƯỚC 3: Khách thoát ra
-                        Visitor->>App: Đóng App / Tắt trình duyệt
-                        App->>App: Áp dụng OS Lifecycle<br/>(App: OnSleep / Web: beforeunload)
-                        App->>App: Dừng nhịp tim<br/>StopHeartbeat()
-                        App->>FB: Cập nhật lần cuối trước khi ngắt<br/>UpdateUserStatusAsync("offline") → PATCH { status, lastSeen }
-                        
-                        FB-->>CMS: Trigger Callback onSnapshot đổi trạng thái
-                        CMS->>CMS: Đếm lại và Re-render<br/>updateOnlineUsersCount()
-                        CMS-->>Owner: Thấy số lượng bị trừ đi 1 người (-1)
+                    CMS->>CMS: Đếm lại số lượng trực tuyến<br />updateOnlineUsersCount()
+                    CMS-->>Owner: Thấy số lượng khách tăng lên (+1)
+
+                    note over Visitor,App: BƯỚC 3: Khách thoát ra
+                    Visitor->>App: Đóng App / Tắt trình duyệt
+                    App->>App: Áp dụng OS Lifecycle<br />(App: OnSleep / Web: beforeunload)
+                    App->>App: Dừng nhịp tim<br />StopHeartbeat()
+                    App->>FB: Cập nhật lần cuối trước khi ngắt<br />UpdateUserStatusAsync("offline") → PATCH { status,
+                    lastSeen }
+
+                    FB-->>CMS: Trigger Callback onSnapshot đổi trạng thái
+                    CMS->>CMS: Đếm lại và Re-render<br />updateOnlineUsersCount()
+                    CMS-->>Owner: Thấy số lượng bị trừ đi 1 người (-1)
                 </div>
             </div>
 
             <div class="card-grid" style="margin-bottom: 1rem;">
                 <div class="card">
                     <h4>🤖 7. Luồng Tự động Dịch Đa ngôn ngữ (AI LLM Translation Flow)</h4>
-                    <p>Ứng dụng GenAI (Gemini) để sinh tự động nội dung dịch thuật chuyên ngành ẩm thực theo ngữ cảnh thay vì dịch tĩnh thô cứng truyền thống.</p>
+                    <p>Ứng dụng GenAI (Gemini) để sinh tự động nội dung dịch thuật chuyên ngành ẩm thực theo ngữ cảnh
+                        thay vì dịch tĩnh thô cứng truyền thống.</p>
                 </div>
             </div>
             <div class="diagram-container" style="margin-bottom: 4rem;">
                 <div class="mermaid">
                     sequenceDiagram
-                        actor Owner as Chủ Quán
-                        participant UI as Form CMS (poi.js)
-                        participant TS as Translate Module (gemini-translate.js)
-                        participant AI as Google Gemini API (LLM)
-                        participant DB as Firestore DB
-                        
-                        Owner->>UI: Nhập mô tả món ăn (Tiếng Việt)
-                        Owner->>UI: Bấm nút "Dịch Động bằng AI"
-                        UI->>UI: Hiện Loading Spinner
-                        UI->>TS: Yêu cầu xử lý đoạn Text
-                        
-                        TS->>TS: Gói Prompt Hệ thống:<br/>"Là một chuyên gia văn hóa ẩm thực VN..."
-                        TS->>AI: Gửi Payload (Prompt + Tiếng Việt) qua JSON REST
-                        
-                        Note over TS,AI: AI xử lý và phân tích ngữ nghĩa 
-                        AI-->>TS: Trả về Kết quả (en, zh)
-                        
-                        TS->>TS: Parse cấu trúc JSON (Bắt lỗi rỗng/đứt đoạn)
-                        TS-->>UI: Callbacks text bản dịch
-                        
-                        UI->>UI: Tự động điền dữ liệu vào ô Input (En, Zh)
-                        UI-->>Owner: Tắt Loading, Cho phép Owner xem xét
-                        
-                        Owner->>Owner: Rà soát & Sửa thủ công (Nếu cần)
-                        Owner->>UI: Nhấn "Lưu Toàn Bộ"
-                        UI->>DB: Push gộp JSON (vi, en, zh) xuống CSDL
+                    actor Owner as Chủ Quán
+                    participant UI as Form CMS (poi.js)
+                    participant TS as Translate Module (gemini-translate.js)
+                    participant AI as Google Gemini API (LLM)
+                    participant DB as Firestore DB
+
+                    Owner->>UI: Nhập mô tả món ăn (Tiếng Việt)
+                    Owner->>UI: Bấm nút "Dịch Động bằng AI"
+                    UI->>UI: Hiện Loading Spinner
+                    UI->>TS: Yêu cầu xử lý đoạn Text
+
+                    TS->>TS: Gói Prompt Hệ thống:<br />"Là một chuyên gia văn hóa ẩm thực VN..."
+                    TS->>AI: Gửi Payload (Prompt + Tiếng Việt) qua JSON REST
+
+                    Note over TS,AI: AI xử lý và phân tích ngữ nghĩa
+                    AI-->>TS: Trả về Kết quả (en, zh)
+
+                    TS->>TS: Parse cấu trúc JSON (Bắt lỗi rỗng/đứt đoạn)
+                    TS-->>UI: Callbacks text bản dịch
+
+                    UI->>UI: Tự động điền dữ liệu vào ô Input (En, Zh)
+                    UI-->>Owner: Tắt Loading, Cho phép Owner xem xét
+
+                    Owner->>Owner: Rà soát & Sửa thủ công (Nếu cần)
+                    Owner->>UI: Nhấn "Lưu Toàn Bộ"
+                    UI->>DB: Push gộp JSON (vi, en, zh) xuống CSDL
                 </div>
             </div>
         </section>
@@ -1027,7 +1125,7 @@
 
         window.addEventListener('scroll', () => {
             let current = '';
-            
+
             sections.forEach(section => {
                 const sectionTop = section.offsetTop;
                 const sectionHeight = section.clientHeight;
@@ -1055,4 +1153,5 @@
         });
     </script>
 </body>
+
 </html>

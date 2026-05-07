@@ -84,12 +84,13 @@ let markerLayer = null;
 
 async function loadDashboardStats() {
     try {
-        const [poisSnap, audioSnap, toursSnap, historySnap, pendingSnap] = await Promise.all([
+        const [poisSnap, audioSnap, toursSnap, historySnap, pendingSnap, accessRightsSnap] = await Promise.all([
             db.collection('pois').get(),
             db.collection('audioFiles').get(),
             db.collection('tours').get(),
             db.collection('narrationLogs').get(),
-            db.collection('poiRequests').where('status', '==', 'PENDING').get()
+            db.collection('poiRequests').where('status', '==', 'PENDING').get(),
+            db.collection('accessRights').get()
         ]);
 
         document.getElementById('statPoi').textContent = poisSnap.size;
@@ -97,6 +98,11 @@ async function loadDashboardStats() {
         document.getElementById('statTour').textContent = toursSnap.size;
         document.getElementById('statHistory').textContent = historySnap.size;
         document.getElementById('statPending').textContent = pendingSnap.size;
+        
+        const elTotalRevenue = document.getElementById('statTotalRevenue');
+        if (elTotalRevenue) {
+            elTotalRevenue.textContent = new Intl.NumberFormat('vi-VN').format(accessRightsSnap.size * 5000) + 'đ';
+        }
 
         // Lưu tạm dữ liệu để heatmap dùng khi toggle
         window._heatmapPoisSnap = poisSnap;
