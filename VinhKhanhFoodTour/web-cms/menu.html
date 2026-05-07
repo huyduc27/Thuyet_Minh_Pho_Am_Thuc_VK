@@ -561,6 +561,17 @@
                 userAgent: navigator.userAgent,
                 platform: 'web'
             }, { merge: true }).catch(e => console.error("Heartbeat error:", e));
+
+            // Ghi log lượt quét QR Tổng (analytics) - Chỉ ghi 1 lần mỗi lần load trang
+            if (!window.hasLoggedScan) {
+                db.collection('qrScans').add({
+                    poiId: 'master_menu',
+                    poiName: 'QR Tổng Phố Vĩnh Khánh',
+                    scannedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    userAgent: navigator.userAgent
+                }).then(() => { window.hasLoggedScan = true; })
+                  .catch(e => console.error("Log scan error:", e));
+            }
         }
 
         function initGuestHeartbeat() {

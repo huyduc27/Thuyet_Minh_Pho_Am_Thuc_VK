@@ -201,7 +201,8 @@
             try {
                 const doc = await db.collection('pois').doc(poiId).get();
                 if (doc.exists) {
-                    document.getElementById('poiName').textContent = doc.data().name;
+                    const poiData = doc.data();
+                    document.getElementById('poiName').textContent = poiData.name;
                     document.getElementById('loadingOverlay').style.display = 'none';
                 }
             } catch (e) { console.error(e); alert('Lỗi kết nối!'); }

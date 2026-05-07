@@ -1,474 +1,326 @@
 // ========================================
-// QR Code Module — Tạo mã QR cho từng POI
-// Sử dụng thư viện qrcode.js (CDN) để render trực tiếp trên browser
+// QR Code Module — Quản lý QR Tổng & Analytics
 // ========================================
 
-let allQrPois = [];
-let qrPage = 1;
-
-// Base URL cho trang nghe — tự nhận diện cả local (file://) lẫn hosted (http://)
 const QR_BASE_URL = window.location.origin !== 'null'
     ? window.location.origin
     : window.location.href.substring(0, window.location.href.lastIndexOf('/'));
 
+// Chart Configuration & State (Advanced Analytics)
+let qrMainChartInstance = null;
+let qrCurrentCategory = 'revenue'; // 'revenue' | 'usage'
+let qrCurrentPeriod = 'day';     // 'day' | 'week' | 'month' | 'year'
+let qrCurrentBaseDate = new Date(); // Ngày gốc đang xem
+
+let currentQrColor = '#e94560';
+let currentShowLogo = true;
+let currentMasterQr = null;
+
 /**
- * Load danh sách POI và tạo QR code cho từng quán
+ * Khởi tạo module QR
  */
 async function loadQrCodes() {
-    const container = document.getElementById('qrCodeGrid');
-    if (!container) return;
-
-    container.innerHTML = '<div class="loading-overlay"><span class="loading-spinner"></span> Đang tạo mã QR...</div>';
-
-    try {
-        let snapshot;
-        if (window.currentUser && window.currentUser.role === 'owner') {
-            if (window.currentUser.shopIds && window.currentUser.shopIds.length > 0) {
-                const promises = window.currentUser.shopIds.map(id => db.collection('pois').doc(id).get());
-                const docs = await Promise.all(promises);
-                const validDocs = docs.filter(d => d.exists);
-                snapshot = { empty: validDocs.length === 0, docs: validDocs, size: validDocs.length };
-            } else {
-                snapshot = { empty: true, docs: [], size: 0 };
-            }
-        } else {
-            snapshot = await db.collection('pois').orderBy('name').get();
-        }
-
-        if (snapshot.empty) {
-            container.innerHTML = `<div class="empty-state"><div class="icon">📱</div><p>Chưa có POI nào để tạo QR</p></div>`;
-            renderPagination('qrPagination', 1, 0, () => {});
-            return;
-        }
-
-        allQrPois = snapshot.docs;
-        qrPage = 1;
-        renderQrPage();
-
-        // Cập nhật counter
-        document.getElementById('qrCount').textContent = snapshot.size;
-
-    } catch (error) {
-        console.error('Error generating QR codes:', error);
-        container.innerHTML = `<div class="empty-state"><p>Lỗi tạo QR: ${error.message}</p></div>`;
-    }
-}
-
-function renderQrPage() {
-    const container = document.getElementById('qrCodeGrid');
-    container.innerHTML = '';
-
-    const pageItems = getPageSlice(allQrPois, qrPage);
-
-    pageItems.forEach(doc => {
-        const poi = doc.data();
-        const poiId = doc.id;
-        const listenUrl = `${QR_BASE_URL}/checkout.html?id=${poiId}`;
-
-        // Tạo card chứa QR
-        const card = document.createElement('div');
-        card.className = 'qr-card';
-        card.innerHTML = `
-            <div class="qr-card-header">
-                <span class="qr-poi-name">${poi.name || 'Không tên'}</span>
-                <span class="qr-category-badge">${getCategoryIcon(poi.category)} ${poi.category || ''}</span>
-            </div>
-            <div class="qr-canvas-wrapper" id="qr-wrapper-${poiId}"></div>
-            <div class="qr-url-display">${listenUrl}</div>
-            <div class="qr-actions">
-                <button class="btn btn-sm btn-primary" onclick="downloadQr('${poiId}', '${(poi.name || '').replace(/'/g, "\\'")}')">
-                    ⬇️ Tải PNG
-                </button>
-                <button class="btn btn-sm btn-secondary" onclick="copyQrUrl('${poiId}')">
-                    📋 Copy URL
-                </button>
-                <button class="btn btn-sm btn-secondary" onclick="printSingleQr('${poiId}', '${(poi.name || '').replace(/'/g, "\\'")}')">
-                    🖨️ In
-                </button>
-            </div>
-        `;
-        container.appendChild(card);
-
-        // Render QR code vào wrapper
-        const wrapper = document.getElementById(`qr-wrapper-${poiId}`);
-        new QRCode(wrapper, {
-            text: listenUrl,
-            width: 200,
-            height: 200,
-            colorDark: '#1a1a2e',
-            colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.H  // Cao nhất — in ấn tốt
-        });
-    });
-
-    renderPagination('qrPagination', qrPage, allQrPois.length, (page) => {
-        qrPage = page;
-        renderQrPage();
-    });
+    renderMasterQrLive();
+    await loadQrAnalytics(false);
+    
+    // Mặc định về ngày hôm nay
+    qrCurrentBaseDate = new Date();
+    setTimeout(() => {
+        loadQrCharts();
+    }, 100);
 }
 
 /**
- * Lấy icon theo category
+ * Render Master QR
  */
-function getCategoryIcon(category) {
-    const icons = {
-        'Ốc': '🐚', 'Lẩu': '🍲', 'Nướng': '🔥', 'Hải sản': '🦀',
-        'Bò': '🥩', 'Cơm': '🍚', 'Ăn vặt': '🍢', 'Chè': '🍧', 'Tráng miệng': '🍨'
-    };
-    return icons[category] || '🍽️';
-}
-
-/**
- * Tải xuống QR code dưới dạng PNG
- */
-function downloadQr(poiId, poiName) {
-    const wrapper = document.getElementById(`qr-wrapper-${poiId}`);
+function renderMasterQrLive() {
+    const wrapper = document.getElementById('masterQrLiveWrapper');
     if (!wrapper) return;
+    wrapper.innerHTML = '';
 
-    const canvas = wrapper.querySelector('canvas');
-    if (!canvas) {
-        showToast('Không tìm thấy QR code', 'error');
-        return;
-    }
-
-    // Tạo canvas mới có label tên quán phía dưới
-    const exportCanvas = document.createElement('canvas');
-    const padding = 20;
-    const labelHeight = 40;
-    exportCanvas.width = canvas.width + padding * 2;
-    exportCanvas.height = canvas.height + padding * 2 + labelHeight;
-
-    const ctx = exportCanvas.getContext('2d');
-
-    // Background trắng
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-
-    // Vẽ QR
-    ctx.drawImage(canvas, padding, padding);
-
-    // Vẽ tên quán
-    ctx.fillStyle = '#1a1a2e';
-    ctx.font = 'bold 14px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(poiName, exportCanvas.width / 2, canvas.height + padding + 25);
-
-    // Tải xuống
-    const link = document.createElement('a');
-    const safeName = poiName.replace(/[^a-zA-Z0-9\u00C0-\u024F\u1E00-\u1EFF]/g, '_');
-    link.download = `QR_${safeName}.png`;
-    link.href = exportCanvas.toDataURL('image/png');
-    link.click();
-
-    showToast(`Đã tải QR: ${poiName}`);
-}
-
-/**
- * Copy URL listen vào clipboard
- */
-function copyQrUrl(poiId) {
-    const url = `${QR_BASE_URL}/listen.html?id=${poiId}`;
-    navigator.clipboard.writeText(url).then(() => {
-        showToast('Đã copy URL!');
-    }).catch(() => {
-        // Fallback cho trình duyệt cũ
-        const input = document.createElement('input');
-        input.value = url;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand('copy');
-        document.body.removeChild(input);
-        showToast('Đã copy URL!');
-    });
-}
-
-/**
- * In một QR code đơn lẻ
- */
-function printSingleQr(poiId, poiName) {
-    const wrapper = document.getElementById(`qr-wrapper-${poiId}`);
-    if (!wrapper) return;
-
-    const canvas = wrapper.querySelector('canvas');
-    if (!canvas) return;
-
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>QR - ${poiName}</title>
-            <style>
-                body { 
-                    display: flex; flex-direction: column; align-items: center; 
-                    justify-content: center; min-height: 100vh; margin: 0;
-                    font-family: Arial, sans-serif; 
-                }
-                .qr-print { text-align: center; }
-                .qr-print img { width: 250px; height: 250px; }
-                .qr-print h2 { margin: 12px 0 4px; font-size: 18px; color: #1a1a2e; }
-                .qr-print p { margin: 0; font-size: 11px; color: #888; }
-                .qr-print .brand { margin-top: 8px; font-size: 13px; color: #e94560; font-weight: bold; }
-            </style>
-        </head>
-        <body>
-            <div class="qr-print">
-                <img src="${canvas.toDataURL('image/png')}" alt="QR Code">
-                <h2>${poiName}</h2>
-                <p>Quét mã QR để nghe thuyết minh</p>
-                <div class="brand">🍜 Phố Ẩm Thực Vĩnh Khánh</div>
-            </div>
-            <script>window.onload = () => { window.print(); window.close(); }<\/script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-}
-
-/**
- * Tải tất cả QR codes (lần lượt trigger download cho từng file)
- */
-async function downloadAllQrCodes() {
-    const wrappers = document.querySelectorAll('[id^="qr-wrapper-"]');
-    if (wrappers.length === 0) {
-        showToast('Chưa có QR code nào', 'error');
-        return;
-    }
-
-    showToast(`Đang tải ${wrappers.length} mã QR...`);
-
-    for (const wrapper of wrappers) {
-        const poiId = wrapper.id.replace('qr-wrapper-', '');
-        const card = wrapper.closest('.qr-card');
-        const poiName = card?.querySelector('.qr-poi-name')?.textContent || poiId;
-
-        downloadQr(poiId, poiName);
-
-        // Delay nhẹ giữa các lần download để trình duyệt không block
-        await new Promise(resolve => setTimeout(resolve, 300));
-    }
-
-    showToast(`Đã tải xong ${wrappers.length} mã QR!`);
-}
-
-/**
- * In tất cả QR codes trên 1 trang (grid layout)
- */
-function printAllQrCodes() {
-    const cards = document.querySelectorAll('.qr-card');
-    if (cards.length === 0) {
-        showToast('Chưa có QR code nào', 'error');
-        return;
-    }
-
-    let qrItems = '';
-    cards.forEach(card => {
-        const canvas = card.querySelector('canvas');
-        const name = card.querySelector('.qr-poi-name')?.textContent || '';
-        if (canvas) {
-            qrItems += `
-                <div class="qr-item">
-                    <img src="${canvas.toDataURL('image/png')}" alt="QR">
-                    <div class="name">${name}</div>
-                    <div class="hint">Quét để nghe thuyết minh</div>
-                </div>
-            `;
-        }
-    });
-
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>QR Codes - Phố Ẩm Thực Vĩnh Khánh</title>
-            <style>
-                * { box-sizing: border-box; margin: 0; padding: 0; }
-                body { font-family: Arial, sans-serif; padding: 20px; }
-                h1 { text-align: center; margin-bottom: 20px; font-size: 20px; color: #1a1a2e; }
-                .grid { 
-                    display: grid; 
-                    grid-template-columns: repeat(3, 1fr); 
-                    gap: 24px; 
-                    max-width: 800px; 
-                    margin: 0 auto; 
-                }
-                .qr-item { 
-                    text-align: center; 
-                    border: 1px solid #eee; 
-                    border-radius: 8px; 
-                    padding: 16px; 
-                    break-inside: avoid; 
-                }
-                .qr-item img { width: 150px; height: 150px; }
-                .qr-item .name { font-weight: bold; font-size: 12px; margin-top: 8px; color: #1a1a2e; }
-                .qr-item .hint { font-size: 10px; color: #888; margin-top: 4px; }
-                @media print {
-                    .grid { grid-template-columns: repeat(3, 1fr); }
-                }
-            </style>
-        </head>
-        <body>
-            <h1>🍜 Mã QR — Phố Ẩm Thực Vĩnh Khánh</h1>
-            <div class="grid">${qrItems}</div>
-            <script>window.onload = () => { window.print(); }<\/script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-}
-
-// ========================================
-// MÃ QR TỔNG (CHUNG) — Trỏ về trang menu.html
-// ========================================
-
-/**
- * Mở modal hiển thị mã QR Tổng (chung cho cả phố)
- */
-function generateMasterQr() {
     const masterUrl = `${QR_BASE_URL}/menu.html`;
-
-    // Tạo modal overlay
-    let modal = document.getElementById('masterQrModal');
-    if (modal) modal.remove(); // Xoá modal cũ nếu có
-
-    modal = document.createElement('div');
-    modal.id = 'masterQrModal';
-    modal.className = 'modal-overlay';
-    modal.innerHTML = `
-        <div class="modal" style="max-width: 420px; text-align: center;">
-            <h2 style="margin-bottom: 6px; justify-content: center;">🔲 Mã QR Tổng — Phố Vĩnh Khánh</h2>
-            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 18px;">
-                Khách quét mã này sẽ thấy <strong>danh sách toàn bộ quán ăn</strong>, tự chọn quán → thanh toán → nghe audio.
-            </p>
-            <div id="masterQrWrapper" style="
-                background: #fff; border-radius: 16px; padding: 20px;
-                display: inline-block; margin-bottom: 14px;
-                box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            "></div>
-            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px; word-break: break-all;">
-                ${masterUrl}
-            </div>
-            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-                <button class="btn btn-primary btn-sm" onclick="downloadMasterQr()">⬇️ Tải PNG</button>
-                <button class="btn btn-secondary btn-sm" onclick="printMasterQr()">🖨️ In</button>
-                <button class="btn btn-secondary btn-sm" onclick="copyMasterQrUrl()">📋 Copy URL</button>
-                <button class="btn btn-secondary btn-sm" onclick="closeMasterQrModal()">❌ Đóng</button>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    // Trigger CSS transition: thêm class 'show' sau 1 frame để animation chạy mượt
-    requestAnimationFrame(() => {
-        modal.classList.add('show');
-    });
-
-    // Render QR vào wrapper
-    const wrapper = document.getElementById('masterQrWrapper');
-    new QRCode(wrapper, {
+    const qrcodeObj = new QRCode(wrapper, {
         text: masterUrl,
-        width: 240,
-        height: 240,
-        colorDark: '#1a1a2e',
+        width: 260,
+        height: 260,
+        colorDark: currentQrColor,
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H
     });
+
+    setTimeout(() => {
+        const canvas = wrapper.querySelector('canvas');
+        const img = wrapper.querySelector('img');
+        if (!canvas) return;
+
+        if (currentShowLogo) {
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+            const center = size / 2;
+            const logoBgSize = size * 0.22;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(center, center, logoBgSize / 2 + 5, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.font = `${logoBgSize * 0.7}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🍜', center, center + 2);
+
+            if (img) img.src = canvas.toDataURL();
+        }
+        
+        if (img) {
+            img.style.display = 'block';
+            img.style.margin = '0 auto';
+        }
+        currentMasterQr = canvas;
+    }, 200);
 }
 
-function closeMasterQrModal() {
-    const modal = document.getElementById('masterQrModal');
-    if (modal) {
-        modal.classList.remove('show');
-        setTimeout(() => modal.remove(), 250);
-    }
+function updateQrStyle() {
+    const selectedRadio = document.querySelector('input[name="qrColor"]:checked');
+    if (selectedRadio) currentQrColor = selectedRadio.value;
+    currentShowLogo = document.getElementById('qrShowLogo').checked;
+    renderMasterQrLive();
 }
 
-function downloadMasterQr() {
-    const wrapper = document.getElementById('masterQrWrapper');
-    if (!wrapper) return;
-    const canvas = wrapper.querySelector('canvas');
-    if (!canvas) { showToast('Không tìm thấy QR', 'error'); return; }
-
-    // Tạo canvas xuất có label
-    const exportCanvas = document.createElement('canvas');
-    const padding = 24;
-    const labelHeight = 50;
-    exportCanvas.width = canvas.width + padding * 2;
-    exportCanvas.height = canvas.height + padding * 2 + labelHeight;
-
-    const ctx = exportCanvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-    ctx.drawImage(canvas, padding, padding);
-
-    ctx.fillStyle = '#1a1a2e';
-    ctx.font = 'bold 16px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🍜 Phố Ẩm Thực Vĩnh Khánh', exportCanvas.width / 2, canvas.height + padding + 22);
-    ctx.font = '11px Arial, sans-serif';
-    ctx.fillStyle = '#888';
-    ctx.fillText('Quét để xem danh sách quán ăn', exportCanvas.width / 2, canvas.height + padding + 40);
-
+function downloadMasterQrCustom() {
+    if (!currentMasterQr) return;
     const link = document.createElement('a');
-    link.download = 'QR_TONG_Pho_Vinh_Khanh.png';
-    link.href = exportCanvas.toDataURL('image/png');
+    link.download = `VinhKhanh_MasterQR_${new Date().getTime()}.png`;
+    link.href = currentMasterQr.toDataURL('image/png');
     link.click();
-
-    showToast('Đã tải QR Tổng!');
 }
 
-function printMasterQr() {
-    const wrapper = document.getElementById('masterQrWrapper');
-    if (!wrapper) return;
-    const canvas = wrapper.querySelector('canvas');
-    if (!canvas) return;
-
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <!DOCTYPE html>
+function printMasterQrCustom() {
+    if (!currentMasterQr) return;
+    const dataUrl = currentMasterQr.toDataURL('image/png');
+    const windowPrint = window.open('', '_blank');
+    windowPrint.document.write(`
         <html>
-        <head>
-            <title>QR Tổng - Phố Ẩm Thực Vĩnh Khánh</title>
-            <style>
-                body {
-                    display: flex; flex-direction: column; align-items: center;
-                    justify-content: center; min-height: 100vh; margin: 0;
-                    font-family: Arial, sans-serif;
-                }
-                .qr-print { text-align: center; }
-                .qr-print img { width: 300px; height: 300px; }
-                .qr-print h2 { margin: 16px 0 6px; font-size: 22px; color: #1a1a2e; }
-                .qr-print p { margin: 0; font-size: 13px; color: #888; }
-                .qr-print .brand { margin-top: 10px; font-size: 15px; color: #e94560; font-weight: bold; }
-            </style>
-        </head>
-        <body>
-            <div class="qr-print">
-                <img src="${canvas.toDataURL('image/png')}" alt="QR Tổng">
-                <h2>Phố Ẩm Thực Vĩnh Khánh</h2>
-                <p>Quét mã QR để xem danh sách quán ăn & nghe thuyết minh</p>
-                <div class="brand">🍜 Quận 4, TP. Hồ Chí Minh</div>
-            </div>
-            <script>window.onload = () => { window.print(); window.close(); }<\/script>
-        </body>
+            <head><title>In Mã QR</title></head>
+            <body style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:sans-serif;">
+                <img src="${dataUrl}" style="width:400px; border: 1px solid #eee; padding: 10px; border-radius: 20px;" />
+                <h2 style="margin-top:20px; color:${currentQrColor}">PHỐ ẨM THỰC VĨNH KHÁNH</h2>
+                <script>setTimeout(() => { window.print(); window.close(); }, 500);</script>
+            </body>
         </html>
     `);
-    printWindow.document.close();
+    windowPrint.document.close();
 }
 
 function copyMasterQrUrl() {
     const url = `${QR_BASE_URL}/menu.html`;
-    navigator.clipboard.writeText(url).then(() => {
-        showToast('Đã copy URL menu!');
-    }).catch(() => {
-        const input = document.createElement('input');
-        input.value = url;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand('copy');
-        document.body.removeChild(input);
-        showToast('Đã copy URL menu!');
+    navigator.clipboard.writeText(url).then(() => showToast('Đã copy URL!'));
+}
+
+async function loadQrAnalytics(showToastFlag = true) {
+    const elScans = document.getElementById('qrStatScans');
+    const elRevenue = document.getElementById('qrStatRevenue');
+    try {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const [scansSnap, paymentsSnap] = await Promise.all([
+            db.collection('qrScans').where('scannedAt', '>=', startOfDay).get(),
+            db.collection('accessRights').where('purchasedAt', '>=', startOfDay).get()
+        ]);
+        if (elScans) elScans.textContent = scansSnap.size;
+        if (elRevenue) elRevenue.textContent = new Intl.NumberFormat('vi-VN').format(paymentsSnap.size * 5000) + 'đ';
+        if (showToastFlag) showToast('Đã cập nhật số liệu hôm nay!');
+    } catch (e) { console.error(e); }
+}
+
+/**
+ * Analytics Filter Logic (Jump to date & Navigate)
+ */
+
+function switchQrCategory(category) {
+    qrCurrentCategory = category;
+    document.querySelectorAll('.qr-tab').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`tab-${category}`).classList.add('active');
+    loadQrCharts();
+}
+
+function switchQrPeriod(period) {
+    qrCurrentPeriod = period;
+    // Khi đổi chế độ, thường reset về ngày hôm nay hoặc giữ nguyên ngày đang xem
+    loadQrCharts();
+    
+    // Cập nhật tab UI
+    document.querySelectorAll('.qr-period-tab').forEach(btn => btn.classList.remove('active'));
+    const activeTab = document.getElementById(`per-${period}`);
+    if (activeTab) activeTab.classList.add('active');
+}
+
+function navigateQrTime(direction) {
+    const date = new Date(qrCurrentBaseDate);
+    if (qrCurrentPeriod === 'day') date.setDate(date.getDate() + direction);
+    else if (qrCurrentPeriod === 'week') date.setDate(date.getDate() + (direction * 7));
+    else if (qrCurrentPeriod === 'month') date.setMonth(date.getMonth() + direction);
+    else if (qrCurrentPeriod === 'year') date.setFullYear(date.getFullYear() + direction);
+    
+    qrCurrentBaseDate = date;
+    loadQrCharts();
+}
+
+// Kích hoạt bộ chọn lịch
+function triggerQrPicker() {
+    if (qrCurrentPeriod === 'day' || qrCurrentPeriod === 'week') {
+        document.getElementById('qrPickerDate').showPicker();
+    } else if (qrCurrentPeriod === 'month') {
+        document.getElementById('qrPickerMonth').showPicker();
+    }
+    // Bỏ qua trường hợp 'year' theo yêu cầu
+}
+
+// Xử lý khi chọn ngày từ lịch
+function jumpToQrDate(val) {
+    if (!val) return;
+    qrCurrentBaseDate = new Date(val);
+    loadQrCharts();
+}
+
+async function loadQrCharts() {
+    const mainCanvas = document.getElementById('qrMainChart');
+    const labelEl = document.getElementById('qrChartPeriodLabel');
+    if (!mainCanvas) return;
+
+    try {
+        const { start, end, labels, displayLabel, chartType } = getPeriodBounds(qrCurrentPeriod, qrCurrentBaseDate);
+        
+        if (labelEl) {
+            labelEl.textContent = displayLabel;
+            // Chỉ hiện bàn tay và title nếu không phải là view Năm
+            if (qrCurrentPeriod === 'year') {
+                labelEl.style.cursor = 'default';
+                labelEl.title = '';
+                labelEl.style.pointerEvents = 'none'; // Khóa click
+            } else {
+                labelEl.style.cursor = 'pointer';
+                labelEl.title = 'Nhấn để chọn cụ thể';
+                labelEl.style.pointerEvents = 'auto'; // Mở click
+            }
+        }
+
+        const collectionName = qrCurrentCategory === 'revenue' ? 'accessRights' : 'qrScans';
+        const dateField = qrCurrentCategory === 'revenue' ? 'purchasedAt' : 'scannedAt';
+
+        const snapshot = await db.collection(collectionName)
+            .where(dateField, '>=', start)
+            .where(dateField, '<=', end)
+            .get();
+
+        const buckets = aggregateDataToBuckets(snapshot.docs, dateField, qrCurrentPeriod, start, labels.length);
+        const isRevenue = qrCurrentCategory === 'revenue';
+        const themeColor = isRevenue ? '#2ecc71' : '#3498db';
+        const themeGradient = isRevenue ? 'rgba(46, 204, 113, 0.4)' : 'rgba(52, 152, 219, 0.4)';
+        const chartTitle = isRevenue ? "Doanh thu" : "Lượt quét";
+        
+        renderAdvancedChart(mainCanvas, labels, buckets, chartType, themeColor, themeGradient, chartTitle, isRevenue);
+    } catch (e) { console.error(e); }
+}
+
+function getPeriodBounds(period, baseDate) {
+    let start = new Date(baseDate);
+    let end = new Date(baseDate);
+    let labels = [];
+    let displayLabel = "";
+    let chartType = 'bar';
+
+    if (period === 'day') {
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        displayLabel = start.toLocaleDateString('vi-VN');
+        labels = Array.from({ length: 24 }, (_, i) => `${i}h`);
+    } 
+    else if (period === 'week') {
+        const dayOfWeek = start.getDay() || 7;
+        start.setDate(start.getDate() - (dayOfWeek - 1));
+        start.setHours(0, 0, 0, 0);
+        end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+        displayLabel = `${start.getDate()}/${start.getMonth()+1} - ${end.getDate()}/${end.getMonth()+1}`;
+        labels = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
+    }
+    else if (period === 'month') {
+        start.setDate(1);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+        end.setHours(23, 59, 59, 999);
+        displayLabel = `Tháng ${start.getMonth() + 1} / ${start.getFullYear()}`;
+        labels = Array.from({ length: end.getDate() }, (_, i) => `${i + 1}`);
+        chartType = 'line';
+    }
+    else if (period === 'year') {
+        start.setMonth(0, 1);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(start.getFullYear(), 11, 31);
+        end.setHours(23, 59, 59, 999);
+        displayLabel = `Năm ${start.getFullYear()}`;
+        labels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+    }
+    return { start, end, labels, displayLabel, chartType };
+}
+
+function aggregateDataToBuckets(docs, dateField, period, startTime, bucketCount) {
+    const buckets = new Array(bucketCount).fill(0);
+    const isRevenue = qrCurrentCategory === 'revenue';
+    docs.forEach(doc => {
+        const timestamp = doc.data()[dateField];
+        if (!timestamp) return;
+        const date = timestamp.toDate();
+        let index = -1;
+        if (period === 'day') index = date.getHours();
+        else if (period === 'week') {
+            const diff = date.getTime() - startTime.getTime();
+            index = Math.floor(diff / (1000 * 60 * 60 * 24));
+        }
+        else if (period === 'month') index = date.getDate() - 1;
+        else if (period === 'year') index = date.getMonth();
+        if (index >= 0 && index < bucketCount) buckets[index] += isRevenue ? 5000 : 1;
+    });
+    return buckets;
+}
+
+function renderAdvancedChart(canvas, labels, data, type, color, gradient, title, isRevenue) {
+    if (qrMainChartInstance) qrMainChartInstance.destroy();
+    qrMainChartInstance = new Chart(canvas, {
+        type: type,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: title,
+                data: data,
+                backgroundColor: type === 'line' ? gradient : color + '99',
+                borderColor: color,
+                borderWidth: 2,
+                fill: type === 'line',
+                tension: 0.4,
+                pointRadius: type === 'line' ? 3 : 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1a1a24',
+                    callbacks: {
+                        label: (ctx) => isRevenue 
+                            ? `${new Intl.NumberFormat('vi-VN').format(ctx.raw)}đ`
+                            : `${ctx.raw} lượt`
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { grid: { display: false }, ticks: { autoSkip: true } }
+            }
+        }
     });
 }
