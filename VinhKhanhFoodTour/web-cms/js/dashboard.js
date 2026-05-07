@@ -101,7 +101,11 @@ async function loadDashboardStats() {
         
         const elTotalRevenue = document.getElementById('statTotalRevenue');
         if (elTotalRevenue) {
-            elTotalRevenue.textContent = new Intl.NumberFormat('vi-VN').format(accessRightsSnap.size * 5000) + 'đ';
+            let totalRevenue = 0;
+            accessRightsSnap.docs.forEach(doc => {
+                totalRevenue += (doc.data().amount || 5000);
+            });
+            elTotalRevenue.textContent = new Intl.NumberFormat('vi-VN').format(totalRevenue) + 'đ';
         }
 
         // Lưu tạm dữ liệu để heatmap dùng khi toggle

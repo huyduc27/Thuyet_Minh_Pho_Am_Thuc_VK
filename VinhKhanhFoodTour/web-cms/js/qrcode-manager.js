@@ -128,7 +128,12 @@ async function loadQrAnalytics(showToastFlag = true) {
             db.collection('accessRights').where('purchasedAt', '>=', startOfDay).get()
         ]);
         if (elScans) elScans.textContent = scansSnap.size;
-        if (elRevenue) elRevenue.textContent = new Intl.NumberFormat('vi-VN').format(paymentsSnap.size * 5000) + 'đ';
+        
+        let dailyRevenue = 0;
+        paymentsSnap.docs.forEach(doc => {
+            dailyRevenue += (doc.data().amount || 5000);
+        });
+        if (elRevenue) elRevenue.textContent = new Intl.NumberFormat('vi-VN').format(dailyRevenue) + 'đ';
         if (showToastFlag) showToast('Đã cập nhật số liệu hôm nay!');
     } catch (e) { console.error(e); }
 }
@@ -281,7 +286,9 @@ function aggregateDataToBuckets(docs, dateField, period, startTime, bucketCount)
         }
         else if (period === 'month') index = date.getDate() - 1;
         else if (period === 'year') index = date.getMonth();
-        if (index >= 0 && index < bucketCount) buckets[index] += isRevenue ? 5000 : 1;
+        if (index >= 0 && index < bucketCount) {
+            buckets[index] += isRevenue ? (doc.data().amount || 5000) : 1;
+        }
     });
     return buckets;
 }
